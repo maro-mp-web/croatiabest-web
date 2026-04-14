@@ -11,7 +11,7 @@ export interface Category {
 }
 
 export const CATEGORIES: Category[] = [
-  // BESPLATNE KATEGORIJE
+  // BESPLATNE KATEGORIJE (FREE)
   { id: 'institutions', name: 'Državne i gradske institucije', type: 'free', color: '#4B5563', icon: 'Building2' },
   { id: 'bus_station', name: 'Autobusni kolodvori', type: 'free', color: '#D97706', icon: 'Bus' },
   { id: 'train_station', name: 'Željeznički kolodvori', type: 'free', color: '#4F46E5', icon: 'Train' },
@@ -25,7 +25,7 @@ export const CATEGORIES: Category[] = [
   { id: 'firefighters', name: 'Vatrogasci', type: 'free', color: '#EA580C', icon: 'Flame' },
   { id: 'parks', name: 'Javni parkovi', type: 'free', color: '#15803D', icon: 'Trees' },
 
-  // PLAĆENE KATEGORIJE
+  // PLAĆENE KATEGORIJE (PAY)
   { id: 'restaurants', name: 'Restorani', type: 'paid', color: '#E11D48', price: '89€', icon: 'Utensils' },
   { id: 'cafes', name: 'Kafići', type: 'paid', color: '#BE123C', price: '69€', icon: 'Coffee' },
   { id: 'hotels', name: 'Hoteli', type: 'paid', color: '#4338CA', price: '390€', icon: 'Hotel' },

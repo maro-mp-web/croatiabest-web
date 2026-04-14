@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
-import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 export default function SubmitListingPage() {
   const [formData, setFormData] = useState({
@@ -31,13 +31,13 @@ export default function SubmitListingPage() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Ovdje bi išla Firestore logika
+    // Ovdje bi išla Firestore logika za spremanje u /listings kolekciju sa statusom 'pending'
     setTimeout(() => {
       toast({
         title: "Prijava poslana!",
         description: isPaid 
-          ? "Vaša prijava je zaprimljena. Očekujte upute za plaćanje na email." 
-          : "Vaša prijava je poslana na pregled adminu.",
+          ? "Vaša prijava je zaprimljena. Očekujte upute za plaćanje na email prije odobrenja." 
+          : "Vaša prijava je poslana na pregled administratoru.",
       });
       setIsSubmitting(false);
       setFormData({ name: '', categoryId: '', address: '', description: '', email: '', phone: '' });
@@ -50,13 +50,13 @@ export default function SubmitListingPage() {
       <main className="container mx-auto px-4 py-12 max-w-3xl">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-headline font-bold mb-4">Prijavite svoj objekt</h1>
-          <p className="text-muted-foreground">Pridružite se najboljem portalu za istraživanje Hrvatske.</p>
+          <p className="text-muted-foreground">Postanite dio najveće baze najboljeg u Hrvatskoj.</p>
         </div>
 
         <Card className="border-none shadow-2xl">
           <CardHeader>
             <CardTitle>Podaci o objektu</CardTitle>
-            <CardDescription>Ispunite formu ispod. Svi objekti prolaze provjeru administratora.</CardDescription>
+            <CardDescription>Sve prijave pregledava Superadmin prije objave.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -92,13 +92,14 @@ export default function SubmitListingPage() {
                 <Input 
                   id="address" 
                   required 
+                  placeholder="npr. Ilica 1, Zagreb"
                   value={formData.address}
                   onChange={e => setFormData({...formData, address: e.target.value})}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Opis</Label>
+                <Label htmlFor="description">Opis objekta / Usluge</Label>
                 <Textarea 
                   id="description" 
                   className="min-h-[120px]" 
@@ -134,13 +135,13 @@ export default function SubmitListingPage() {
                   <Info className="size-5 text-primary shrink-0" />
                   <p className="text-sm">
                     Odabrali ste plaćenu kategoriju <strong>{selectedCategory?.name}</strong>. 
-                    Nakon odobrenja administratora, dobit ćete podatke za uplatu iznosa od <strong>{selectedCategory?.price}</strong>.
+                    Nakon što Superadmin provjeri prijavu, dobit ćete podatke za uplatu <strong>{selectedCategory?.price}</strong> na email.
                   </p>
                 </div>
               )}
 
               <Button type="submit" disabled={isSubmitting} className="w-full h-12 text-lg font-bold">
-                {isSubmitting ? "Slanje..." : "Pošalji na pregled"}
+                {isSubmitting ? "Slanje..." : "Pošalji prijavu Superadminu"}
               </Button>
             </form>
           </CardContent>
