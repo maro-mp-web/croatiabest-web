@@ -1,3 +1,4 @@
+
 export type Language = 'hr' | 'en';
 
 export const translations = {
@@ -8,8 +9,8 @@ export const translations = {
     heroTitlePart3: 'plaže i dragulje',
     heroDesc1: 'Od Istre do Dubrovnika — preko 300 lokacija koje su označili putnici. Otkrijte lokalne priče, tajne vidikovce i najčišće more.',
     heroDesc2: 'ažuriranja uživo od zajednice',
-    heroCTA: 'VIDI CIJELU KARTU →',
-    heroSubCTA: 'ili otkrij u blizini',
+    heroCTA: 'VIDI CIJELU KARTU',
+    heroSubCTA: 'otkrij u blizini',
     statsPins: 'oznaka putnika',
     statsRating: 'ocjena zajednice',
     navExplore: 'Istraži Kartu',
@@ -31,8 +32,8 @@ export const translations = {
     heroTitlePart3: 'beaches & gems',
     heroDesc1: 'From Istria to Dubrovnik — over 300 locations pinned by travelers. Discover local stories, secret viewpoints and the clearest sea.',
     heroDesc2: 'live updates from the community',
-    heroCTA: 'VIEW FULL MAP →',
-    heroSubCTA: 'or discover near you',
+    heroCTA: 'VIEW FULL MAP',
+    heroSubCTA: 'discover near you',
     statsPins: 'traveler pins',
     statsRating: 'community rating',
     navExplore: 'Explore Map',
