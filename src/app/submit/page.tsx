@@ -31,7 +31,7 @@ export default function SubmitListingPage() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Ovdje bi išao Firestore logik (addDoc)
+    // Ovdje bi išla Firestore logika
     setTimeout(() => {
       toast({
         title: "Prijava poslana!",

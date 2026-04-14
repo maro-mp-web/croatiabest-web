@@ -2,7 +2,6 @@
 "use client"
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,8 +14,7 @@ import {
   Sparkles, 
   CheckCircle2, 
   XCircle,
-  Clock,
-  Plus
+  Clock
 } from 'lucide-react';
 import { CATEGORIES } from '@/app/lib/constants';
 
@@ -42,23 +40,14 @@ export default function AdminDashboard() {
       <Navbar />
       
       <main className="container mx-auto px-4 py-12">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
+        <div className="flex justify-between items-center mb-12">
           <div>
             <h1 className="text-4xl font-headline font-bold mb-2">Admin Panel</h1>
             <p className="text-muted-foreground text-lg">Samo Superadmin ima pristup odobravanju listinga.</p>
           </div>
-          <div className="flex gap-3">
-            <Link href="/admin/ai-writer">
-              <Button variant="outline">
-                <Sparkles className="size-4 mr-2" /> AI Pisač
-              </Button>
-            </Link>
-            <Link href="/submit">
-              <Button className="bg-primary">
-                <Plus className="size-4 mr-2" /> Novi Unos
-              </Button>
-            </Link>
-          </div>
+          <Button variant="outline">
+            <Sparkles className="size-4 mr-2" /> AI Content Assistant
+          </Button>
         </div>
 
         {/* Stats Grid */}
@@ -112,21 +101,16 @@ export default function AdminDashboard() {
                         <Badge variant={listing.type === 'paid' ? 'default' : 'secondary'} className="mr-4">
                           {listing.type === 'paid' ? 'PLAĆENO' : 'FREE'}
                         </Badge>
-                        <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-50 hover:text-red-600">
+                        <Button variant="ghost" size="icon" className="text-red-500">
                           <XCircle className="size-6" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-green-500 hover:bg-green-50 hover:text-green-600">
+                        <Button variant="ghost" size="icon" className="text-green-500">
                           <CheckCircle2 className="size-6" />
                         </Button>
                       </div>
                     </div>
                   ))}
                 </div>
-                {pendingListings.length === 0 && (
-                  <div className="p-12 text-center text-muted-foreground">
-                    Nema novih prijava na čekanju.
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
