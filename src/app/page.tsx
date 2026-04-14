@@ -16,7 +16,6 @@ import { Logo } from '@/components/brand/Logo';
 
 export default function Home() {
   const { t } = useLanguage();
-  const paidCategories = CATEGORIES.filter(c => c.type === 'paid');
   const featuredListings = MOCK_LISTINGS.filter(l => l.categoryId === 'restaurants' || l.categoryId === 'hotels');
 
   return (
@@ -33,7 +32,7 @@ export default function Home() {
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               
-              {/* LEFT SIDE: Interactive Map Card */}
+              {/* LIJEVA STRANA: Interactive Map Card */}
               <div className="relative group order-2 lg:order-1 animate-fade-in">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary via-secondary to-primary rounded-3xl opacity-20 group-hover:opacity-30 blur transition duration-700"></div>
                 <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-3 border border-white/50 h-full flex flex-col">
