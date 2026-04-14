@@ -1,0 +1,49 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "Korisnički Profil",
+      "description": "Podaci o korisniku i njegovoj ulozi.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "superadmin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Listing": {
+      "title": "Objekt / Listing",
+      "description": "Podaci o prijavljenom objektu.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "type": { "type": "string", "enum": ["free", "paid"] },
+        "submittedBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "contactEmail": { "type": "string" },
+        "contactPhone": { "type": "string" }
+      },
+      "required": ["name", "categoryId", "status", "type", "submittedBy"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Spremište korisničkih profila."
+    },
+    "/listings/{listingId}": {
+      "schema": "Listing",
+      "description": "Spremište svih prijavljenih objekata."
+    }
+  }
+}

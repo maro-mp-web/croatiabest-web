@@ -1,3 +1,4 @@
+
 export type CategoryType = 'free' | 'paid';
 
 export interface Category {
@@ -39,28 +40,15 @@ export const CATEGORIES: Category[] = [
   { id: 'public_parks', name: 'Javni parkovi', type: 'free', color: '#15803D', icon: 'Trees' },
 
   // Paid Categories
-  { id: 'restaurants', name: 'Restorani', type: 'paid', color: '#E11D48', price: '89e', icon: 'Utensils' },
-  { id: 'cafes', name: 'Kafići', type: 'paid', color: '#BE123C', price: '69e', icon: 'Coffee' },
-  { id: 'fast_food', name: 'Fast food', type: 'paid', color: '#F43F5E', price: '29e', icon: 'Pizza' },
-  { id: 'hotels', name: 'Hoteli', type: 'paid', color: '#4338CA', price: '390e', icon: 'Hotel' },
-  { id: 'motels', name: 'Moteli', type: 'paid', color: '#6366F1', price: '89e', icon: 'Bed' },
-  { id: 'camps', name: 'Kampovi', type: 'paid', color: '#059669', price: '29e', icon: 'Tent' },
-  { id: 'apartments', name: 'Apartmani', type: 'paid', color: '#10B981', price: '29e', icon: 'Home' },
-  { id: 'travel_agencies', name: 'Turističke agencije', type: 'paid', color: '#7C3AED', price: '290e', icon: 'Briefcase' },
-  { id: 'stores', name: 'Trgovine', type: 'paid', color: '#D946EF', price: '49e', icon: 'ShoppingBag' },
-  { id: 'shopping_malls', name: 'Trgovački centri', type: 'paid', color: '#A21CAF', price: '190e', icon: 'Store' },
-  { id: 'night_clubs', name: 'Noćni klubovi', type: 'paid', color: '#111827', price: '190e', icon: 'Music' },
-];
-
-export const INFO_CATEGORIES = [
-  'Poznati o Hrvatskoj',
-  'Poznati u Hrvatskoj',
-  'Poznati Hrvati',
-  'Turističke informacije',
-  'Domovinski rat',
-  'Blog',
-  'Putovanja',
-  'Svijet',
-  'Vijesti',
-  'Nacionalni Parkovi'
+  { id: 'restaurants', name: 'Restorani', type: 'paid', color: '#E11D48', price: '89€', icon: 'Utensils' },
+  { id: 'cafes', name: 'Kafići', type: 'paid', color: '#BE123C', price: '69€', icon: 'Coffee' },
+  { id: 'fast_food', name: 'Fast food', type: 'paid', color: '#F43F5E', price: '29€', icon: 'Pizza' },
+  { id: 'hotels', name: 'Hoteli', type: 'paid', color: '#4338CA', price: '390€', icon: 'Hotel' },
+  { id: 'motels', name: 'Moteli', type: 'paid', color: '#6366F1', price: '89€', icon: 'Bed' },
+  { id: 'camps', name: 'Kampovi', type: 'paid', color: '#059669', price: '29€', icon: 'Tent' },
+  { id: 'apartments', name: 'Apartmani', type: 'paid', color: '#10B981', price: '29€', icon: 'Home' },
+  { id: 'travel_agencies', name: 'Turističke agencije', type: 'paid', color: '#7C3AED', price: '290€', icon: 'Briefcase' },
+  { id: 'stores', name: 'Trgovine', type: 'paid', color: '#D946EF', price: '49€', icon: 'ShoppingBag' },
+  { id: 'shopping_malls', name: 'Trgovački centri', type: 'paid', color: '#A21CAF', price: '190€', icon: 'Store' },
+  { id: 'night_clubs', name: 'Noćni klubovi', type: 'paid', color: '#111827', price: '190€', icon: 'Music' },
 ];
