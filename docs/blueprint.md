@@ -1,0 +1,19 @@
+# **App Name**: CroatiaBest
+
+## Core Features:
+
+- Interactive Map with Custom Markers: An interactive Google Map displaying free and paid listings with individual markers. Features include marker clustering for larger distances and dynamically colored icons based on listing category for quick identification.
+- Listing Content Management: An administrative interface for adding, editing, and deleting both free and paid listings. It supports custom data fields tailored to each category, including contact information, media uploads (photos, videos), web links (indexed/unindexed), and specific details for categories like restaurants (menu) or apartments (room count).
+- Dynamic Content and Blog Management: A system for administrators to create, categorize, and publish non-map related articles and blog posts (e.g., 'Poznati o Hrvatskoj', 'Turističke informacije'), with rich text editing capabilities.
+- AI-Assisted Content Writing Tool: An integrated generative AI tool within the admin panel to assist content creators in drafting or enhancing descriptions for listings and blog articles, ensuring quality and consistency under human control.
+- Payment Gateway Integration: Implement a secure payment gateway to handle annual subscription payments for paid listing categories, including management of invoices, renewals, and subscription statuses.
+- User-Facing Listing and Article Display: Public-facing sections for browsing all types of listings and reading articles. This includes detailed listing pages, and dedicated pages for cities, islands, and specific categories showcasing relevant map data and content.
+- Homepage with Featured Content and Ads: A dynamic homepage designed with multiple customizable sections to highlight featured listings, latest news, and calls to action. It supports flexible placement for advertising banners to generate revenue.
+
+## Style Guidelines:
+
+- The primary color is a deep, balanced blue (#1F1FBD), selected to evoke a sense of trust and professionalism while reflecting the natural beauty of Croatia. The background color is a very light, desaturated blue (#F2F2FC) for optimal readability in a light theme. A vibrant sky blue (#16A4E6) serves as an accent, providing visual highlight and energy.
+- Headline font: 'Belleza', a humanist sans-serif with a sophisticated, art- and design-aligned style, chosen for its modern and high-end feel suitable for 'CroatiaBest'. Body text font: 'Alegreya', a humanist serif font known for its elegant, intellectual, and contemporary character, ensuring excellent readability for longer informational content and articles.
+- Utilize a suite of modern, minimalist vector icons. Map markers will be designed to be visually distinct and prominently color-coded according to listing categories. Implement cluster icons for aggregated locations at lower zoom levels, enhancing map usability.
+- A responsive, grid-based layout will ensure optimal display across all devices. The homepage will feature prominent, customizable sections to showcase featured content and advertisement banners. Dedicated interactive map pages will offer robust filtering, while template-driven pages for cities, islands, and categories will dynamically display relevant listings and content.
+- Subtle yet engaging micro-interactions will be incorporated on hover, click, and during element transitions to enhance the overall user experience. Dynamic animations for map interactions like zooming, panning, and marker displays will provide a smooth and modern feel. Page loading and content reveal animations will contribute to a polished, premium aesthetic.
