@@ -1,3 +1,4 @@
+
 export type Language = 'hr' | 'en';
 
 export const translations = {
@@ -19,6 +20,7 @@ export const translations = {
     navBlog: 'Magazin',
     navInfo: 'Informacije',
     navAdmin: 'Admin Panel',
+    navCities: 'Gradovi',
     searchPlaceholder: 'Traži plaže, restorane...',
     featuredTitle: 'Najbolja Mjesta',
     featuredBadge: 'IZDVOJENO',
@@ -26,6 +28,9 @@ export const translations = {
     footerDesc: 'Vodeći portal za informiranje turista i lokalnog stanovništva u Republici Hrvatskoj.',
     sliderDestinations: 'Inspiracija za putovanje',
     quickSearch: 'Brza pretraga',
+    population: 'Stanovništvo',
+    region: 'Regija',
+    backToHome: 'Povratak na početnu',
   },
   en: {
     heroVideoTitle: 'Discover the Soul of Croatia',
@@ -45,6 +50,7 @@ export const translations = {
     navBlog: 'Magazine',
     navInfo: 'Information',
     navAdmin: 'Admin Panel',
+    navCities: 'Cities',
     searchPlaceholder: 'Search beaches, restaurants...',
     featuredTitle: 'Top Places',
     featuredBadge: 'FEATURED',
@@ -52,5 +58,8 @@ export const translations = {
     footerDesc: 'The leading portal for informing tourists and locals in the Republic of Croatia.',
     sliderDestinations: 'Travel Inspiration',
     quickSearch: 'Quick Search',
+    population: 'Population',
+    region: 'Region',
+    backToHome: 'Back to Home',
   }
 };

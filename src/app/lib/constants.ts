@@ -10,6 +10,82 @@ export interface Category {
   icon: string;
 }
 
+export interface City {
+  slug: string;
+  name: string;
+  description: string;
+  image: string;
+  region: string;
+  population: string;
+}
+
+export const CITIES: City[] = [
+  { 
+    slug: 'zagreb', 
+    name: 'Zagreb', 
+    region: 'Središnja Hrvatska',
+    population: '767,131',
+    image: 'https://picsum.photos/seed/zagreb1/1200/800',
+    description: 'Glavni grad Hrvatske, poznat po svojoj bogatoj povijesti, muzejima i živoj atmosferi na ulicama.' 
+  },
+  { 
+    slug: 'split', 
+    name: 'Split', 
+    region: 'Dalmacija',
+    population: '161,312',
+    image: 'https://picsum.photos/seed/split1/1200/800',
+    description: 'Srce Dalmacije, dom Dioklecijanove palače i jedna od najživljih mediteranskih luka.' 
+  },
+  { 
+    slug: 'dubrovnik', 
+    name: 'Dubrovnik', 
+    region: 'Južna Dalmacija',
+    population: '41,562',
+    image: 'https://picsum.photos/seed/dubrovnik1/1200/800',
+    description: 'Biser Jadrana, poznat po svojim zidinama i povijesnoj jezgri pod zaštitom UNESCO-a.' 
+  },
+  { 
+    slug: 'zadar', 
+    name: 'Zadar', 
+    region: 'Dalmacija',
+    population: '70,829',
+    image: 'https://picsum.photos/seed/zadar1/1200/800',
+    description: 'Grad s najljepšim zalaskom sunca, Pozdravom Suncu i Morski orguljama.' 
+  },
+  { 
+    slug: 'rijeka', 
+    name: 'Rijeka', 
+    region: 'Kvarner',
+    population: '108,622',
+    image: 'https://picsum.photos/seed/rijeka1/1200/800',
+    description: 'Najveća hrvatska luka i grad bogate industrijske i kulturne baštine.' 
+  },
+  { 
+    slug: 'pula', 
+    name: 'Pula', 
+    region: 'Istra',
+    population: '52,220',
+    image: 'https://picsum.photos/seed/pula1/1200/800',
+    description: 'Istarski grad poznat po rimskom amfiteatru Areni i prekrasnoj obali.' 
+  },
+  { 
+    slug: 'sibenik', 
+    name: 'Šibenik', 
+    region: 'Dalmacija',
+    population: '42,589',
+    image: 'https://picsum.photos/seed/sibenik1/1200/800',
+    description: 'Grad s dvije UNESCO-ve katedrale i prekrasnim arhipelagom.' 
+  },
+  { 
+    slug: 'osijek', 
+    name: 'Osijek', 
+    region: 'Slavonija',
+    population: '96,568',
+    image: 'https://picsum.photos/seed/osijek1/1200/800',
+    description: 'Metropola Slavonije, poznata po secesijskoj arhitekturi i vrhunskoj gastronomiji.' 
+  },
+];
+
 export const CATEGORIES: Category[] = [
   // BESPLATNE KATEGORIJE (FREE)
   { id: 'institutions', name: 'Državne i gradske institucije', type: 'free', color: '#4B5563', icon: 'Building2' },
