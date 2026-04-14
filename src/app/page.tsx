@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CATEGORIES, INFO_CATEGORIES } from '@/app/lib/constants';
-import { MOCK_LISTINGS, MOCK_ARTICLES } from '@/app/lib/mock-data';
-import { MapPin, ArrowRight, Star, TrendingUp, Map as MapIcon } from 'lucide-react';
+import { CATEGORIES } from '@/app/lib/constants';
+import { MOCK_LISTINGS } from '@/app/lib/mock-data';
+import { MapPin, ArrowRight, Star, Map as MapIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Logo } from '@/components/brand/Logo';
 
@@ -24,7 +24,7 @@ export default function Home() {
       <Navbar />
       
       <main className="flex-1">
-        {/* Dynamic Hero Section */}
+        {/* Hero Section */}
         <section className="relative overflow-hidden py-16 md:py-24">
           <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none">
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
@@ -53,7 +53,7 @@ export default function Home() {
                       data-ai-hint="croatia map"
                     />
                     
-                    {/* Simulated Map Markers */}
+                    {/* Simulated Markers */}
                     <div className="absolute top-[30%] left-[40%] animate-bounce">
                       <div className="size-8 rounded-full bg-primary border-4 border-white shadow-lg flex items-center justify-center">
                         <MapPin className="size-4 text-white" />
@@ -88,7 +88,7 @@ export default function Home() {
                 </div>
 
                 <h2 className="text-4xl sm:text-5xl md:text-7xl font-black leading-tight tracking-tighter">
-                  <span className="text-gradient">{t.heroTitlePart1}</span>
+                  <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">{t.heroTitlePart1}</span>
                   <br />
                   <span className="text-foreground">{t.heroTitlePart2}</span>
                   <br />
@@ -134,13 +134,6 @@ export default function Home() {
                     <div className="text-3xl font-black text-secondary">4.9★</div>
                     <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t.statsRating}</div>
                   </div>
-                  <div className="flex -space-x-2">
-                    {['M', 'I', 'K', 'L'].map((initial, i) => (
-                      <div key={i} className={`w-10 h-10 rounded-full border-2 border-background flex items-center justify-center text-xs font-bold text-white shadow-md ${['bg-primary', 'bg-secondary', 'bg-accent', 'bg-foreground'][i]}`}>
-                        {initial}
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </div>
             </div>
@@ -174,7 +167,6 @@ export default function Home() {
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <Badge className="absolute top-6 left-6 bg-white/90 text-primary border-none shadow-lg backdrop-blur font-bold px-4 py-1">
                     {CATEGORIES.find(c => c.id === listing.categoryId)?.name}
                   </Badge>
@@ -185,11 +177,6 @@ export default function Home() {
                     <MapPin className="size-4 mr-2 text-secondary" /> {listing.address}
                   </div>
                   <div className="flex items-center justify-between pt-4">
-                    <div className="flex items-center gap-1">
-                      {Array(5).fill(0).map((_, i) => (
-                        <Star key={i} className={`size-4 ${i < 4 ? 'fill-secondary text-secondary' : 'text-muted'}`} />
-                      ))}
-                    </div>
                     <Link href={`/listing/${listing.id}`}>
                       <Button size="sm" className="rounded-xl px-6 bg-foreground hover:bg-primary transition-colors">
                         Details
@@ -201,18 +188,6 @@ export default function Home() {
             ))}
           </div>
         </section>
-
-        {/* Categories Scrolling Bar */}
-        <div className="bg-foreground py-10 overflow-hidden">
-          <div className="container mx-auto px-4 flex gap-12 items-center justify-center animate-marquee whitespace-nowrap">
-            {paidCategories.map((cat) => (
-              <Link key={cat.id} href={`/category/${cat.id}`} className="flex items-center gap-3 text-white/70 hover:text-white transition-all hover:scale-105 group">
-                <div className="size-2 rounded-full bg-primary" />
-                <span className="text-sm uppercase tracking-[0.3em] font-bold">{cat.name}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
       </main>
 
       <footer className="bg-foreground text-white py-24">
