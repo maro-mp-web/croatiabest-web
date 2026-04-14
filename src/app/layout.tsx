@@ -1,5 +1,7 @@
 import type {Metadata} from 'next';
 import './globals.css';
+import { LanguageProvider } from '@/contexts/LanguageContext';
+import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'CroatiaBest - Your Ultimate Guide to Croatia',
@@ -18,7 +20,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Belleza&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased">{children}</body>
+      <body className="font-body antialiased">
+        <LanguageProvider>
+          {children}
+          <Toaster />
+        </LanguageProvider>
+      </body>
     </html>
   );
 }

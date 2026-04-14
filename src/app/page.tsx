@@ -1,3 +1,5 @@
+"use client"
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,108 +10,188 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CATEGORIES, INFO_CATEGORIES } from '@/app/lib/constants';
 import { MOCK_LISTINGS, MOCK_ARTICLES } from '@/app/lib/mock-data';
-import { MapPin, ArrowRight, Star, TrendingUp } from 'lucide-react';
+import { MapPin, ArrowRight, Star, TrendingUp, Map as MapIcon } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Home() {
+  const { t } = useLanguage();
   const paidCategories = CATEGORIES.filter(c => c.type === 'paid');
   const featuredListings = MOCK_LISTINGS.filter(l => l.categoryId === 'restaurants' || l.categoryId === 'hotels');
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative h-[80vh] flex items-center justify-center text-center px-4 overflow-hidden">
-          <Image
-            src="https://picsum.photos/seed/croatia/1920/1080"
-            alt="Hero Croatia"
-            fill
-            className="object-cover brightness-[0.4]"
-            priority
-            data-ai-hint="dubrovnik coast"
-          />
-          <div className="relative z-10 max-w-4xl space-y-6 animate-fade-in">
-            <Badge variant="outline" className="text-white border-white/40 bg-white/10 px-4 py-1 text-sm uppercase tracking-widest backdrop-blur-md">
-              Otkrijte najbolje od Hrvatske
-            </Badge>
-            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl text-white font-bold tracking-tight">
-              Croatia<span className="text-accent">Best</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-white/90 font-light max-w-2xl mx-auto">
-              Vaš ultimativni vodič kroz skrivene dragulje, najbolje restorane i sve važne informacije na jednom mjestu.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4 pt-4">
-              <Link href="/explore">
-                <Button size="lg" className="rounded-full px-8 text-lg bg-primary hover:bg-primary/90">
-                  Istraži Kartu
-                </Button>
-              </Link>
-              <Link href="/blog">
-                <Button size="lg" variant="outline" className="rounded-full px-8 text-lg text-white border-white hover:bg-white hover:text-primary">
-                  Pročitaj Blog
-                </Button>
-              </Link>
+        {/* Dynamic Hero Section */}
+        <section className="relative overflow-hidden py-16 md:py-24">
+          <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none">
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+          </div>
+          
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              
+              {/* LEFT SIDE: Interactive Map Card */}
+              <div className="relative group order-2 lg:order-1 animate-fade-in">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary via-secondary to-primary rounded-3xl opacity-20 group-hover:opacity-30 blur transition duration-700"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-3 border border-white/50 h-full flex flex-col">
+                  
+                  <div className="lg:hidden text-center mb-4">
+                    <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-semibold tracking-wide">
+                      🇭🇷 istraži Hrvatsku
+                    </span>
+                  </div>
+                  
+                  <div className="relative bg-gradient-to-b from-sky-50 to-indigo-50 rounded-xl overflow-hidden flex-1 flex items-center justify-center min-h-[400px] border border-black/5">
+                    <Image 
+                      src="https://picsum.photos/seed/croatia-map/1200/800" 
+                      alt="Travel Map" 
+                      fill 
+                      className="object-cover opacity-60 saturate-150"
+                      data-ai-hint="croatia map"
+                    />
+                    
+                    {/* Simulated Map Markers */}
+                    <div className="absolute top-[30%] left-[40%] animate-bounce">
+                      <div className="size-8 rounded-full bg-primary border-4 border-white shadow-lg flex items-center justify-center">
+                        <MapPin className="size-4 text-white" />
+                      </div>
+                    </div>
+                    <div className="absolute top-[60%] left-[70%] animate-pulse">
+                      <div className="size-10 rounded-full bg-secondary/90 border-4 border-white shadow-xl flex items-center justify-center text-white font-bold text-xs">
+                        12
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap items-center justify-between text-[10px] sm:text-xs text-muted-foreground">
+                    <div className="flex gap-2 items-center">
+                      <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+                      <span>popular places</span>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <span className="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+                      <span>hidden beaches</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT SIDE: Text & CTA */}
+              <div className="flex flex-col justify-center order-1 lg:order-2 space-y-8 relative animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <div className="inline-flex">
+                  <span className="bg-primary/10 text-primary text-xs md:text-sm font-semibold px-5 py-2 rounded-full border border-primary/20 shadow-sm uppercase tracking-widest">
+                    {t.heroBadge}
+                  </span>
+                </div>
+
+                <h2 className="text-4xl sm:text-5xl md:text-7xl font-black leading-tight tracking-tighter">
+                  <span className="text-gradient">{t.heroTitlePart1}</span>
+                  <br />
+                  <span className="text-foreground">{t.heroTitlePart2}</span>
+                  <br />
+                  <span className="text-secondary relative">
+                    {t.heroTitlePart3}
+                    <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 8" preserveAspectRatio="none">
+                      <path d="M0,5 Q30,0 60,5 T120,5 T180,5" stroke="currentColor" className="text-accent" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.6"></path>
+                    </svg>
+                  </span>
+                </h2>
+
+                <div className="space-y-4 max-w-lg">
+                  <p className="text-foreground/80 text-lg md:text-xl leading-relaxed font-body">
+                    <span className="font-semibold text-primary">From Istria to Dubrovnik</span> — {t.heroDesc1}
+                  </p>
+                  <p className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
+                    <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
+                    {t.heroDesc2}
+                    <span className="inline-block w-2 h-2 rounded-full bg-secondary"></span>
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-6 pt-4">
+                  <Link href="/explore" className="group relative inline-flex items-center justify-center px-10 py-5 text-lg font-bold text-white transition-all duration-300 ease-out rounded-2xl shadow-xl hover:shadow-2xl active:scale-95 overflow-hidden">
+                    <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary to-secondary"></span>
+                    <span className="absolute -inset-1 bg-gradient-to-r from-primary via-secondary to-primary rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-500"></span>
+                    <span className="relative flex items-center gap-3">
+                      <MapIcon className="size-6" />
+                      <span>{t.heroCTA}</span>
+                    </span>
+                  </Link>
+                  <span className="text-sm text-muted-foreground flex items-center gap-1">
+                    {t.heroSubCTA.split(' ')[0]} <Link href="/explore" className="underline underline-offset-4 decoration-primary hover:text-primary transition font-bold">{t.heroSubCTA.split(' ').slice(1).join(' ')}</Link>
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-12 pt-8 border-t border-border">
+                  <div>
+                    <div className="text-3xl font-black text-primary">15k+</div>
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t.statsPins}</div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-black text-secondary">4.9★</div>
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t.statsRating}</div>
+                  </div>
+                  <div className="flex -space-x-2">
+                    {['M', 'I', 'K', 'L'].map((initial, i) => (
+                      <div key={i} className={`w-10 h-10 rounded-full border-2 border-background flex items-center justify-center text-xs font-bold text-white shadow-md ${['bg-primary', 'bg-secondary', 'bg-accent', 'bg-foreground'][i]}`}>
+                        {initial}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Categories Bar */}
-        <div className="bg-primary py-8 overflow-hidden">
-          <div className="container mx-auto px-4 flex gap-8 items-center justify-center animate-marquee whitespace-nowrap">
-            {paidCategories.map((cat) => (
-              <Link key={cat.id} href={`/category/${cat.id}`} className="flex items-center gap-2 text-white/80 hover:text-white transition-colors">
-                <span className="text-xs uppercase tracking-tighter font-medium">{cat.name}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Featured Listings Section */}
-        <section className="py-24 container mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-primary font-semibold uppercase tracking-widest text-sm">
+        {/* Featured Sections with Bilingual Support */}
+        <section className="py-24 container mx-auto px-4 bg-white/50 rounded-[3rem] my-12 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-[0.2em] text-xs">
                 <Star className="size-4 fill-primary" />
-                Izdvojeno
+                {t.featuredBadge}
               </div>
-              <h2 className="text-4xl font-headline font-bold">Najbolja Mjesta za Posjetiti</h2>
+              <h2 className="text-4xl md:text-5xl font-headline font-black">{t.featuredTitle}</h2>
             </div>
             <Link href="/explore">
-              <Button variant="link" className="text-primary p-0 h-auto group">
-                Vidi sve objekte <ArrowRight className="ml-2 size-4 transition-transform group-hover:translate-x-1" />
+              <Button variant="link" className="text-primary p-0 h-auto group text-lg font-bold">
+                {t.viewAll} <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {featuredListings.map((listing) => (
-              <Card key={listing.id} className="group overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300">
-                <div className="relative h-64 overflow-hidden">
+              <Card key={listing.id} className="group overflow-hidden border-none shadow-2xl hover:shadow-primary/10 transition-all duration-500 rounded-3xl">
+                <div className="relative h-72 overflow-hidden">
                   <Image
                     src={listing.images[0]}
                     alt={listing.name}
                     fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <Badge className="absolute top-4 left-4 bg-primary/90 backdrop-blur-md">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <Badge className="absolute top-6 left-6 bg-white/90 text-primary border-none shadow-lg backdrop-blur font-bold px-4 py-1">
                     {CATEGORIES.find(c => c.id === listing.categoryId)?.name}
                   </Badge>
                 </div>
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold mb-2">{listing.name}</h3>
-                  <div className="flex items-center text-muted-foreground text-sm mb-4">
-                    <MapPin className="size-4 mr-1" /> {listing.address}
+                <CardContent className="p-8 space-y-4">
+                  <h3 className="text-2xl font-bold leading-tight group-hover:text-primary transition-colors">{listing.name}</h3>
+                  <div className="flex items-center text-muted-foreground text-sm">
+                    <MapPin className="size-4 mr-2 text-secondary" /> {listing.address}
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between pt-4">
                     <div className="flex items-center gap-1">
                       {Array(5).fill(0).map((_, i) => (
-                        <Star key={i} className={`size-3 ${i < 4 ? 'fill-accent text-accent' : 'text-muted'}`} />
+                        <Star key={i} className={`size-4 ${i < 4 ? 'fill-secondary text-secondary' : 'text-muted'}`} />
                       ))}
                     </div>
                     <Link href={`/listing/${listing.id}`}>
-                      <Button size="sm" variant="outline" className="rounded-full hover:bg-primary hover:text-white">
-                        Detalji
+                      <Button size="sm" className="rounded-xl px-6 bg-foreground hover:bg-primary transition-colors">
+                        Details
                       </Button>
                     </Link>
                   </div>
@@ -119,112 +201,55 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Ad Banner 1 */}
-        <section className="container mx-auto px-4 py-12">
-          <div className="w-full h-48 bg-secondary/50 rounded-2xl flex items-center justify-center border-2 border-dashed border-muted-foreground/20 text-muted-foreground">
-            <div className="text-center">
-              <span className="block text-xs uppercase tracking-widest mb-2">Oglasni prostor</span>
-              <p className="font-headline text-lg">Vaš oglas ovdje</p>
-            </div>
+        {/* Categories Scrolling Bar */}
+        <div className="bg-foreground py-10 overflow-hidden">
+          <div className="container mx-auto px-4 flex gap-12 items-center justify-center animate-marquee whitespace-nowrap">
+            {paidCategories.map((cat) => (
+              <Link key={cat.id} href={`/category/${cat.id}`} className="flex items-center gap-3 text-white/70 hover:text-white transition-all hover:scale-105 group">
+                <div className="size-2 rounded-full bg-primary" />
+                <span className="text-sm uppercase tracking-[0.3em] font-bold">{cat.name}</span>
+              </Link>
+            ))}
           </div>
-        </section>
-
-        {/* Magazine / News Section */}
-        <section className="py-24 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center gap-4 mb-12">
-              <div className="h-px flex-1 bg-border" />
-              <h2 className="text-3xl font-headline font-bold text-center px-4">CroatiaBest Magazin</h2>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {MOCK_ARTICLES.map((article, idx) => (
-                <div key={article.id} className={`flex flex-col ${idx % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} gap-8 items-center`}>
-                  <div className="relative w-full md:w-1/2 aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
-                    <Image
-                      src={article.image}
-                      alt={article.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="w-full md:w-1/2 space-y-4">
-                    <Badge variant="secondary" className="text-accent bg-accent/10">{article.category}</Badge>
-                    <h3 className="text-2xl font-bold leading-tight hover:text-primary cursor-pointer transition-colors">{article.title}</h3>
-                    <p className="text-muted-foreground line-clamp-3">{article.excerpt}</p>
-                    <div className="flex items-center gap-4 pt-4 border-t">
-                      <div className="size-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold uppercase">CB</div>
-                      <div className="text-xs">
-                        <p className="font-semibold">{article.author}</p>
-                        <p className="text-muted-foreground">{article.date}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Information Grid */}
-        <section className="py-24 bg-background">
-          <div className="container mx-auto px-4">
-            <div className="mb-12 text-center">
-              <h2 className="text-4xl font-headline font-bold mb-4">Sve što trebate znati</h2>
-              <p className="text-muted-foreground">Od povijesti do praktičnih turističkih savjeta.</p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {INFO_CATEGORIES.map((cat) => (
-                <Link key={cat} href={`/info/${cat.toLowerCase().replace(/ /g, '-')}`}>
-                  <div className="bg-white p-6 rounded-xl text-center shadow-sm hover:shadow-md hover:-translate-y-1 transition-all border border-transparent hover:border-primary/20">
-                    <TrendingUp className="size-6 mx-auto mb-3 text-primary/40" />
-                    <span className="text-sm font-semibold">{cat}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+        </div>
       </main>
 
-      <footer className="bg-primary text-white py-24 border-t border-white/10">
-        <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12">
+      <footer className="bg-foreground text-white py-24">
+        <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-16">
           <div className="space-y-6">
-            <h2 className="font-headline text-3xl font-bold">CroatiaBest</h2>
-            <p className="text-white/60 font-light leading-relaxed">
-              Vodeći portal za informiranje turista i lokalnog stanovništva u Republici Hrvatskoj. 
-              Povezujemo najbolje objekte s vašim potrebama.
+            <h2 className="font-headline text-4xl font-black">
+              Croatia<span className="text-secondary">Best</span>
+            </h2>
+            <p className="text-white/60 font-body text-lg leading-relaxed">
+              {t.footerDesc}
             </p>
           </div>
           <div>
-            <h4 className="font-bold mb-6 text-lg">Istraži</h4>
-            <ul className="space-y-4 text-white/60 font-light">
-              <li><Link href="/explore" className="hover:text-white transition-colors">Interaktivna Karta</Link></li>
-              <li><Link href="/top-destinations" className="hover:text-white transition-colors">Top Destinacije</Link></li>
-              <li><Link href="/magazin" className="hover:text-white transition-colors">Magazin</Link></li>
-              <li><Link href="/add-listing" className="hover:text-white transition-colors">Dodaj svoj objekt</Link></li>
+            <h4 className="font-black mb-8 text-xl tracking-wide">Links</h4>
+            <ul className="space-y-5 text-white/50 font-medium">
+              <li><Link href="/explore" className="hover:text-primary transition-colors">{t.navExplore}</Link></li>
+              <li><Link href="/blog" className="hover:text-primary transition-colors">{t.navBlog}</Link></li>
+              <li><Link href="/info" className="hover:text-primary transition-colors">{t.navInfo}</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-bold mb-6 text-lg">Podrška</h4>
-            <ul className="space-y-4 text-white/60 font-light">
-              <li><Link href="/contact" className="hover:text-white transition-colors">Kontakt</Link></li>
-              <li><Link href="/faq" className="hover:text-white transition-colors">Česta Pitanja</Link></li>
-              <li><Link href="/privacy" className="hover:text-white transition-colors">Privatnost</Link></li>
-              <li><Link href="/terms" className="hover:text-white transition-colors">Uvjeti Korištenja</Link></li>
+            <h4 className="font-black mb-8 text-xl tracking-wide">Help</h4>
+            <ul className="space-y-5 text-white/50 font-medium">
+              <li><Link href="#" className="hover:text-primary transition-colors">FAQ</Link></li>
+              <li><Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+              <li><Link href="#" className="hover:text-primary transition-colors">Contact</Link></li>
             </ul>
           </div>
-          <div className="space-y-6">
-            <h4 className="font-bold mb-6 text-lg">Newsletter</h4>
+          <div className="space-y-8">
+            <h4 className="font-black mb-8 text-xl tracking-wide">Newsletter</h4>
             <div className="flex gap-2">
-              <Input placeholder="Vaš email" className="bg-white/10 border-white/20 text-white placeholder:text-white/40" />
-              <Button className="bg-accent hover:bg-accent/90">Prijava</Button>
+              <Input placeholder="Email" className="bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl" />
+              <Button className="bg-primary hover:bg-primary/90 rounded-xl">Join</Button>
             </div>
           </div>
         </div>
-        <div className="container mx-auto px-4 mt-24 pt-8 border-t border-white/10 text-center text-white/40 text-sm">
-          &copy; {new Date().getFullYear()} CroatiaBest. Sva prava pridržana.
+        <div className="container mx-auto px-4 mt-24 pt-12 border-t border-white/5 text-center text-white/20 text-xs font-bold tracking-[0.5em] uppercase">
+          &copy; {new Date().getFullYear()} CroatiaBest. All rights reserved.
         </div>
       </footer>
     </div>
