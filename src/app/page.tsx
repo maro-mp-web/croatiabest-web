@@ -17,8 +17,9 @@ import {
 } from '@/components/ui/carousel';
 import { CATEGORIES } from '@/app/lib/constants';
 import { MOCK_LISTINGS } from '@/app/lib/mock-data';
-import { MapPin, ArrowRight, Star, Map as MapIcon, Navigation, Play, MousePointer2 } from 'lucide-react';
+import { MapPin, ArrowRight, Star, Navigation, Play, MousePointer2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Logo } from '@/components/brand/Logo';
 
 const HERO_SLIDES = [
   { id: 1, title: 'Dubrovnik', tag: 'Biser Jadrana', img: 'https://picsum.photos/seed/dubrovnik/1200/800', hint: 'dubrovnik old town' },
@@ -36,9 +37,8 @@ export default function Home() {
       <Navbar />
       
       <main className="flex-1">
-        {/* TRUE HERO SECTION - VIDEO BACKGROUND */}
+        {/* HERO SECTION - VIDEO BACKGROUND */}
         <section className="relative h-[90vh] w-full overflow-hidden flex items-center">
-          {/* Video Background Placeholder - Replace with actual mp4 in public/ */}
           <div className="absolute inset-0 z-0">
             <video 
               autoPlay 
@@ -50,7 +50,6 @@ export default function Home() {
             >
               <source src="https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-a-shoreline-with-clear-water-4422-large.mp4" type="video/mp4" />
             </video>
-            {/* Cinematic Overlay - Left gradient for text readability */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10" />
           </div>
 
@@ -80,17 +79,14 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          {/* Bottom Fade */}
           <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-background to-transparent z-20" />
         </section>
 
-        {/* INTERACTIVE EXPLORE SECTION - MOVING PREVIOUS HERO HERE */}
+        {/* EXPLORE SECTION */}
         <section className="relative py-24 overflow-hidden -mt-10 z-30">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               
-              {/* LIJEVA STRANA: Interaktivna karta / Slider destinacija */}
               <div className="relative group animate-fade-in">
                 <div className="absolute -inset-2 bg-gradient-to-r from-primary via-secondary to-primary rounded-[2.5rem] opacity-20 group-hover:opacity-40 blur-2xl transition duration-1000"></div>
                 
@@ -158,7 +154,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* DESNA STRANA: Tipografija i Akcija */}
               <div className="flex flex-col justify-center space-y-12 animate-fade-in">
                 <div className="space-y-8">
                   <div className="inline-flex">
@@ -256,7 +251,7 @@ export default function Home() {
       <footer className="bg-foreground text-white py-24 relative overflow-hidden">
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-20">
           <div className="space-y-8">
-            <Image src="/logo.png" alt="CroatiaBest" width={200} height={60} className="h-12 w-auto brightness-0 invert" />
+            <Logo className="mb-4" />
             <p className="text-white/40 font-body text-xl leading-relaxed italic pr-8">
               {t.footerDesc}
             </p>
