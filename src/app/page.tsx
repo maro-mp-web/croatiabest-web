@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from 'react';
@@ -18,7 +17,7 @@ import {
 } from '@/components/ui/carousel';
 import { CATEGORIES } from '@/app/lib/constants';
 import { MOCK_LISTINGS } from '@/app/lib/mock-data';
-import { MapPin, ArrowRight, Star, Map as MapIcon, Sparkles, Navigation, Search } from 'lucide-react';
+import { MapPin, ArrowRight, Star, Map as MapIcon, Navigation, Play, MousePointer2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const HERO_SLIDES = [
@@ -37,23 +36,65 @@ export default function Home() {
       <Navbar />
       
       <main className="flex-1">
-        {/* HERO SECTION - NAPREDNI UX/UI */}
-        <section className="relative pt-12 pb-24 overflow-hidden">
-          {/* Pozadinski ambijent */}
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/5 to-transparent -z-10 blur-3xl opacity-50" />
-          <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-gradient-to-tr from-secondary/5 to-transparent -z-10 blur-3xl opacity-30" />
+        {/* TRUE HERO SECTION - VIDEO BACKGROUND */}
+        <section className="relative h-[90vh] w-full overflow-hidden flex items-center">
+          {/* Video Background Placeholder - Replace with actual mp4 in public/ */}
+          <div className="absolute inset-0 z-0">
+            <video 
+              autoPlay 
+              muted 
+              loop 
+              playsInline 
+              className="w-full h-full object-cover brightness-[0.7]"
+              poster="https://picsum.photos/seed/croatia-hero/1920/1080"
+            >
+              <source src="https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-a-shoreline-with-clear-water-4422-large.mp4" type="video/mp4" />
+            </video>
+            {/* Cinematic Overlay - Left gradient for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10" />
+          </div>
 
+          <div className="container mx-auto px-6 relative z-20">
+            <div className="max-w-2xl animate-fade-in">
+              <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 bg-primary/20 backdrop-blur-md border border-primary/30 rounded-full text-primary-foreground text-xs font-bold tracking-[0.2em] uppercase">
+                <Play className="size-3 fill-primary text-primary" /> Live from the Adriatic
+              </div>
+              <h1 className="text-6xl md:text-8xl font-black text-white leading-[0.9] tracking-tighter mb-8 font-headline italic">
+                {t.heroVideoTitle}
+              </h1>
+              <p className="text-xl md:text-2xl text-white/80 font-body mb-10 leading-relaxed max-w-lg">
+                {t.heroVideoSub}
+              </p>
+              <div className="flex flex-wrap gap-6">
+                <Link href="/explore">
+                  <Button className="h-16 px-10 text-lg font-black bg-primary hover:bg-primary/90 rounded-2xl shadow-2xl shadow-primary/40 group transition-all">
+                    {t.heroVideoCTA} <ArrowRight className="ml-2 group-hover:translate-x-2 transition-transform" />
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-4 text-white/60">
+                  <div className="size-12 rounded-full border border-white/20 flex items-center justify-center animate-bounce">
+                    <MousePointer2 className="size-5" />
+                  </div>
+                  <span className="text-sm font-bold uppercase tracking-widest">{t.heroSubCTA}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Fade */}
+          <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-background to-transparent z-20" />
+        </section>
+
+        {/* INTERACTIVE EXPLORE SECTION - MOVING PREVIOUS HERO HERE */}
+        <section className="relative py-24 overflow-hidden -mt-10 z-30">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               
               {/* LIJEVA STRANA: Interaktivna karta / Slider destinacija */}
-              <div className="relative group order-2 lg:order-1 animate-fade-in">
-                {/* Okvir s efektima (Sjaj oko kartice) */}
+              <div className="relative group animate-fade-in">
                 <div className="absolute -inset-2 bg-gradient-to-r from-primary via-secondary to-primary rounded-[2.5rem] opacity-20 group-hover:opacity-40 blur-2xl transition duration-1000"></div>
                 
                 <div className="relative bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-3 border border-white/60 flex flex-col overflow-hidden">
-                  
-                  {/* Gornji dio kartice: Live Status */}
                   <div className="flex items-center justify-between p-4 mb-2">
                     <div className="flex items-center gap-2 px-4 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold tracking-wider uppercase">
                       <span className="relative flex h-2 w-2">
@@ -67,7 +108,6 @@ export default function Home() {
                     </Badge>
                   </div>
                   
-                  {/* Glavni vizualni dio (Slider/Mapa) */}
                   <div className="relative flex-1 min-h-[400px] sm:min-h-[500px] rounded-[2rem] overflow-hidden border border-black/5 shadow-inner group/slider">
                     <Carousel className="w-full h-full" opts={{ loop: true }}>
                       <CarouselContent className="h-full">
@@ -95,25 +135,15 @@ export default function Home() {
                         <CarouselNext className="static translate-y-0 h-12 w-12 bg-white/20 hover:bg-white/40 border-none text-white backdrop-blur-md rounded-xl" />
                       </div>
                     </Carousel>
-
-                    {/* Plutajući markeri (UX detalj) */}
-                    <div className="absolute top-[30%] left-[25%] pointer-events-none animate-bounce" style={{ animationDuration: '4s' }}>
-                      <div className="size-10 rounded-full bg-primary border-4 border-white shadow-2xl flex items-center justify-center">
-                        <MapPin className="size-5 text-white" />
-                      </div>
-                    </div>
                   </div>
 
-                  {/* Donji dio: Kategorije i Statistika */}
                   <div className="p-6 flex items-center justify-between border-t border-black/5 bg-secondary/5 mt-2">
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                       <div className="flex items-center gap-2">
-                        <div className="size-2 rounded-full bg-primary animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Popularno</span>
+                        <div className="size-2 rounded-full bg-primary animate-pulse" /> Popularno
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="size-2 rounded-full bg-secondary" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Novo</span>
+                        <div className="size-2 rounded-full bg-secondary" /> Novo
                       </div>
                     </div>
                     <div className="flex -space-x-3">
@@ -129,8 +159,7 @@ export default function Home() {
               </div>
 
               {/* DESNA STRANA: Tipografija i Akcija */}
-              <div className="flex flex-col justify-center order-1 lg:order-2 space-y-12 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                
+              <div className="flex flex-col justify-center space-y-12 animate-fade-in">
                 <div className="space-y-8">
                   <div className="inline-flex">
                     <span className="bg-primary/10 text-primary text-sm font-black px-6 py-2.5 rounded-full border border-primary/20 shadow-sm tracking-[0.2em] uppercase">
@@ -138,7 +167,7 @@ export default function Home() {
                     </span>
                   </div>
 
-                  <h1 className="text-6xl sm:text-7xl md:text-8xl font-black leading-[0.85] tracking-tighter text-foreground">
+                  <h2 className="text-6xl sm:text-7xl font-black leading-[0.85] tracking-tighter text-foreground">
                     <span className="text-gradient block">{t.heroTitlePart1}</span>
                     <span className="block">{t.heroTitlePart2}</span>
                     <span className="text-secondary relative inline-block italic font-headline font-normal mt-2">
@@ -147,63 +176,34 @@ export default function Home() {
                         <path d="M0,5 Q30,0 60,5 T120,5 T180,5" stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round"></path>
                       </svg>
                     </span>
-                  </h1>
+                  </h2>
 
                   <div className="space-y-6 max-w-xl">
-                    <p className="text-foreground/80 text-xl md:text-2xl leading-relaxed font-body italic">
+                    <p className="text-foreground/80 text-xl leading-relaxed font-body italic">
                       "<span className="font-bold text-primary">From Istria to Dubrovnik</span> — {t.heroDesc1}"
                     </p>
-                    <div className="flex items-center gap-4 p-5 bg-secondary/5 rounded-[1.5rem] border border-secondary/10 backdrop-blur-sm">
-                      <div className="size-14 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
-                        <MapIcon className="size-7" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground uppercase tracking-wider">Live Travel Guide</p>
-                        <p className="text-xs text-muted-foreground font-medium">Ažuriranja putnika u stvarnom vremenu</p>
-                      </div>
-                    </div>
                   </div>
                 </div>
 
-                {/* Glavne Akcije */}
                 <div className="flex flex-wrap items-center gap-8 pt-4">
-                  <Link href="/explore" className="group relative inline-flex items-center justify-center px-12 py-6 text-xl font-black text-white transition-all duration-300 ease-out rounded-[2rem] shadow-2xl hover:shadow-primary/40 active:scale-95 overflow-hidden">
-                    <span className="absolute inset-0 w-full h-full bg-gradient-to-br from-primary via-primary to-secondary"></span>
-                    <span className="absolute -inset-1.5 bg-gradient-to-r from-primary via-secondary to-primary rounded-[2rem] blur opacity-40 group-hover:opacity-80 transition duration-500"></span>
-                    <span className="relative flex items-center gap-4 uppercase tracking-widest">
-                      <Navigation className="size-7" />
+                  <Link href="/explore" className="group relative inline-flex items-center justify-center px-10 py-5 text-lg font-black text-white transition-all duration-300 ease-out rounded-2xl shadow-xl hover:shadow-primary/40 active:scale-95 overflow-hidden">
+                    <span className="absolute inset-0 w-full h-full bg-gradient-to-br from-primary to-secondary"></span>
+                    <span className="relative flex items-center gap-3 uppercase tracking-widest">
+                      <Navigation className="size-6" />
                       <span>{t.heroCTA}</span>
                     </span>
                   </Link>
-                  
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-1">Ili nastavi</span>
-                    <Link href="/explore" className="text-lg font-black text-foreground underline decoration-primary decoration-4 underline-offset-8 hover:text-primary transition-colors">
-                      {t.heroSubCTA}
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Social Proof */}
-                <div className="flex items-center gap-16 pt-12 border-t border-border/60">
-                  <div className="group cursor-default">
-                    <div className="text-5xl font-black text-primary transition-transform group-hover:scale-110">15k+</div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-1">{t.statsPins}</div>
-                  </div>
-                  <div className="group cursor-default">
-                    <div className="text-5xl font-black text-secondary transition-transform group-hover:scale-110">4.9★</div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-1">{t.statsRating}</div>
-                  </div>
+                  <Link href="/explore" className="text-lg font-black text-foreground underline decoration-primary decoration-4 underline-offset-8 hover:text-primary transition-colors">
+                    {t.heroSubCTA}
+                  </Link>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Featured Sections */}
-        <section className="py-24 container mx-auto px-4 bg-white/40 backdrop-blur-sm rounded-[4rem] my-12 shadow-2xl border border-white/50 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-primary" />
-          
+        {/* Featured Listings */}
+        <section className="py-24 container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-[0.3em] text-xs">
@@ -213,8 +213,8 @@ export default function Home() {
               <h2 className="text-5xl md:text-6xl font-headline font-black tracking-tight">{t.featuredTitle}</h2>
             </div>
             <Link href="/explore">
-              <Button variant="outline" className="rounded-2xl px-8 py-6 border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all text-lg font-bold group">
-                {t.viewAll} <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-2" />
+              <Button variant="outline" className="rounded-2xl px-8 py-6 border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all text-lg font-bold">
+                {t.viewAll} <ArrowRight className="ml-2 size-5" />
               </Button>
             </Link>
           </div>
@@ -229,7 +229,6 @@ export default function Home() {
                     fill
                     className="object-cover transition-transform duration-1000 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <Badge className="absolute top-8 left-8 bg-white/95 text-primary border-none shadow-xl backdrop-blur font-black px-5 py-2 rounded-xl text-xs tracking-widest uppercase">
                     {CATEGORIES.find(c => c.id === listing.categoryId)?.name}
                   </Badge>
@@ -241,7 +240,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-center justify-between pt-6 border-t border-black/5">
                     <Link href={`/listing/${listing.id}`} className="w-full">
-                      <Button className="w-full rounded-2xl h-14 bg-foreground hover:bg-primary transition-all duration-300 font-bold text-lg group-hover:shadow-lg group-hover:shadow-primary/30">
+                      <Button className="w-full rounded-2xl h-14 bg-foreground hover:bg-primary transition-all duration-300 font-bold text-lg">
                         Details
                       </Button>
                     </Link>
@@ -253,14 +252,11 @@ export default function Home() {
         </section>
       </main>
 
-      {/* FOOTER - MODERN RESTYLE */}
+      {/* Footer */}
       <footer className="bg-foreground text-white py-24 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-20">
           <div className="space-y-8">
-            <div className="flex items-center gap-4">
-              <Image src="/logo.png" alt="CroatiaBest" width={200} height={60} className="h-12 w-auto brightness-0 invert" />
-            </div>
+            <Image src="/logo.png" alt="CroatiaBest" width={200} height={60} className="h-12 w-auto brightness-0 invert" />
             <p className="text-white/40 font-body text-xl leading-relaxed italic pr-8">
               {t.footerDesc}
             </p>
@@ -268,39 +264,29 @@ export default function Home() {
           <div>
             <h4 className="font-black mb-10 text-2xl tracking-tight text-white uppercase">{t.navExplore}</h4>
             <ul className="space-y-6 text-white/50 font-bold">
-              <li><Link href="/explore" className="hover:text-primary transition-all hover:translate-x-2 inline-block">Interactive Map</Link></li>
-              <li><Link href="/explore" className="hover:text-primary transition-all hover:translate-x-2 inline-block">Beaches & Islands</Link></li>
-              <li><Link href="/explore" className="hover:text-primary transition-all hover:translate-x-2 inline-block">Hidden Gems</Link></li>
+              <li><Link href="/explore" className="hover:text-primary transition-all">Interactive Map</Link></li>
+              <li><Link href="/explore" className="hover:text-primary transition-all">Beaches & Islands</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-black mb-10 text-2xl tracking-tight text-white uppercase">Resources</h4>
             <ul className="space-y-6 text-white/50 font-bold">
-              <li><Link href="/blog" className="hover:text-primary transition-all hover:translate-x-2 inline-block">{t.navBlog}</Link></li>
-              <li><Link href="/info" className="hover:text-primary transition-all hover:translate-x-2 inline-block">{t.navInfo}</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-all hover:translate-x-2 inline-block">Contact Support</Link></li>
+              <li><Link href="/blog" className="hover:text-primary transition-all">{t.navBlog}</Link></li>
+              <li><Link href="/info" className="hover:text-primary transition-all">{t.navInfo}</Link></li>
             </ul>
           </div>
           <div className="space-y-10">
             <h4 className="font-black mb-10 text-2xl tracking-tight text-white uppercase">Join the Journey</h4>
-            <div className="flex flex-col gap-4">
-              <div className="relative group">
-                <Input placeholder="Your Email" className="bg-white/5 border-white/10 h-14 text-white placeholder:text-white/20 rounded-2xl pl-6 focus:ring-primary focus:border-primary transition-all" />
-                <Button className="absolute right-2 top-2 h-10 bg-primary hover:bg-primary/90 rounded-xl px-6 font-bold">Join</Button>
-              </div>
-              <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-bold text-center">No spam, only magic.</p>
+            <div className="relative group">
+              <Input placeholder="Your Email" className="bg-white/5 border-white/10 h-14 text-white placeholder:text-white/20 rounded-2xl pl-6" />
+              <Button className="absolute right-2 top-2 h-10 bg-primary hover:bg-primary/90 rounded-xl px-6 font-bold">Join</Button>
             </div>
           </div>
         </div>
-        <div className="container mx-auto px-4 mt-24 pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-white/20 text-xs font-black tracking-[0.5em] uppercase">
+        <div className="container mx-auto px-4 mt-24 pt-12 border-t border-white/5">
+          <p className="text-white/20 text-xs font-black tracking-[0.5em] uppercase text-center md:text-left">
             &copy; {new Date().getFullYear()} CroatiaBest. Developed with 💙
           </p>
-          <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-white/20">
-            <Link href="#" className="hover:text-white transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-white transition-colors">Terms</Link>
-            <Link href="#" className="hover:text-white transition-colors">Cookie Policy</Link>
-          </div>
         </div>
       </footer>
     </div>

@@ -1,8 +1,10 @@
-
 export type Language = 'hr' | 'en';
 
 export const translations = {
   hr: {
+    heroVideoTitle: 'Otkrij dušu Hrvatske',
+    heroVideoSub: 'Od skrivenih uvala do luksuznih restorana, istražite najbolje što Jadran nudi.',
+    heroVideoCTA: 'ZAPOČNI ISTRAŽIVANJE',
     heroBadge: '✦ KARTA PUTOVANJA HRVATSKOM ✦',
     heroTitlePart1: 'Istraži',
     heroTitlePart2: 'skrivene',
@@ -26,6 +28,9 @@ export const translations = {
     quickSearch: 'Brza pretraga',
   },
   en: {
+    heroVideoTitle: 'Discover the Soul of Croatia',
+    heroVideoSub: 'From hidden coves to luxury dining, explore the very best of the Adriatic.',
+    heroVideoCTA: 'START EXPLORING',
     heroBadge: '✦ CROATIA TRAVEL MAP ✦',
     heroTitlePart1: 'Explore',
     heroTitlePart2: 'the hidden',
