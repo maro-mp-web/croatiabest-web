@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from 'react';
@@ -82,7 +83,7 @@ export default function Home() {
           <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-background to-transparent z-20" />
         </section>
 
-        {/* EXPLORE SECTION */}
+        {/* EXPLORE SECTION (Ispod Hero sekcije) */}
         <section className="relative py-24 overflow-hidden -mt-10 z-30">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">

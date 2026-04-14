@@ -14,7 +14,7 @@ export function Logo({ className, iconOnly = false }: LogoProps) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <Image 
-        src="/logo.png" 
+        src="/croatia-best.png" 
         alt="CroatiaBest Logo" 
         width={iconOnly ? 80 : 240} 
         height={80} 
