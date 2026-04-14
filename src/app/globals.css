@@ -70,18 +70,31 @@
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
+  animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(40px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .bg-gradient-primary {
-  @apply bg-gradient-to-r from-primary to-secondary;
+  @apply bg-gradient-to-r from-primary via-primary to-secondary;
 }
 
 .text-gradient {
-  @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+  @apply bg-gradient-to-br from-primary via-primary to-secondary bg-clip-text text-transparent;
+}
+
+/* Custom effects for high-end look */
+.glass-card {
+  @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl;
+}
+
+.map-marker-glow {
+  box-shadow: 0 0 20px rgba(255, 49, 49, 0.4);
+}
+
+::selection {
+  @apply bg-primary text-white;
 }

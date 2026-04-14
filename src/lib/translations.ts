@@ -21,6 +21,8 @@ export const translations = {
     featuredBadge: 'IZDVOJENO',
     viewAll: 'Vidi sve',
     footerDesc: 'Vodeći portal za informiranje turista i lokalnog stanovništva u Republici Hrvatskoj.',
+    sliderDestinations: 'Inspiracija za putovanje',
+    quickSearch: 'Brza pretraga',
   },
   en: {
     heroBadge: '✦ CROATIA TRAVEL MAP ✦',
@@ -42,5 +44,7 @@ export const translations = {
     featuredBadge: 'FEATURED',
     viewAll: 'View all',
     footerDesc: 'The leading portal for informing tourists and locals in the Republic of Croatia.',
+    sliderDestinations: 'Travel Inspiration',
+    quickSearch: 'Quick Search',
   }
 };
