@@ -12,6 +12,7 @@ import { CATEGORIES, INFO_CATEGORIES } from '@/app/lib/constants';
 import { MOCK_LISTINGS, MOCK_ARTICLES } from '@/app/lib/mock-data';
 import { MapPin, ArrowRight, Star, TrendingUp, Map as MapIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Logo } from '@/components/brand/Logo';
 
 export default function Home() {
   const { t } = useLanguage();
@@ -39,7 +40,7 @@ export default function Home() {
                   
                   <div className="lg:hidden text-center mb-4">
                     <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-semibold tracking-wide">
-                      🇭🇷 istraži Hrvatsku
+                      🇭🇷 {t.navExplore}
                     </span>
                   </div>
                   
@@ -146,7 +147,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Featured Sections with Bilingual Support */}
+        {/* Featured Sections */}
         <section className="py-24 container mx-auto px-4 bg-white/50 rounded-[3rem] my-12 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
             <div className="space-y-3">
@@ -217,10 +218,8 @@ export default function Home() {
       <footer className="bg-foreground text-white py-24">
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-16">
           <div className="space-y-6">
-            <h2 className="font-headline text-4xl font-black">
-              Croatia<span className="text-secondary">Best</span>
-            </h2>
-            <p className="text-white/60 font-body text-lg leading-relaxed">
+            <Logo />
+            <p className="text-white/60 font-body text-lg leading-relaxed pt-2">
               {t.footerDesc}
             </p>
           </div>
