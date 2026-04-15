@@ -11,9 +11,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
-import { Info, CheckCircle2, User, Building2, LayoutGrid, CheckSquare } from 'lucide-react';
+import { CheckCircle2, User, Building2, LayoutGrid } from 'lucide-react';
+import { useFirestore, useUser } from '@/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function SubmitListingPage() {
+  const { user } = useUser();
+  const firestore = useFirestore();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -33,23 +39,45 @@ export default function SubmitListingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!firestore) return;
     if (!formData.categoryId) {
       toast({ title: "Odaberite kategoriju", description: "Morate odabrati kategoriju objekta.", variant: "destructive" });
       return;
     }
+    
     setIsSubmitting(true);
     
-    // Simulacija slanja u bazu podataka
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSuccess(true);
-      toast({
-        title: "Prijava poslana!",
-        description: isPaid 
-          ? "Vaša prijava je zaprimljena. Očekujte upute za plaćanje na email prije odobrenja." 
-          : "Vaša prijava je poslana na pregled administratoru.",
+    const listingData = {
+      ...formData,
+      status: 'pending',
+      type: isPaid ? 'paid' : 'free',
+      submittedBy: user?.uid || 'anonymous',
+      createdAt: serverTimestamp(),
+      paymentStatus: isPaid ? 'waiting' : 'n/a'
+    };
+
+    const listingsRef = collection(firestore, 'listings');
+    
+    addDoc(listingsRef, listingData)
+      .then(() => {
+        setIsSubmitting(false);
+        setIsSuccess(true);
+        toast({
+          title: "Prijava poslana!",
+          description: isPaid 
+            ? "Vaša prijava je zaprimljena. Provjerite email za upute o plaćanju." 
+            : "Vaša prijava je poslana na pregled administratoru.",
+        });
+      })
+      .catch(async (error) => {
+        setIsSubmitting(false);
+        const permissionError = new FirestorePermissionError({
+          path: listingsRef.path,
+          operation: 'create',
+          requestResourceData: listingData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
       });
-    }, 2000);
   };
 
   if (isSuccess) {
@@ -62,7 +90,7 @@ export default function SubmitListingPage() {
           </div>
           <h1 className="text-5xl font-headline font-black mb-4">Uspješno poslano!</h1>
           <p className="text-muted-foreground text-xl max-w-lg mb-12">
-            Hvala vam, <strong>{formData.firstName}</strong>. Vaša prijava za <strong>{formData.objectName}</strong> je poslana Superadminu na provjeru. Provjerite svoj email za daljnje upute.
+            Hvala vam, <strong>{formData.firstName}</strong>. Vaša prijava za <strong>{formData.objectName}</strong> je poslana na provjeru.
           </p>
           <Button size="lg" className="rounded-2xl px-12 h-14 text-lg font-bold" onClick={() => window.location.href = '/'}>Povratak na naslovnicu</Button>
         </main>
@@ -85,7 +113,6 @@ export default function SubmitListingPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-10">
-          {/* STEP 1: PERSONAL INFO */}
           <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden">
             <CardHeader className="bg-secondary/5 border-b p-8">
               <div className="flex items-center gap-4">
@@ -93,32 +120,18 @@ export default function SubmitListingPage() {
                   <User className="size-6" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl font-bold">1. Vaše osobne informacije</CardTitle>
-                  <CardDescription>Podaci o osobi koja prijavljuje objekt.</CardDescription>
+                  <CardTitle className="text-2xl font-bold">1. Osobni podaci</CardTitle>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <Label>Ime</Label>
-                <Input required placeholder="Vaše ime" className="h-12 rounded-xl" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <Label>Prezime</Label>
-                <Input required placeholder="Vaše prezime" className="h-12 rounded-xl" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <Label>Kontakt Email</Label>
-                <Input required type="email" placeholder="vas@email.com" className="h-12 rounded-xl" value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <Label>Kontakt Telefon</Label>
-                <Input required placeholder="+385 9x xxx xxxx" className="h-12 rounded-xl" value={formData.contactPhone} onChange={e => setFormData({...formData, contactPhone: e.target.value})} />
-              </div>
+              <Input required placeholder="Ime" className="h-12 rounded-xl" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} />
+              <Input required placeholder="Prezime" className="h-12 rounded-xl" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} />
+              <Input required type="email" placeholder="Email" className="h-12 rounded-xl" value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} />
+              <Input required placeholder="Telefon" className="h-12 rounded-xl" value={formData.contactPhone} onChange={e => setFormData({...formData, contactPhone: e.target.value})} />
             </CardContent>
           </Card>
 
-          {/* STEP 2: OBJECT INFO */}
           <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden">
             <CardHeader className="bg-secondary/5 border-b p-8">
               <div className="flex items-center gap-4">
@@ -127,73 +140,41 @@ export default function SubmitListingPage() {
                 </div>
                 <div>
                   <CardTitle className="text-2xl font-bold">2. Podaci o objektu</CardTitle>
-                  <CardDescription>Informacije koje će biti prikazane na portalu.</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-8 space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <Label>Naziv objekta</Label>
-                  <Input required placeholder="npr. Restoran Riva" className="h-12 rounded-xl" value={formData.objectName} onChange={e => setFormData({...formData, objectName: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Kategorija</Label>
-                  <Select onValueChange={v => setFormData({...formData, categoryId: v})} required>
-                    <SelectTrigger className="h-12 rounded-xl">
-                      <SelectValue placeholder="Odaberi vrstu objekta" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <div className="px-2 py-2 text-xs font-black text-muted-foreground uppercase opacity-50">Javne / Besplatne</div>
-                      {CATEGORIES.filter(c => c.type === 'free').map(cat => (
-                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                      ))}
-                      <div className="px-2 py-2 text-xs font-black text-muted-foreground uppercase opacity-50 border-t mt-2">Komercijalne / Plaćene</div>
-                      {CATEGORIES.filter(c => c.type === 'paid').map(cat => (
-                        <SelectItem key={cat.id} value={cat.id}>{cat.name} ({cat.price})</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Input required placeholder="Naziv objekta" className="h-12 rounded-xl" value={formData.objectName} onChange={e => setFormData({...formData, objectName: e.target.value})} />
+                <Select onValueChange={v => setFormData({...formData, categoryId: v})} required>
+                  <SelectTrigger className="h-12 rounded-xl">
+                    <SelectValue placeholder="Kategorija" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map(cat => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name} {cat.type === 'paid' ? `(${cat.price})` : '(FREE)'}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input required placeholder="Grad" className="h-12 rounded-xl" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+                <Input required placeholder="Adresa" className="h-12 rounded-xl" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <Label>Grad</Label>
-                  <Input required placeholder="npr. Split" className="h-12 rounded-xl" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Adresa</Label>
-                  <Input required placeholder="Ulica i kućni broj" className="h-12 rounded-xl" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Kratki opis</Label>
-                <Textarea placeholder="Što vaš objekt nudi posjetiteljima?" className="min-h-[120px] rounded-xl text-lg" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
-              </div>
+              <Textarea placeholder="Opis objekta..." className="min-h-[120px] rounded-xl" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
             </CardContent>
           </Card>
 
-          {/* PAYMENT NOTICE IF PAID */}
           {isPaid && (
-            <div className="p-8 bg-primary/5 border-2 border-primary/20 rounded-[2.5rem] flex gap-6 animate-pulse">
-              <div className="size-14 bg-primary text-white rounded-2xl flex items-center justify-center shrink-0">
-                <LayoutGrid className="size-8" />
-              </div>
-              <div className="space-y-2">
-                <h4 className="text-xl font-black text-primary uppercase">Izdvojena Prijava (PAID)</h4>
-                <p className="text-muted-foreground leading-relaxed">
-                  Odabrali ste kategoriju <strong>{selectedCategory?.name}</strong>. Cijena objave je <strong>{selectedCategory?.price}</strong>. 
-                  Nakon što Superadmin pregleda vašu prijavu, dobit ćete podatke za uplatu na email. 
-                  Vaš objekt će postati vidljiv čim uplata bude evidentirana.
-                </p>
+            <div className="p-8 bg-primary/5 border-2 border-primary/20 rounded-[2.5rem] flex gap-6">
+              <LayoutGrid className="size-12 text-primary" />
+              <div>
+                <h4 className="text-xl font-black text-primary uppercase">PLAĆENA OBJAVA</h4>
+                <p className="text-muted-foreground">Odabrali ste plaćenu kategoriju. Cijena je {selectedCategory?.price}. Instrukcije za uplatu dobit ćete nakon inicijalne provjere administratora.</p>
               </div>
             </div>
           )}
 
-          <Button type="submit" disabled={isSubmitting} className="w-full h-20 text-2xl font-black rounded-[2rem] bg-foreground hover:bg-primary shadow-2xl transition-all uppercase tracking-widest">
-            {isSubmitting ? "Slanje prijave..." : "Pošalji Superadminu na provjeru"}
+          <Button type="submit" disabled={isSubmitting} className="w-full h-20 text-2xl font-black rounded-[2rem] bg-foreground hover:bg-primary shadow-2xl uppercase tracking-widest">
+            {isSubmitting ? "Slanje..." : "Pošalji na provjeru"}
           </Button>
         </form>
       </main>
