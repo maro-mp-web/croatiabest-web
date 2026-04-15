@@ -77,11 +77,43 @@ export const MOCK_LISTINGS = [...generateFreeListings(), ...PREMIUM_EXAMPLES];
 export const MOCK_ARTICLES = [
   {
     id: 'a1',
-    title: 'Skriveni dragulji Dalmacije',
-    excerpt: 'Istražite otoke za koje niste znali da postoje.',
+    title: 'Skriveni dragulji Dalmacije: Otoci koje morate posjetiti',
+    excerpt: 'Istražite otoke za koje niste znali da postoje i doživite pravi mir Jadrana.',
+    content: `Hrvatska obala krije nevjerojatne tajne koje čekaju da budu otkrivene. Dok su Hvar, Brač i Korčula na vrhu popisa svakog turista, postoje manji otoci koji nude autentično iskustvo bez gužve.
+
+U ovom članku vodimo vas kroz arhipelag Visa i Lastova, mjesta gdje vrijeme kao da je stalo. Naučit ćete kako doći do skrivenih uvala, gdje pojesti najbolju svježu ribu direktno s broda i zašto je noćno nebo iznad Lastova jedno od najčišćih u Europi.
+
+Bilo da ste zaljubljenik u jedrenje ili tražite savršeno mjesto za digitalni detoks, ovi skriveni dragulji Dalmacije će vas ostaviti bez daha.`,
     category: 'Putovanja',
-    image: 'https://picsum.photos/seed/island/800/600',
-    author: 'Admin',
-    date: 'Feb 24, 2024'
+    image: 'https://picsum.photos/seed/island-article/1200/800',
+    author: 'Marko Jadranski',
+    date: 'Feb 24, 2024',
+    readTime: '5 min'
+  },
+  {
+    id: 'a2',
+    title: 'Vrhunski Gastro Vodič: Najbolji tartufi u Istri',
+    excerpt: 'Otkrijte tajne istarskih šuma i najbolje restorane koji služe ovaj dragocjeni gomolj.',
+    content: `Istra je poznata kao zemlja tartufa, a miris ovog dragocjenog gomolja prožima svaku vrhunsku konobu u unutrašnjosti poluotoka. No, kako prepoznati pravi kvalitetan tartuf?
+
+U suradnji s lokalnim lovcima na tartufe iz okolice Motovuna, donosimo vam priču o bijelom i crnom tartufu. Saznajte kada je sezona lova, kako psi dresirani za ovaj posao pronalaze blago skriveno pod zemljom i koje su najbolje kombinacije s domaćom tjesteninom - fužima i pljukancima.`,
+    category: 'Gastronomija',
+    image: 'https://picsum.photos/seed/truffles/1200/800',
+    author: 'Ana Istarska',
+    date: 'Feb 20, 2024',
+    readTime: '7 min'
+  },
+  {
+    id: 'a3',
+    title: 'Povijest u kamenu: Tajne Dioklecijanove palače',
+    excerpt: 'Sve što niste znali o srcu Splita i kako je rimski car živio u svojoj mirovini.',
+    content: `Dioklecijanova palača nije samo spomenik, to je živi grad u kojem se tisućljećima odvija svakodnevni život. Od podruma koji su inspirirali filmske setove do Peristila koji je srce društvenog života Splita.
+
+U ovom članku istražujemo arhitektonska čuda koja su preživjela stoljeća i otkrivamo manje poznate priče o rimskim vojnicima, egipatskim sfingama koje i danas čuvaju ulaze te o tome kako se život unutar zidina mijenjao kroz povijest.`,
+    category: 'Kultura',
+    image: 'https://picsum.photos/seed/split-palace/1200/800',
+    author: 'Luka Splitski',
+    date: 'Feb 15, 2024',
+    readTime: '6 min'
   }
 ];
