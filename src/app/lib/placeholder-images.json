@@ -1,0 +1,47 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "beach-dubrovnik",
+      "description": "Banje Beach Dubrovnik",
+      "imageUrl": "https://picsum.photos/seed/banje/1200/800",
+      "imageHint": "dubrovnik beach"
+    },
+    {
+      "id": "beach-split",
+      "description": "Bačvice Beach Split",
+      "imageUrl": "https://picsum.photos/seed/bacvice/1200/800",
+      "imageHint": "split beach"
+    },
+    {
+      "id": "airport-zagreb",
+      "description": "Franjo Tuđman Airport Zagreb",
+      "imageUrl": "https://picsum.photos/seed/zgr-airport/1200/800",
+      "imageHint": "zagreb airport"
+    },
+    {
+      "id": "park-maksimir",
+      "description": "Maksimir Park Zagreb",
+      "imageUrl": "https://picsum.photos/seed/maksimir/1200/800",
+      "imageHint": "zagreb park"
+    },
+    {
+      "id": "port-split",
+      "description": "Split Ferry Port",
+      "imageUrl": "https://picsum.photos/seed/split-port/1200/800",
+      "imageHint": "split port"
+    },
+    {
+      "id": "viewpoint-marjan",
+      "description": "Marjan Hill Viewpoint Split",
+      "imageUrl": "https://picsum.photos/seed/marjan/1200/800",
+      "imageHint": "split view"
+    },
+    {
+      "id": "bus-zadar",
+      "description": "Zadar Main Bus Station",
+      "imageUrl": "https://picsum.photos/seed/zadar-bus/1200/800",
+      "imageHint": "bus station"
+    }
+  ]
+}
