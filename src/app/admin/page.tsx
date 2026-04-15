@@ -16,7 +16,8 @@ import {
   ShieldAlert,
   Loader2,
   CreditCard,
-  DollarSign
+  DollarSign,
+  PlusCircle
 } from 'lucide-react';
 import { CATEGORIES } from '@/app/lib/constants';
 import Link from 'next/link';
@@ -90,8 +91,8 @@ export default function AdminDashboard() {
   }
 
   const totalRevenue = listings?.filter(l => l.paymentStatus === 'paid').reduce((acc, curr) => {
-    const price = CATEGORIES.find(c => c.id === curr.categoryId)?.price?.replace('€', '') || '0';
-    return acc + parseInt(price);
+    const priceStr = CATEGORIES.find(c => c.id === curr.categoryId)?.price?.replace('€', '') || '0';
+    return acc + parseInt(priceStr);
   }, 0);
 
   return (
@@ -104,9 +105,14 @@ export default function AdminDashboard() {
             <h1 className="text-4xl font-headline font-bold mb-2 text-gradient">Superadmin Dashboard</h1>
             <p className="text-muted-foreground text-lg">Prijavljen kao: <span className="font-bold text-foreground">{user?.email}</span></p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
+            <Link href="/admin/new-listing">
+              <Button className="bg-foreground text-white hover:bg-foreground/90 rounded-xl font-bold h-12 px-6">
+                <PlusCircle className="size-4 mr-2" /> Dodaj Novi Objekt
+              </Button>
+            </Link>
             <Link href="/admin/ai-writer">
-              <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white rounded-xl font-bold">
+              <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white rounded-xl font-bold h-12 px-6">
                 <Sparkles className="size-4 mr-2" /> AI Content Assistant
               </Button>
             </Link>
