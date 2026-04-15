@@ -1,7 +1,9 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Toaster } from '@/components/ui/toaster';
+import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
   title: 'CroatiaBest - Your Ultimate Guide to Croatia',
@@ -21,10 +23,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Belleza&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <LanguageProvider>
-          {children}
-          <Toaster />
-        </LanguageProvider>
+        <FirebaseClientProvider>
+          <LanguageProvider>
+            {children}
+            <Toaster />
+          </LanguageProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );
