@@ -187,7 +187,7 @@ export default function SubmitListingPage() {
                     <SelectContent>
                       {CATEGORIES.map(cat => (
                         <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name} {cat.type === 'paid' ? `(Premium - ${cat.price})` : '(Besplatno)'}
+                          {cat.name} {cat.type === 'paid' ? `(Premium)` : '(Besplatno)'}
                         </SelectItem>
                       ))}
                     </SelectContent>

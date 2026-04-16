@@ -81,7 +81,6 @@ export default function ExplorePage() {
                 >
                   <div className="size-2 rounded-full shadow-sm" style={{ backgroundColor: cat.color }} />
                   {cat.name}
-                  {cat.price && <Badge variant="outline" className="ml-auto text-[9px] h-4 px-1 opacity-50">{cat.price}</Badge>}
                 </button>
               ))}
               
