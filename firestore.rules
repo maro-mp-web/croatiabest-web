@@ -41,9 +41,6 @@ service cloud.firestore {
     /**
      * @description Global definitions for listing categories. Public read, Admin write.
      * @path /location_categories/{locationCategoryId}
-     * @allow (get) Any user.
-     * @deny (create) Non-admin users.
-     * @principle Pattern: Global Metadata (Public Read / Admin Write).
      */
     match /location_categories/{locationCategoryId} {
       allow get, list: if true;
@@ -53,9 +50,6 @@ service cloud.firestore {
     /**
      * @description Global definitions for amenities. Public read, Admin write.
      * @path /amenities/{amenityId}
-     * @allow (get) Any user.
-     * @deny (delete) Any non-admin user.
-     * @principle Pattern: Global Metadata (Public Read / Admin Write).
      */
     match /amenities/{amenityId} {
       allow get, list: if true;
@@ -65,9 +59,6 @@ service cloud.firestore {
     /**
      * @description Global definitions for article categories. Public read, Admin write.
      * @path /article_categories/{articleCategoryId}
-     * @allow (list) Any user.
-     * @deny (update) Any non-admin user.
-     * @principle Pattern: Global Metadata (Public Read / Admin Write).
      */
     match /article_categories/{articleCategoryId} {
       allow get, list: if true;
@@ -77,9 +68,6 @@ service cloud.firestore {
     /**
      * @description Global tags for content classification. Public read, Admin write.
      * @path /tags/{tagId}
-     * @allow (get) Any user.
-     * @deny (create) Any non-admin user.
-     * @principle Pattern: Global Metadata (Public Read / Admin Write).
      */
     match /tags/{tagId} {
       allow get, list: if true;
@@ -89,29 +77,22 @@ service cloud.firestore {
     /**
      * @description Public advertising banners. Readable if active or by admin.
      * @path /advertisements/{advertisementId}
-     * @allow (get) Authenticated user if advertisement is active.
-     * @deny (list) If unauthorized. Note: resource is not used in list per P6.
-     * @principle Public consumption with admin management.
      */
     match /advertisements/{advertisementId} {
       allow get: if isAdmin() || resource.data.isActive == true;
-      // CRITICAL: Per P6, resource.data is not used for list. Public listing is restricted to ensure privacy of inactive ads.
-      allow list: if isAdmin(); 
+      // Allow public listing only for active ads
+      allow list: if isAdmin() || resource.data.isActive == true; 
       allow create, update, delete: if isAdmin();
     }
 
     /**
      * @description Business/Location listings. Owners can manage all states; Public can only see 'active'.
      * @path /listings/{listingId}
-     * @allow (create) Authenticated user setting themselves as ownerId.
-     * @deny (update) Attempting to change the ownerId.
-     * @principle Ownership-based writes with public read-only state filtering.
      */
     match /listings/{listingId} {
       allow get: if isAdmin() || resource.data.status == 'active' || isOwner(resource.data.ownerId);
-      // CRITICAL: Public listing is restricted here because this collection contains private drafts.
-      // Users should query using their specific ownerId which is verified in the backend logic/indexes.
-      allow list: if isAdmin() || isSignedIn(); 
+      // Allow public listing for active items, or for owners to see their own items (drafts etc)
+      allow list: if isAdmin() || resource.data.status == 'active' || (isSignedIn() && request.auth.uid == resource.data.ownerId); 
       
       allow create: if isAdmin() || (isSignedIn() && request.resource.data.ownerId == request.auth.uid);
       allow update: if isAdmin() || (isExistingOwner(resource.data.ownerId) && request.resource.data.ownerId == resource.data.ownerId);
@@ -121,37 +102,27 @@ service cloud.firestore {
     /**
      * @description Annual subscription records. Private to the listing owner and admins.
      * @path /subscriptions/{subscriptionId}
-     * @allow (get) The listing owner or an admin.
-     * @deny (create) Individual users (handled by admin/system).
-     * @principle Ownership-based read access via denormalized listingOwnerId.
      */
     match /subscriptions/{subscriptionId} {
       allow get: if isAdmin() || isOwner(resource.data.listingOwnerId);
-      // List restricted to ensure user-specific data is not leaked.
-      allow list: if isAdmin() || isSignedIn(); 
+      allow list: if isAdmin() || (isSignedIn() && request.auth.uid == resource.data.listingOwnerId); 
       allow create, update, delete: if isAdmin();
     }
 
     /**
      * @description Informational articles/blog posts. Public read for published, admin-only write.
      * @path /articles/{articleId}
-     * @allow (get) Any user if status is 'published'.
-     * @deny (write) Any non-admin user.
-     * @principle Public read-only for published content; Admin control for lifecycle.
      */
     match /articles/{articleId} {
       allow get: if isAdmin() || resource.data.status == 'published';
-      // List restricted per P6 to avoid exposing draft content to public queries.
-      allow list: if isAdmin();
+      // Allow public listing for published articles
+      allow list: if isAdmin() || resource.data.status == 'published';
       allow create, update, delete: if isAdmin();
     }
 
     /**
-     * @description Admin role definitions. Used for DBAC (Database-Backed Access Control).
+     * @description Admin role definitions. Used for DBAC.
      * @path /roles_admin/{adminUid}
-     * @allow (get) The user checking their own role or an admin.
-     * @deny (create) Self-promotion to admin.
-     * @principle Restricted access to the authorization source-of-truth.
      */
     match /roles_admin/{adminUid} {
       allow get: if isAdmin() || isOwner(adminUid);
