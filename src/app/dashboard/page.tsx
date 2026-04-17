@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from 'react';
@@ -7,7 +8,20 @@ import { collection, query, where, orderBy } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, PlusCircle, MapPin, ExternalLink, Settings, CreditCard } from 'lucide-react';
+import { 
+  Loader2, 
+  PlusCircle, 
+  MapPin, 
+  ExternalLink, 
+  Settings, 
+  CreditCard,
+  TrendingUp,
+  Eye,
+  MessageSquare,
+  ShieldCheck,
+  Star,
+  ChevronRight
+} from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CATEGORIES } from '@/app/lib/constants';
@@ -38,138 +52,198 @@ export default function UserDashboard() {
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 text-center">
-        <h1 className="text-4xl font-black mb-4">Pristupite svom Dashboardu</h1>
-        <p className="text-muted-foreground mb-8">Prijavite se kako biste upravljali svojim objektima.</p>
-        <Link href="/"><Button>Povratak na početnu</Button></Link>
+        <div className="size-24 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+          <ShieldCheck className="size-12 text-primary" />
+        </div>
+        <h1 className="text-4xl font-black mb-4 tracking-tighter">Pristupite svom Dashboardu</h1>
+        <p className="text-muted-foreground mb-8 text-lg max-w-sm font-body italic">Prijavite se kako biste upravljali svojim premium objektima i pratili analitiku.</p>
+        <Link href="/"><Button className="h-14 px-10 rounded-2xl font-black bg-primary">Povratak na početnu</Button></Link>
       </div>
     );
   }
 
+  const activeListings = listings?.filter(l => l.status === 'active') || [];
+  const pendingListings = listings?.filter(l => l.status === 'pending') || [];
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container mx-auto px-4 py-12">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
-          <div>
-            <h1 className="text-5xl font-headline font-black">Moj Dashboard</h1>
-            <p className="text-muted-foreground mt-2">Upravljajte svojim objavama i pratite status.</p>
+      <main className="container mx-auto px-4 py-16">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8">
+          <div className="space-y-4">
+            <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-widest px-6 py-1">Partner Portal</Badge>
+            <h1 className="text-6xl font-headline font-black tracking-tighter">Dobrodošli natrag, {user.displayName?.split(' ')[0] || 'Partner'}</h1>
+            <p className="text-muted-foreground text-xl font-body italic">Upravljajte svojim prisustvom na najljepšem hrvatskom portalu.</p>
           </div>
           <Link href="/submit">
-            <Button className="rounded-2xl h-14 px-8 font-black bg-primary shadow-lg shadow-primary/20">
-              <PlusCircle className="size-5 mr-2" /> NOVA PRIJAVA
+            <Button className="rounded-2xl h-16 px-10 font-black bg-primary shadow-2xl shadow-primary/30 text-lg uppercase tracking-widest group">
+              <PlusCircle className="size-5 mr-3" /> NOVA PRIJAVA
             </Button>
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* User Info & Stats */}
-          <div className="space-y-6">
-            <Card className="border-none shadow-xl rounded-[2rem]">
-              <CardHeader>
-                <div className="flex items-center gap-4">
-                  <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Image 
-                      src={user.photoURL || `https://picsum.photos/seed/${user.uid}/200`} 
-                      alt="Profile" 
-                      width={64} 
-                      height={64} 
-                      className="rounded-full object-cover" 
-                    />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">{user.displayName || 'Vlasnik Objekta'}</CardTitle>
-                    <CardDescription>{user.email}</CardDescription>
-                  </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+          
+          {/* Stats & User Info Sidebar */}
+          <div className="lg:col-span-1 space-y-8">
+            <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden">
+              <div className="h-24 bg-gradient-to-r from-primary to-secondary" />
+              <CardContent className="p-8 -mt-12">
+                <div className="size-24 rounded-[2rem] border-8 border-white bg-white shadow-lg overflow-hidden mb-6 mx-auto">
+                  <Image 
+                    src={user.photoURL || `https://picsum.photos/seed/${user.uid}/200`} 
+                    alt="Profile" 
+                    width={96} 
+                    height={96} 
+                    className="object-cover" 
+                  />
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center p-4 bg-secondary/5 rounded-xl border border-secondary/10">
-                  <span className="text-sm font-bold">Ukupno objekata</span>
-                  <span className="text-2xl font-black text-primary">{listings?.length || 0}</span>
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-black">{user.displayName || 'Vlasnik Objekta'}</h3>
+                  <p className="text-muted-foreground text-sm">{user.email}</p>
                 </div>
-                <Button variant="outline" className="w-full rounded-xl"><Settings className="size-4 mr-2" /> Postavke Profila</Button>
-                <Button variant="outline" className="w-full rounded-xl"><CreditCard className="size-4 mr-2" /> Povijest Plaćanja</Button>
+                <div className="space-y-3">
+                  <Button variant="secondary" className="w-full rounded-xl h-12 font-bold justify-start"><Settings className="size-4 mr-3" /> Postavke Profila</Button>
+                  <Button variant="secondary" className="w-full rounded-xl h-12 font-bold justify-start"><CreditCard className="size-4 mr-3" /> Povijest Plaćanja</Button>
+                </div>
               </CardContent>
             </Card>
 
-            <div className="p-8 bg-foreground text-white rounded-[2rem] space-y-4">
-              <h3 className="text-2xl font-black italic">Trebate pomoć?</h3>
-              <p className="text-white/60 text-sm">Naš tim je tu za vas 0-24. Ako imate pitanja o svojoj pretplati ili želite poboljšati vidljivost, kontaktirajte nas.</p>
-              <Button className="w-full bg-primary text-white font-black rounded-xl">PODRŠKA</Button>
+            <div className="bg-foreground p-10 rounded-[2.5rem] text-white space-y-6 shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 size-32 bg-primary/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
+              <h3 className="text-3xl font-black italic italic leading-none">Premium Podrška</h3>
+              <p className="text-white/60 font-body text-lg italic">Kao naš partner, imate prioritetan pristup našem timu stručnjaka 0-24.</p>
+              <Button className="w-full bg-primary text-white font-black rounded-xl h-14">KONTAKTIRAJ NAS</Button>
             </div>
           </div>
 
-          {/* Listings List */}
-          <div className="lg:col-span-2 space-y-6">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <PlusCircle className="size-6 text-primary" /> Moji Objekti
-            </h2>
+          {/* Main Listings Area */}
+          <div className="lg:col-span-3 space-y-10">
             
-            {!listings || listings.length === 0 ? (
-              <Card className="border-2 border-dashed rounded-[2rem] p-12 text-center text-muted-foreground italic">
-                Još niste dodali niti jedan objekt. Započnite klikom na gumb "Nova prijava".
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="border-none shadow-xl rounded-3xl bg-secondary/5 border border-secondary/10 p-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest mb-1">Aktivni Objekti</p>
+                    <p className="text-5xl font-black">{activeListings.length}</p>
+                  </div>
+                  <Eye className="size-10 text-secondary opacity-20" />
+                </div>
               </Card>
-            ) : (
-              <div className="grid grid-cols-1 gap-6">
-                {listings.map((item) => {
-                  const cat = CATEGORIES.find(c => c.id === item.locationCategoryId || item.categoryId);
-                  return (
-                    <Card key={item.id} className="border-none shadow-xl rounded-[2rem] overflow-hidden group hover:shadow-2xl transition-all">
-                      <CardContent className="p-0 flex flex-col md:flex-row">
-                        <div className="relative w-full md:w-64 h-48 md:h-auto overflow-hidden">
-                          <Image 
-                            src={item.photoUrls?.[0] || 'https://picsum.photos/seed/placeholder/400/300'} 
-                            alt={item.name || item.objectName} 
-                            fill 
-                            className="object-cover group-hover:scale-105 transition-transform duration-700" 
-                          />
-                        </div>
-                        <div className="flex-1 p-8">
-                          <div className="flex flex-wrap justify-between items-start gap-4 mb-4">
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase">{cat?.name}</Badge>
-                                <Badge variant="outline" className={`
-                                  text-[10px] font-black uppercase
-                                  ${item.status === 'active' ? 'border-green-500 text-green-500 bg-green-50' : 'border-orange-500 text-orange-500 bg-orange-50'}
-                                `}>
-                                  {item.status}
-                                </Badge>
+              <Card className="border-none shadow-xl rounded-3xl bg-orange-50 border border-orange-100 p-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-orange-600/60 tracking-widest mb-1">U Obradi</p>
+                    <p className="text-5xl font-black text-orange-700">{pendingListings.length}</p>
+                  </div>
+                  <TrendingUp className="size-10 text-orange-600 opacity-20" />
+                </div>
+              </Card>
+              <Card className="border-none shadow-xl rounded-3xl bg-primary/5 border border-primary/10 p-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-primary/60 tracking-widest mb-1">Ukupno Upita</p>
+                    <p className="text-5xl font-black text-primary">0</p>
+                  </div>
+                  <MessageSquare className="size-10 text-primary opacity-20" />
+                </div>
+              </Card>
+            </div>
+
+            <div className="space-y-8">
+              <div className="flex items-center justify-between">
+                <h2 className="text-3xl font-black flex items-center gap-4 italic">
+                  <Star className="size-8 text-primary fill-primary" /> Moji Objekti
+                </h2>
+                <Badge variant="outline" className="px-4 py-1 text-[10px] font-black uppercase">Live Updates</Badge>
+              </div>
+              
+              {!listings || listings.length === 0 ? (
+                <div className="border-4 border-dashed rounded-[3rem] p-24 text-center space-y-6">
+                  <PlusCircle className="size-20 text-muted-foreground mx-auto opacity-10" />
+                  <p className="text-2xl text-muted-foreground font-body italic">
+                    Još niste dodali niti jedan objekt.<br/>Započnite klikom na gumb "Nova prijava".
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-8">
+                  {listings.map((item) => {
+                    const cat = CATEGORIES.find(c => c.id === item.locationCategoryId || item.categoryId);
+                    const isPremium = item.locationCategoryType === 'Paid' || item.type === 'paid';
+                    
+                    return (
+                      <Card key={item.id} className="border-none shadow-2xl rounded-[3rem] overflow-hidden group hover:shadow-primary/10 transition-all duration-500 bg-white">
+                        <CardContent className="p-0 flex flex-col md:flex-row">
+                          <div className="relative w-full md:w-80 h-64 md:h-auto overflow-hidden">
+                            <Image 
+                              src={item.photoUrls?.[0] || 'https://picsum.photos/seed/placeholder/800/600'} 
+                              alt={item.name || item.objectName} 
+                              fill 
+                              className="object-cover group-hover:scale-110 transition-transform duration-1000" 
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8">
+                              <Link href={`/listing/${item.id}`}>
+                                <Button className="w-full bg-white text-primary font-black rounded-xl">VIDI JAVNO <ChevronRight className="size-4 ml-1" /></Button>
+                              </Link>
+                            </div>
+                          </div>
+                          <div className="flex-1 p-10 flex flex-col justify-between">
+                            <div className="space-y-4">
+                              <div className="flex flex-wrap items-center justify-between gap-4">
+                                <div className="flex gap-2">
+                                  <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase px-4 py-1">{cat?.name}</Badge>
+                                  <Badge className={`
+                                    text-[10px] font-black uppercase px-4 py-1 border-none
+                                    ${item.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}
+                                  `}>
+                                    {item.status}
+                                  </Badge>
+                                </div>
+                                {isPremium && (
+                                  <div className="flex items-center gap-1 text-[10px] font-black text-primary uppercase tracking-tighter">
+                                    <Star className="size-3 fill-primary" /> PREMIUM PARTNER
+                                  </div>
+                                )}
                               </div>
-                              <h3 className="text-2xl font-black">{item.name || item.objectName}</h3>
-                              <p className="text-muted-foreground text-sm flex items-center gap-2">
-                                <MapPin className="size-3" /> {item.city}, {item.address}
+                              <h3 className="text-4xl font-black leading-none">{item.name || item.objectName}</h3>
+                              <p className="text-muted-foreground text-lg flex items-center gap-2 font-body italic">
+                                <MapPin className="size-5 text-secondary" /> {item.city}, {item.address}
                               </p>
                             </div>
-                            <div className="flex gap-2">
-                              <Link href={`/listing/${item.id}`}>
-                                <Button size="icon" variant="ghost" className="rounded-full border border-black/5"><ExternalLink className="size-4" /></Button>
-                              </Link>
-                              <Button size="icon" variant="ghost" className="rounded-full border border-black/5"><Settings className="size-4" /></Button>
+                            
+                            <div className="flex items-center justify-between pt-10 mt-8 border-t border-black/5">
+                              <div className="flex flex-col">
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Status Naplate</p>
+                                {item.paymentStatus === 'paid' ? (
+                                  <span className="text-sm font-black text-green-600 flex items-center gap-2">
+                                    <ShieldCheck className="size-4" /> PROKNJIŽENO
+                                  </span>
+                                ) : (
+                                  <span className="text-sm font-black text-orange-600 uppercase">
+                                    ČEKA SE UPLATA
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex gap-3">
+                                <Button variant="outline" className="rounded-xl px-6 h-12 font-bold border-black/10 hover:bg-black/5">
+                                  UREDI
+                                </Button>
+                                <Button variant="ghost" size="icon" className="rounded-xl size-12 border border-black/10 hover:bg-black/5">
+                                  <Settings className="size-5" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                          
-                          <div className="flex items-center justify-between pt-6 border-t border-black/5 mt-4">
-                            <div className="flex items-center gap-2">
-                              {item.paymentStatus === 'paid' ? (
-                                <span className="text-[10px] font-black text-green-600 uppercase tracking-widest flex items-center gap-1">
-                                  <CreditCard className="size-3" /> Pretplata Aktivna
-                                </span>
-                              ) : (
-                                <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">
-                                  Čeka se naplata
-                                </span>
-                              )}
-                            </div>
-                            <Button variant="link" className="text-primary font-black text-xs uppercase p-0 h-auto">Uredi detalje</Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>
