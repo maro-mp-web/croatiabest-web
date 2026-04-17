@@ -1,7 +1,9 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // HELPER FUNCTIONS
     function isSignedIn() {
       return request.auth != null;
     }
@@ -14,59 +16,41 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isExistingOwner() {
-      return resource != null && isOwner(resource.data.ownerId);
-    }
-
+    // RULES
     match /location_categories/{locationCategoryId} {
       allow get, list: if true;
       allow create, update, delete: if isAdmin();
     }
 
-    match /amenities/{amenityId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /article_categories/{articleCategoryId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /tags/{tagId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /advertisements/{advertisementId} {
-      allow get, list: if isAdmin() || resource.data.isActive == true;
-      allow create, update, delete: if isAdmin();
-    }
-
     match /listings/{listingId} {
+      // Javno vidljivi samo aktivni oglasi. Vlasnici i admini vide sve (nacrte, odbijene).
       allow get: if isAdmin() || resource.data.status == 'active' || isOwner(resource.data.ownerId);
-      allow list: if isAdmin() || resource.data.status == 'active' || (isSignedIn() && request.auth.uid == resource.data.ownerId); 
+      allow list: if isAdmin() || resource.data.status == 'active' || (isSignedIn() && request.query.limit <= 100 && resource.data.ownerId == request.auth.uid);
       
+      // Kreiranje: Korisnik mora postaviti sebe kao vlasnika.
       allow create: if isAdmin() || (isSignedIn() && request.resource.data.ownerId == request.auth.uid);
-      allow update: if isAdmin() || (isExistingOwner() && request.resource.data.ownerId == resource.data.ownerId);
-      allow delete: if isAdmin() || isExistingOwner();
+      
+      // Ažuriranje: Samo vlasnik ili admin. Vlasnik ne smije mijenjati ownerId.
+      allow update: if isAdmin() || (isOwner(resource.data.ownerId) && request.resource.data.ownerId == resource.data.ownerId);
+      
+      allow delete: if isAdmin() || isOwner(resource.data.ownerId);
     }
 
     match /subscriptions/{subscriptionId} {
-      allow get: if isAdmin() || isOwner(resource.data.listingOwnerId);
-      allow list: if isAdmin() || (isSignedIn() && request.auth.uid == resource.data.listingOwnerId); 
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /articles/{articleId} {
-      allow get, list: if isAdmin() || resource.data.status == 'published';
+      // Samo vlasnik pripadajućeg oglasa ili admin može vidjeti pretplatu.
+      allow get, list: if isAdmin() || isOwner(resource.data.listingOwnerId);
       allow create, update, delete: if isAdmin();
     }
 
     match /roles_admin/{adminUid} {
+      // DBAC: Samo postojeći admin može dodijeliti novog admina. 
+      // Korisnik može vidjeti svoj vlastiti admin status.
       allow get: if isAdmin() || isOwner(adminUid);
       allow list: if isAdmin();
       allow create, update, delete: if isAdmin();
     }
+
+    // STORAGE RULES (napomena: ovo su Firestore pravila, ali podsjetnik za Storage konzolu)
+    // match /b/$(request.auth.bucket)/o { ... }
   }
 }

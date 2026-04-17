@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "LocationCategory": {
@@ -6,482 +7,66 @@
       "type": "object",
       "description": "Represents a category for listings, distinguishing between free and paid types and defining associated metadata like icon color and annual fees.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the LocationCategory entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The human-readable name of the category (e.g., \"Restorani\", \"Plaže\")."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of what this category represents."
-        },
-        "type": {
-          "type": "string",
-          "description": "Indicates whether the category is 'Free' or 'Paid'.",
-          "format": "enum"
-        },
-        "iconColorHex": {
-          "type": "string",
-          "description": "Hexadecimal color code for map markers associated with this category (e.g., \"#FF0000\")."
-        },
-        "annualFeeEuro": {
-          "type": "number",
-          "description": "The annual subscription fee in Euros for listings belonging to this 'Paid' category. Null for 'Free' categories."
-        }
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["free", "paid"] },
+        "iconColorHex": { "type": "string" },
+        "annualFeeEuro": { "type": "number" }
       },
-      "required": [
-        "id",
-        "name",
-        "description",
-        "type",
-        "iconColorHex"
-      ]
+      "required": ["id", "name", "description", "type", "iconColorHex"]
     },
     "Listing": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Listing",
       "type": "object",
-      "description": "Represents a point of interest, service, or business listed in the CroatiaBest application, categorized as either free or paid, and displayed on an interactive map.",
+      "description": "Represents a business or location listing. Includes denormalized ownerId and locationCategoryType for high-performance security rules.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Listing entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The official name of the listed object, business, or location."
-        },
-        "description": {
-          "type": "string",
-          "description": "A comprehensive description of the listing, detailing its offerings, features, or significance."
-        },
-        "address": {
-          "type": "string",
-          "description": "The physical street address of the listing."
-        },
-        "latitude": {
-          "type": "number",
-          "description": "The geographical latitude coordinate of the listing."
-        },
-        "longitude": {
-          "type": "number",
-          "description": "The geographical longitude coordinate of the listing."
-        },
-        "logoUrl": {
-          "type": "string",
-          "description": "URL to the listing's logo image.",
-          "format": "uri"
-        },
-        "webAddress": {
-          "type": "string",
-          "description": "The official website URL for the listing.",
-          "format": "uri"
-        },
-        "isWebAddressIndexed": {
-          "type": "boolean",
-          "description": "Indicates if the web address should be indexed by search engines. True for 'Paid' categories, false for 'Free'."
-        },
-        "contactPhone": {
-          "type": "string",
-          "description": "The primary contact phone number for the listing."
-        },
-        "contactEmail": {
-          "type": "string",
-          "description": "The primary contact email address for the listing.",
-          "format": "email"
-        },
-        "photoUrls": {
-          "type": "array",
-          "description": "URLs to photographs showcasing the listing. Up to 5 for 'Free' categories, up to 10 for 'Paid' categories.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "videoEmbedUrls": {
-          "type": "array",
-          "description": "URLs for embedded videos (e.g., YouTube, Vimeo). Applicable only for 'Paid' categories (up to 3 videos).",
-          "items": {
-            "type": "string"
-          }
-        },
-        "facebookLink": {
-          "type": "string",
-          "description": "URL to the listing's Facebook page. Applicable only for 'Paid' categories.",
-          "format": "uri"
-        },
-        "twitterLink": {
-          "type": "string",
-          "description": "URL to the listing's Twitter profile. Applicable only for 'Paid' categories.",
-          "format": "uri"
-        },
-        "youtubeLink": {
-          "type": "string",
-          "description": "URL to the listing's YouTube channel. Applicable only for 'Paid' categories.",
-          "format": "uri"
-        },
-        "instagramLink": {
-          "type": "string",
-          "description": "URL to the listing's Instagram profile. Applicable only for 'Paid' categories.",
-          "format": "uri"
-        },
-        "tiktokLink": {
-          "type": "string",
-          "description": "URL to the listing's TikTok profile. Applicable only for 'Paid' categories.",
-          "format": "uri"
-        },
-        "locationCategoryId": {
-          "type": "string",
-          "description": "Reference to the LocationCategory entity this listing belongs to. (Relationship: LocationCategory 1:N Listing)"
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Date and time when the listing was first created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Date and time when the listing was last updated.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "Current operational status of the listing (e.g., \"draft\", \"active\", \"archived\").",
-          "format": "enum"
-        },
-        "menuDescription": {
-          "type": "string",
-          "description": "A description or link to the menu, specific for 'Restaurant' listings."
-        },
-        "roomCount": {
-          "type": "number",
-          "description": "The total number of rooms available, specific for 'Hotel' or 'Apartment' listings."
-        },
-        "bedCount": {
-          "type": "number",
-          "description": "The total number of beds available, specific for 'Hotel' or 'Apartment' listings."
-        },
-        "amenityIds": {
-          "type": "array",
-          "description": "References to Amenity entities associated with this listing. (Relationship: Listing N:N Amenity)",
-          "items": {
-            "type": "string"
-          }
-        },
-        "paymentStatus": {
-          "type": "string",
-          "description": "Indicates the subscription payment status for 'Paid' listings. 'not_applicable' for 'Free' listings.",
-          "format": "enum"
-        },
-        "paymentDueDate": {
-          "type": "string",
-          "description": "The date by which the annual payment for a 'Paid' listing is due.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "address": { "type": "string" },
+        "city": { "type": "string" },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "logoUrl": { "type": "string", "format": "uri" },
+        "webAddress": { "type": "string", "format": "uri" },
+        "isWebAddressIndexed": { "type": "boolean" },
+        "contactPhone": { "type": "string" },
+        "contactEmail": { "type": "string", "format": "email" },
+        "photoUrls": { "type": "array", "items": { "type": "string" } },
+        "videoEmbedUrls": { "type": "array", "items": { "type": "string" } },
+        "locationCategoryId": { "type": "string" },
+        "ownerId": { "type": "string", "description": "UID of the user who owns this listing." },
+        "locationCategoryType": { "type": "string", "enum": ["Free", "Paid"] },
+        "status": { "type": "string", "enum": ["draft", "pending", "active", "rejected"] },
+        "paymentStatus": { "type": "string", "enum": ["paid", "pending", "not_applicable"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "name",
-        "description",
-        "address",
-        "latitude",
-        "longitude",
-        "isWebAddressIndexed",
-        "locationCategoryId",
-        "createdAt",
-        "updatedAt",
-        "status",
-        "paymentStatus"
-      ]
-    },
-    "Amenity": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Amenity",
-      "type": "object",
-      "description": "Represents a specific feature or service offered by a listing, such as Wi-Fi, parking, or air conditioning.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Amenity entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The human-readable name of the amenity (e.g., \"WiFi\", \"Parking\", \"Pet-Friendly\")."
-        },
-        "description": {
-          "type": "string",
-          "description": "A brief description of the amenity."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "description"
-      ]
-    },
-    "Article": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Article",
-      "type": "object",
-      "description": "Represents an informational article, blog post, or news item on the CroatiaBest portal, not directly tied to a map location.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Article entity."
-        },
-        "title": {
-          "type": "string",
-          "description": "The title of the article or blog post."
-        },
-        "slug": {
-          "type": "string",
-          "description": "A URL-friendly version of the article title, used for permalinks."
-        },
-        "content": {
-          "type": "string",
-          "description": "The full rich-text content of the article."
-        },
-        "shortDescription": {
-          "type": "string",
-          "description": "A brief summary or excerpt of the article."
-        },
-        "mainImageUrl": {
-          "type": "string",
-          "description": "URL to the main image associated with the article.",
-          "format": "uri"
-        },
-        "authorName": {
-          "type": "string",
-          "description": "The name of the author who created or published the article."
-        },
-        "publishedAt": {
-          "type": "string",
-          "description": "Date and time when the article was officially published.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Date and time when the article was last updated.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "Current publication status of the article (e.g., \"draft\", \"published\", \"archived\").",
-          "format": "enum"
-        },
-        "articleCategoryId": {
-          "type": "string",
-          "description": "Reference to the ArticleCategory entity this article belongs to. (Relationship: ArticleCategory 1:N Article)"
-        },
-        "tagIds": {
-          "type": "array",
-          "description": "References to Tag entities associated with this article. (Relationship: Article N:N Tag)",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "title",
-        "slug",
-        "content",
-        "shortDescription",
-        "authorName",
-        "publishedAt",
-        "updatedAt",
-        "status",
-        "articleCategoryId"
-      ]
-    },
-    "ArticleCategory": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ArticleCategory",
-      "type": "object",
-      "description": "Defines categories for articles and blog posts, allowing for better organization and navigation of content.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the ArticleCategory entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The human-readable name of the article category (e.g., \"Nacionalni Parkovi\", \"Blog\")."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of what this article category represents."
-        },
-        "slug": {
-          "type": "string",
-          "description": "A URL-friendly version of the category name."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "description",
-        "slug"
-      ]
-    },
-    "Tag": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Tag",
-      "type": "object",
-      "description": "A keyword or term assigned to articles for classification and searchability.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Tag entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the tag (e.g., \"culture\", \"history\", \"hiking\")."
-        },
-        "slug": {
-          "type": "string",
-          "description": "A URL-friendly version of the tag name."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "slug"
-      ]
-    },
-    "Advertisement": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Advertisement",
-      "type": "object",
-      "description": "Represents an advertising banner displayed on the website for revenue generation.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Advertisement entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "An internal descriptive name for the advertisement."
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "URL to the image file used for the advertisement banner.",
-          "format": "uri"
-        },
-        "targetUrl": {
-          "type": "string",
-          "description": "The URL where the user is redirected upon clicking the advertisement.",
-          "format": "uri"
-        },
-        "startDate": {
-          "type": "string",
-          "description": "The date and time when the advertisement becomes active.",
-          "format": "date-time"
-        },
-        "endDate": {
-          "type": "string",
-          "description": "The date and time when the advertisement expires.",
-          "format": "date-time"
-        },
-        "position": {
-          "type": "string",
-          "description": "A string indicating the display location of the advertisement (e.g., \"homepage_top_banner\", \"sidebar_right\")."
-        },
-        "isActive": {
-          "type": "boolean",
-          "description": "A boolean flag indicating if the advertisement is currently active and eligible for display."
-        },
-        "clicks": {
-          "type": "number",
-          "description": "The total number of times the advertisement has been clicked."
-        },
-        "impressions": {
-          "type": "number",
-          "description": "The total number of times the advertisement has been displayed."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "imageUrl",
-        "targetUrl",
-        "startDate",
-        "endDate",
-        "position",
-        "isActive",
-        "clicks",
-        "impressions"
-      ]
+      "required": ["id", "name", "address", "city", "ownerId", "status", "locationCategoryType"]
     },
     "Subscription": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Subscription",
       "type": "object",
-      "description": "Manages annual subscription details for paid listings, including payment status and renewal dates.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Subscription entity."
-        },
-        "listingId": {
-          "type": "string",
-          "description": "Reference to the Listing entity for which this subscription applies. (Relationship: Listing 1:N Subscription)"
-        },
-        "locationCategoryId": {
-          "type": "string",
-          "description": "Reference to the LocationCategory for which this subscription was made. (Relationship: LocationCategory 1:N Subscription)"
-        },
-        "amountEuro": {
-          "type": "number",
-          "description": "The total amount paid for this subscription in Euros."
-        },
-        "startDate": {
-          "type": "string",
-          "description": "The date and time when the subscription period begins.",
-          "format": "date-time"
-        },
-        "endDate": {
-          "type": "string",
-          "description": "The date and time when the subscription period ends.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the subscription (e.g., \"active\", \"expired\", \"canceled\", \"pending_renewal\").",
-          "format": "enum"
-        },
-        "transactionId": {
-          "type": "string",
-          "description": "An identifier from the external payment gateway for the corresponding transaction."
-        },
-        "paymentMethod": {
-          "type": "string",
-          "description": "The method used for payment (e.g., \"credit_card\", \"bank_transfer\", \"paypal\")."
-        },
-        "invoiceUrl": {
-          "type": "string",
-          "description": "URL to the invoice document for this subscription.",
-          "format": "uri"
-        }
+        "id": { "type": "string" },
+        "listingId": { "type": "string" },
+        "listingOwnerId": { "type": "string" },
+        "amountEuro": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "expired", "pending"] }
       },
-      "required": [
-        "id",
-        "listingId",
-        "locationCategoryId",
-        "amountEuro",
-        "startDate",
-        "endDate",
-        "status"
-      ]
+      "required": ["id", "listingId", "listingOwnerId", "amountEuro", "status"]
+    },
+    "admin_role": {
+      "title": "admin_role",
+      "type": "object",
+      "description": "DBAC record for administrator access."
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "anonymous"
-    ]
+    "providers": ["password", "google.com", "anonymous"]
   },
   "firestore": {
     "structure": [
@@ -489,147 +74,34 @@
         "path": "/location_categories/{locationCategoryId}",
         "definition": {
           "entityName": "LocationCategory",
-          "schema": {
-            "$ref": "#/backend/entities/LocationCategory"
-          },
-          "description": "Stores global, static definitions for listing categories. Public users have read-only access. Administrators have full read/write access.",
-          "params": [
-            {
-              "name": "locationCategoryId",
-              "description": "The unique identifier for a specific location category."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/amenities/{amenityId}",
-        "definition": {
-          "entityName": "Amenity",
-          "schema": {
-            "$ref": "#/backend/entities/Amenity"
-          },
-          "description": "Stores global, static definitions for amenities offered by listings. Public users have read-only access. Administrators have full read/write access.",
-          "params": [
-            {
-              "name": "amenityId",
-              "description": "The unique identifier for a specific amenity."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/article_categories/{articleCategoryId}",
-        "definition": {
-          "entityName": "ArticleCategory",
-          "schema": {
-            "$ref": "#/backend/entities/ArticleCategory"
-          },
-          "description": "Stores global, static definitions for article categories. Public users have read-only access. Administrators have full read/write access.",
-          "params": [
-            {
-              "name": "articleCategoryId",
-              "description": "The unique identifier for a specific article category."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/tags/{tagId}",
-        "definition": {
-          "entityName": "Tag",
-          "schema": {
-            "$ref": "#/backend/entities/Tag"
-          },
-          "description": "Stores global, static definitions for tags used in articles. Public users have read-only access. Administrators have full read/write access.",
-          "params": [
-            {
-              "name": "tagId",
-              "description": "The unique identifier for a specific tag."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/advertisements/{advertisementId}",
-        "definition": {
-          "entityName": "Advertisement",
-          "schema": {
-            "$ref": "#/backend/entities/Advertisement"
-          },
-          "description": "Stores advertising banners. Public users can read active advertisements. Administrators have full read/write access to all advertisements.",
-          "params": [
-            {
-              "name": "advertisementId",
-              "description": "The unique identifier for a specific advertisement."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/LocationCategory" },
+          "description": "Global static categories. Public read."
         }
       },
       {
         "path": "/listings/{listingId}",
         "definition": {
           "entityName": "Listing",
-          "schema": {
-            "$ref": "#/backend/entities/Listing"
-          },
-          "description": "Stores all business/location listings, including drafts, active, and archived states. Includes denormalized 'ownerId' (UID of the listing creator) for authorization independence, and 'locationCategoryType' for simplified rule evaluation against parent category data, enabling atomic operations and robust QAPs. Public users can only read active listings, while the owner can read/write their own listings across all statuses. Administrators have full access.",
-          "params": [
-            {
-              "name": "listingId",
-              "description": "The unique identifier for a specific listing."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/Listing" },
+          "description": "Listings with ownership rules. Public reads active only."
         }
       },
       {
         "path": "/subscriptions/{subscriptionId}",
         "definition": {
           "entityName": "Subscription",
-          "schema": {
-            "$ref": "#/backend/entities/Subscription"
-          },
-          "description": "Stores subscription details for paid listings. Includes denormalized 'listingOwnerId' (UID of the owner of the associated Listing) for authorization independence, enabling atomic operations and robust QAPs for user-specific queries. Only the listing owner can read their subscriptions, and administrators have full read/write access.",
-          "params": [
-            {
-              "name": "subscriptionId",
-              "description": "The unique identifier for a specific subscription."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/articles/{articleId}",
-        "definition": {
-          "entityName": "Article",
-          "schema": {
-            "$ref": "#/backend/entities/Article"
-          },
-          "description": "Stores informational articles and blog posts, including drafts, published, and archived states. Public users can only read published articles. Administrators have full read/write access to all articles.",
-          "params": [
-            {
-              "name": "articleId",
-              "description": "The unique identifier for a specific article."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/Subscription" },
+          "description": "Payment records for listings."
         }
       },
       {
         "path": "/roles_admin/{adminUid}",
         "definition": {
           "entityName": "admin_role",
-          "schema": {
-            "$ref": "#/backend/entities/admin_role"
-          },
-          "description": "Database-Backed Access Control (DBAC) collection for administrators. The existence of a document with the user's UID as the ID grants administrative privileges across the application. Only administrators can write to this collection, and it is primarily read by security rules.",
-          "params": [
-            {
-              "name": "adminUid",
-              "description": "The unique Firebase Authentication User ID (UID) of an administrator."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/admin_role" },
+          "description": "DBAC for superadmins."
         }
       }
-    ],
-    "reasoning": "The Firestore data structure for CroatiaBest is designed with paramount focus on security, scalability, and debuggability, adhering strictly to the CORE DESIGN PRINCIPLES and DESIGN STRATEGY MANDATES. Authorization Independence, QAPs (Rules are not Filters), and DBAC are the guiding forces.\n\n**Authorization Independence (CRITICAL) via Denormalization:**\nTo eliminate hierarchical authorization dependencies and avoid expensive `get()` calls in security rules, crucial authorization context is denormalized directly into the relevant documents:\n*   **Listings (`/listings/{listingId}`):** Each `Listing` document will explicitly contain an `ownerId` field, which stores the `uid` of the user who created and owns that listing. This allows Firestore security rules to directly verify `request.auth.uid == resource.data.ownerId` for ownership checks, enabling atomic operations (e.g., creating a listing and its initial payment record in a batch) and eliminating cross-collection reads for basic ownership. Furthermore, `locationCategoryType` (e.g., 'Free', 'Paid') is denormalized from the `LocationCategory` to allow for category-specific validation rules without requiring a `get()` on the `/location_categories` collection.\n*   **Subscriptions (`/subscriptions/{subscriptionId}`):** Similarly, each `Subscription` document will include a `listingOwnerId` field, denormalized from its associated `Listing`. This ensures that a user's access to their subscriptions can be validated by checking `request.auth.uid == resource.data.listingOwnerId` directly within the subscription's rules, preventing `get()` calls to the `/listings` collection.\n\n**QAPs (Rules are not Filters) via Structural Segregation and Field-Based Filtering:**\nThe structure facilitates secure and efficient `list` operations (QAPs) through a combination of structural segregation and intelligent field-based filtering enforced by rules:\n*   **Global, Public-Readable Collections:** Collections like `/location_categories`, `/amenities`, `/article_categories`, `/tags`, and `/advertisements` are intended for broad public read access. Their security posture is homogeneous (public read-only, admin full-access), making `list` operations naturally secure and performant. For `advertisements`, public `list` operations are restricted by rules to only 'active' ads, ensuring clients only retrieve displayable content.\n*   **User-Owned/Managed Content (`/listings`, `/articles`, `/subscriptions`):**\n    *   **Public Access:** For `/listings` and `/articles`, public users are only permitted to `list` documents that are explicitly `active` or `published` (enforced by rules checking the `status` field). This ensures that sensitive drafts or archived content are never exposed to public queries.\n    *   **Owner Access:** Authenticated users can `list` all documents they own within `/listings` and `/subscriptions` by querying on the denormalized `ownerId` or `listingOwnerId` field, respectively. The rules then verify that `request.auth.uid` matches the respective owner ID. This enables a user to see all their content (drafts, active, archived listings, and related subscriptions) with a single, secure query.\n    *   **Admin Access:** A dedicated `/roles_admin/{adminUid}` collection serves as a database-backed access control (DBAC) mechanism. If `request.auth.uid` exists as a document ID in this collection, the user is granted full administrative `list` and `read/write` privileges across all collections, overriding specific owner or public restrictions. This allows administrators to manage all content efficiently.\n\n**Other Key Design Principles Applied:**\n*   **Structural Segregation:** All documents within a collection share a similar security posture (e.g., `/listings` mixes `draft` and `active` but differentiates access via `status` and `ownerId`, making security rules clear and explicit for each type of access).\n*   **Access Modeling:** Private data is secured via `ownerId` within the document. Global roles are implemented with `/roles_admin/{adminUid}` for 'Existence over Content' based admin checks.\n*   **Data Clarity:** Use of a single `status` field for explicit state modeling across `Listing` and `Article` entities. Strict naming conventions (`ownerId`, `{listingId}`) are applied for predictability."
+    ]
   }
 }
