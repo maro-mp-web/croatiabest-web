@@ -9,11 +9,12 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, ArrowLeft, ShieldAlert, HeartPulse, Flame, Pill, Loader2, Users, Landmark, Compass, Info, Anchor } from 'lucide-react';
+import { MapPin, ArrowLeft, ShieldAlert, HeartPulse, Flame, Pill, Loader2, Users, Landmark, Compass, Info, Anchor, Navigation } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
+import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 
 export default function IslandPage() {
   const params = useParams();
@@ -72,7 +73,7 @@ export default function IslandPage() {
       <Navbar />
       
       <main className="flex-1 pb-24">
-        <section className="relative h-[75vh] w-full overflow-hidden">
+        <section className="relative h-[65vh] w-full overflow-hidden">
           <Image 
             src={island.image} 
             alt={`Obala otoka ${island.name}`} 
@@ -91,7 +92,7 @@ export default function IslandPage() {
           </div>
         </section>
 
-        <div className="container mx-auto px-6 -mt-20 relative z-20 space-y-16">
+        <div className="container mx-auto px-6 -mt-16 relative z-20 space-y-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             <div className="lg:col-span-8 space-y-16">
               <div className="bg-white/95 backdrop-blur-3xl border border-white/60 shadow-2xl rounded-[3.5rem] p-10 md:p-16 overflow-hidden">
@@ -186,18 +187,44 @@ export default function IslandPage() {
             </div>
 
             <aside className="lg:col-span-4 space-y-8">
-              <div className="bg-foreground p-12 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 size-48 bg-primary/20 rounded-full -mr-24 -mt-24 transition-transform group-hover:scale-150 duration-700"></div>
-                <div className="relative z-10">
-                  <h3 className="text-4xl font-black mb-6 italic leading-none">Istražite obalu</h3>
-                  <p className="text-white/60 mb-10 text-lg font-body leading-relaxed">Pogledajte najbolje plaže, uvale i skrivene restorane na otoku {island.name}.</p>
+              <Card className="rounded-[3.5rem] shadow-2xl border-none overflow-hidden bg-white">
+                <div className="p-8 border-b bg-foreground/5">
+                  <h3 className="text-2xl font-black italic">Mini Karta Otoka</h3>
+                  <p className="text-xs text-muted-foreground font-medium">Sve lokacije na otoku {island.name}</p>
+                </div>
+                <div className="h-[400px] w-full relative">
+                  <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
+                    <Map
+                      defaultCenter={{ lat: island.lat, lng: island.lng }}
+                      defaultZoom={11}
+                      disableDefaultUI={true}
+                      gestureHandling={'greedy'}
+                      className="w-full h-full"
+                    >
+                      {listings?.map((listing) => {
+                        if (listing.latitude === undefined || listing.longitude === undefined) return null;
+                        const cat = CATEGORIES.find(c => c.id === listing.locationCategoryId);
+                        return (
+                          <AdvancedMarker
+                            key={listing.id}
+                            position={{ lat: listing.latitude, lng: listing.longitude }}
+                          >
+                            <Pin background={cat?.color || '#333'} glyphColor={'#fff'} borderColor={'#fff'} />
+                          </AdvancedMarker>
+                        );
+                      })}
+                    </Map>
+                  </APIProvider>
+                </div>
+                <div className="p-8 space-y-4">
+                  <p className="text-sm text-muted-foreground font-body italic">Istražite obalu, plaže i restorane na otoku {island.name}.</p>
                   <Link href="/explore">
-                    <Button className="w-full h-16 bg-primary text-white hover:bg-primary/90 rounded-[1.5rem] font-black text-lg shadow-xl uppercase tracking-widest">
-                      OTVORI KARTU OTOKA
+                    <Button className="w-full h-14 bg-secondary text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-secondary/20">
+                      OTVORI VELIKU KARTU
                     </Button>
                   </Link>
                 </div>
-              </div>
+              </Card>
 
               <div className="p-12 border-2 border-dashed rounded-[3.5rem] text-center space-y-6 bg-white shadow-xl">
                 <p className="text-[10px] font-black text-muted-foreground tracking-[0.3em] uppercase">Oglasni prostor</p>

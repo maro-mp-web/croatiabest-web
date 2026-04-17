@@ -8,12 +8,13 @@ import { CITIES, CATEGORIES } from '@/app/lib/constants';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { MapPin, ArrowLeft, ShieldAlert, HeartPulse, Flame, Pill, Loader2, Users, Landmark, Compass, Info, Phone as PhoneIcon } from 'lucide-react';
+import { MapPin, ArrowLeft, ShieldAlert, HeartPulse, Flame, Pill, Loader2, Users, Landmark, Compass, Info, Phone as PhoneIcon, Navigation } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
+import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 
 export default function CityPage() {
   const params = useParams();
@@ -41,7 +42,7 @@ export default function CityPage() {
     }
   }, [city]);
 
-  const emergencyQuery = useMemoFirebase(() => {
+  const cityQuery = useMemoFirebase(() => {
     if (!firestore || !city) return null;
     return query(
       collection(firestore, 'listings'),
@@ -50,7 +51,7 @@ export default function CityPage() {
     );
   }, [firestore, city]);
 
-  const { data: cityListings, isLoading } = useCollection(emergencyQuery);
+  const { data: cityListings, isLoading } = useCollection(cityQuery);
 
   const cityEmergency = cityListings?.filter(l => 
     ['pharmacy', 'emergency', 'police', 'firefighters'].includes(l.locationCategoryId || l.categoryId)
@@ -72,7 +73,7 @@ export default function CityPage() {
       <Navbar />
       
       <main className="flex-1 pb-24">
-        <section className="relative h-[75vh] w-full overflow-hidden">
+        <section className="relative h-[65vh] w-full overflow-hidden">
           <Image 
             src={city.image} 
             alt={`Panorama grada ${city.name}`} 
@@ -91,7 +92,7 @@ export default function CityPage() {
           </div>
         </section>
 
-        <div className="container mx-auto px-6 -mt-20 relative z-20 space-y-16">
+        <div className="container mx-auto px-6 -mt-16 relative z-20 space-y-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             <div className="lg:col-span-8 space-y-16">
               <div className="bg-white/90 backdrop-blur-3xl border border-white/60 shadow-2xl rounded-[3.5rem] p-10 md:p-16 overflow-hidden">
@@ -192,18 +193,44 @@ export default function CityPage() {
             </div>
 
             <aside className="lg:col-span-4 space-y-8">
-              <div className="bg-primary p-12 rounded-[3.5rem] text-white shadow-2xl shadow-primary/30 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 size-48 bg-white/10 rounded-full -mr-24 -mt-24 transition-transform group-hover:scale-150 duration-700"></div>
-                <div className="relative z-10">
-                  <h3 className="text-4xl font-black mb-6 italic leading-none">Istražite {city.name}</h3>
-                  <p className="text-white/80 mb-10 text-lg font-body leading-relaxed">Pronađite najbolje lokacije, restorane i plaže u gradu na našoj interaktivnoj karti.</p>
+              <Card className="rounded-[3.5rem] shadow-2xl border-none overflow-hidden bg-white">
+                <div className="p-8 border-b bg-secondary/5">
+                  <h3 className="text-2xl font-black italic">Mini Karta Grada</h3>
+                  <p className="text-xs text-muted-foreground font-medium">Sve lokacije u gradu {city.name}</p>
+                </div>
+                <div className="h-[400px] w-full relative">
+                  <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
+                    <Map
+                      defaultCenter={{ lat: city.lat, lng: city.lng }}
+                      defaultZoom={13}
+                      disableDefaultUI={true}
+                      gestureHandling={'greedy'}
+                      className="w-full h-full"
+                    >
+                      {cityListings?.map((listing) => {
+                        if (listing.latitude === undefined || listing.longitude === undefined) return null;
+                        const cat = CATEGORIES.find(c => c.id === listing.locationCategoryId);
+                        return (
+                          <AdvancedMarker
+                            key={listing.id}
+                            position={{ lat: listing.latitude, lng: listing.longitude }}
+                          >
+                            <Pin background={cat?.color || '#333'} glyphColor={'#fff'} borderColor={'#fff'} />
+                          </AdvancedMarker>
+                        );
+                      })}
+                    </Map>
+                  </APIProvider>
+                </div>
+                <div className="p-8 space-y-4">
+                  <p className="text-sm text-muted-foreground font-body italic">Istražite restorane, plaže i usluge u gradu {city.name} na našoj interaktivnoj karti Hrvatske.</p>
                   <Link href="/explore">
-                    <Button className="w-full h-16 bg-white text-primary hover:bg-white/90 rounded-[1.5rem] font-black text-lg shadow-xl uppercase tracking-widest">
-                      OTVORI KARTU GRADA
+                    <Button className="w-full h-14 bg-primary text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20">
+                      OTVORI VELIKU KARTU
                     </Button>
                   </Link>
                 </div>
-              </div>
+              </Card>
 
               <div className="p-12 border-2 border-dashed rounded-[3.5rem] text-center space-y-4 bg-white/40">
                 <p className="text-[10px] font-black text-muted-foreground tracking-[0.3em] uppercase">Partnerstvo</p>
