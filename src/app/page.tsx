@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CATEGORIES, CITIES } from '@/app/lib/constants';
+import { Logo } from '@/components/brand/Logo';
 import { 
   MapPin, 
   ArrowRight, 
@@ -63,7 +64,7 @@ export default function Home() {
       
       <main className="flex-1">
         {/* HERO SECTION */}
-        <section className="relative h-[85vh] w-full overflow-hidden flex items-center">
+        <section className="relative min-h-[90vh] w-full overflow-hidden flex items-center pt-20">
           <div className="absolute inset-0 z-0">
             <video 
               autoPlay 
@@ -78,21 +79,21 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent z-10" />
           </div>
 
-          <div className="container mx-auto px-6 relative z-20">
-            <div className="max-w-3xl animate-fade-in space-y-8">
-              <div className="inline-flex items-center gap-3 px-6 py-2 bg-primary/20 backdrop-blur-xl border border-primary/30 rounded-full text-white text-[10px] font-black tracking-[0.4em] uppercase">
+          <div className="container mx-auto px-6 relative z-20 pb-12">
+            <div className="max-w-4xl animate-fade-in space-y-8">
+              <div className="inline-flex items-center gap-3 px-6 py-2 bg-primary/20 backdrop-blur-xl border border-primary/30 rounded-full text-white text-[12px] font-black tracking-[0.4em] uppercase">
                 <Sparkles className="size-4 text-primary fill-primary animate-pulse" /> {t.heroBadge}
               </div>
-              <h1 className="text-6xl md:text-[8rem] font-black text-white leading-[0.9] tracking-tighter font-headline italic drop-shadow-2xl">
+              <h1 className="text-6xl md:text-[9rem] font-black text-white leading-[0.85] tracking-tighter font-headline italic drop-shadow-2xl">
                 {t.heroVideoTitle}
               </h1>
-              <p className="text-xl md:text-2xl text-white/80 font-body italic max-w-xl leading-relaxed">
+              <p className="text-xl md:text-3xl text-white/80 font-body italic max-w-2xl leading-relaxed">
                 {t.heroVideoSub}
               </p>
-              <div className="flex flex-wrap gap-6 pt-6">
+              <div className="flex flex-wrap gap-6 pt-8">
                 <Link href="/explore">
-                  <Button className="h-20 px-12 text-xl font-black bg-primary hover:bg-primary/90 rounded-[2rem] shadow-2xl shadow-primary/40 group transition-all">
-                    {t.heroVideoCTA} <ArrowRight className="ml-3 size-6 group-hover:translate-x-2 transition-transform" />
+                  <Button className="h-24 px-16 text-2xl font-black bg-primary hover:bg-primary/90 rounded-[2.5rem] shadow-2xl shadow-primary/40 group transition-all">
+                    {t.heroVideoCTA} <ArrowRight className="ml-4 size-8 group-hover:translate-x-3 transition-transform" />
                   </Button>
                 </Link>
               </div>
@@ -100,94 +101,98 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CATEGORIES SECTION - Now correctly below hero without overlap */}
-        <section className="py-20 container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { id: 'restaurants', icon: <Utensils />, name: 'Gastronomija', color: 'bg-primary' },
-              { id: 'hotels', icon: <Hotel />, name: 'Smještaj', color: 'bg-secondary' },
-              { id: 'beaches', icon: <Umbrella />, name: 'Plaže', color: 'bg-blue-400' },
-              { id: 'wineries', icon: <GlassWater />, name: 'Vinarije', color: 'bg-purple-500' },
-            ].map((cat) => (
-              <Link key={cat.id} href={`/explore?category=${cat.id}`}>
-                <Card className="group hover:scale-105 transition-all duration-500 rounded-[2.5rem] border-none shadow-xl overflow-hidden bg-white cursor-pointer">
-                  <CardContent className="p-8 flex flex-col items-center text-center gap-4">
-                    <div className={`size-16 rounded-2xl ${cat.color} text-white flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform`}>
-                      {cat.icon}
-                    </div>
-                    <p className="font-black text-sm uppercase tracking-widest">{cat.name}</p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+        {/* CATEGORIES SECTION */}
+        <section className="py-24 bg-white/50 backdrop-blur-sm relative z-30">
+          <div className="container mx-auto px-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {[
+                { id: 'restaurants', icon: <Utensils className="size-8" />, name: 'Gastronomija', color: 'bg-primary' },
+                { id: 'hotels', icon: <Hotel className="size-8" />, name: 'Smještaj', color: 'bg-secondary' },
+                { id: 'beaches', icon: <Umbrella className="size-8" />, name: 'Plaže', color: 'bg-blue-400' },
+                { id: 'wineries', icon: <GlassWater className="size-8" />, name: 'Vinarije', color: 'bg-purple-500' },
+              ].map((cat) => (
+                <Link key={cat.id} href={`/explore?category=${cat.id}`}>
+                  <Card className="group hover:scale-110 transition-all duration-500 rounded-[3rem] border-none shadow-2xl overflow-hidden bg-white cursor-pointer hover:shadow-primary/10">
+                    <CardContent className="p-10 flex flex-col items-center text-center gap-6">
+                      <div className={`size-20 rounded-[1.5rem] ${cat.color} text-white flex items-center justify-center shadow-xl group-hover:rotate-12 transition-transform`}>
+                        {cat.icon}
+                      </div>
+                      <p className="font-black text-lg uppercase tracking-[0.2em]">{cat.name}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* INTERACTIVE MAP SECTION - RESTORED */}
-        <section className="py-24 bg-white">
-          <div className="container mx-auto px-6 mb-12 flex justify-between items-end">
-            <div className="space-y-4">
-              <Badge variant="outline" className="border-primary text-primary font-black px-6 py-2 uppercase tracking-widest text-[10px]">Interaktivni vodič</Badge>
-              <h2 className="text-5xl font-headline font-black italic">Istraži Hrvatsku uživo</h2>
-            </div>
-            <Link href="/explore">
-              <Button variant="ghost" className="font-black text-xs uppercase tracking-widest group">
-                CIJELA KARTA <ChevronRight className="ml-2 group-hover:translate-x-1" />
-              </Button>
-            </Link>
-          </div>
-          
+        {/* INTERACTIVE MAP SECTION */}
+        <section className="py-32 bg-white">
           <div className="container mx-auto px-6">
-            <div className="h-[600px] w-full rounded-[3.5rem] overflow-hidden shadow-2xl relative border-8 border-white">
-              <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
-                <Map
-                  defaultCenter={MAP_CENTER}
-                  defaultZoom={7}
-                  disableDefaultUI={true}
-                  gestureHandling={'greedy'}
-                  className="w-full h-full"
-                >
-                  {allListings?.map((l) => {
-                    if (l.latitude === undefined || l.longitude === undefined) return null;
-                    const cat = CATEGORIES.find(c => c.id === l.locationCategoryId);
-                    return (
-                      <AdvancedMarker
-                        key={l.id}
-                        position={{ lat: l.latitude, lng: l.longitude }}
-                        onClick={() => setSelectedListingId(l.id)}
-                      >
-                        <Pin background={cat?.color || '#333'} glyphColor={'#fff'} borderColor={'#fff'} />
-                      </AdvancedMarker>
-                    );
-                  })}
-
-                  {selectedListing && selectedListing.latitude !== undefined && selectedListing.longitude !== undefined && (
-                    <InfoWindow
-                      position={{ lat: selectedListing.latitude, lng: selectedListing.longitude }}
-                      onCloseClick={() => setSelectedListingId(null)}
-                    >
-                      <div className="p-3 max-w-[200px] space-y-3">
-                        <h4 className="font-black text-sm">{selectedListing.name}</h4>
-                        <p className="text-[10px] text-muted-foreground line-clamp-2">{selectedListing.description}</p>
-                        <Link href={`/listing/${selectedListing.id}`} className="block">
-                          <Button size="sm" className="w-full h-8 text-[10px] font-black rounded-lg">POGLEDAJ DETALJE</Button>
-                        </Link>
-                      </div>
-                    </InfoWindow>
-                  )}
-                </Map>
-              </APIProvider>
-              
-              {/* Legend overlay */}
-              <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur p-6 rounded-[2rem] shadow-2xl hidden md:block">
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">Legenda karte</p>
-                <div className="space-y-2">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+              <div className="lg:col-span-4 space-y-8">
+                <Badge variant="outline" className="border-primary text-primary font-black px-6 py-2 uppercase tracking-[0.3em] text-[10px]">Interaktivni vodič</Badge>
+                <h2 className="text-6xl font-headline font-black italic tracking-tighter leading-none">Istraži Hrvatsku<br/>uživo na karti</h2>
+                <p className="text-xl text-muted-foreground font-body italic leading-relaxed">
+                  Pronađite skrivene ljekarne, najbolje plaže i ekskluzivne restorane. Svi markeri su provjereni i ažurirani.
+                </p>
+                <div className="space-y-4 pt-6">
                   {CATEGORIES.slice(0, 5).map(cat => (
-                    <div key={cat.id} className="flex items-center gap-2">
-                      <div className="size-2 rounded-full" style={{ backgroundColor: cat.color }} />
-                      <span className="text-[10px] font-bold uppercase">{cat.name}</span>
+                    <div key={cat.id} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/5 border border-black/5">
+                      <div className="size-3 rounded-full shadow-sm" style={{ backgroundColor: cat.color }} />
+                      <span className="text-sm font-black uppercase tracking-widest">{cat.name}</span>
                     </div>
                   ))}
+                </div>
+                <Link href="/explore" className="block pt-6">
+                  <Button variant="outline" className="w-full h-16 rounded-2xl border-primary text-primary font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
+                    OTVORI CIJELU KARTU <Navigation className="ml-2 size-4" />
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="lg:col-span-8">
+                <div className="h-[700px] w-full rounded-[4rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] relative border-[12px] border-white group">
+                  <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
+                    <Map
+                      defaultCenter={MAP_CENTER}
+                      defaultZoom={7}
+                      disableDefaultUI={true}
+                      gestureHandling={'greedy'}
+                      className="w-full h-full"
+                    >
+                      {allListings?.map((l) => {
+                        if (l.latitude === undefined || l.longitude === undefined) return null;
+                        const cat = CATEGORIES.find(c => c.id === (l.locationCategoryId || l.categoryId));
+                        return (
+                          <AdvancedMarker
+                            key={l.id}
+                            position={{ lat: l.latitude, lng: l.longitude }}
+                            onClick={() => setSelectedListingId(l.id)}
+                          >
+                            <Pin background={cat?.color || '#333'} glyphColor={'#fff'} borderColor={'#fff'} />
+                          </AdvancedMarker>
+                        );
+                      })}
+
+                      {selectedListing && selectedListing.latitude !== undefined && selectedListing.longitude !== undefined && (
+                        <InfoWindow
+                          position={{ lat: selectedListing.latitude, lng: selectedListing.longitude }}
+                          onCloseClick={() => setSelectedListingId(null)}
+                        >
+                          <div className="p-4 max-w-[240px] space-y-4">
+                            <h4 className="font-black text-lg leading-tight tracking-tight">{selectedListing.name}</h4>
+                            <p className="text-xs text-muted-foreground line-clamp-2 italic">{selectedListing.description}</p>
+                            <Link href={`/listing/${selectedListing.id}`} className="block">
+                              <Button size="sm" className="w-full h-10 text-[10px] font-black rounded-xl bg-primary shadow-lg shadow-primary/20">
+                                POGLEDAJ DETALJE
+                              </Button>
+                            </Link>
+                          </div>
+                        </InfoWindow>
+                      )}
+                    </Map>
+                  </APIProvider>
                 </div>
               </div>
             </div>
@@ -196,18 +201,18 @@ export default function Home() {
 
         {/* PREMIUM PARTNERS SECTION */}
         <section className="py-32 container mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
-            <div className="space-y-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
+            <div className="space-y-6">
               <div className="flex items-center gap-3 text-primary font-black uppercase tracking-[0.4em] text-[10px]">
-                <Star className="size-5 fill-primary" /> {t.featuredBadge}
+                <Star className="size-6 fill-primary" /> {t.featuredBadge}
               </div>
-              <h2 className="text-6xl md:text-8xl font-headline font-black tracking-tighter leading-none italic">
+              <h2 className="text-6xl md:text-[7rem] font-headline font-black tracking-tighter leading-none italic">
                 {t.featuredTitle}
               </h2>
             </div>
             <Link href="/explore">
-              <Button variant="ghost" className="text-primary font-black text-sm uppercase tracking-widest hover:bg-primary/5 px-8 h-16 rounded-2xl group">
-                {t.viewAll} <ChevronRight className="ml-2 group-hover:translate-x-2 transition-transform" />
+              <Button variant="ghost" className="text-primary font-black text-base uppercase tracking-widest hover:bg-primary/5 px-10 h-20 rounded-3xl group">
+                {t.viewAll} <ChevronRight className="ml-3 group-hover:translate-x-3 transition-transform" />
               </Button>
             </Link>
           </div>
@@ -215,33 +220,34 @@ export default function Home() {
           {isPremiumLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               {[1, 2, 3].map(i => (
-                <div key={i} className="h-[500px] rounded-[3rem] bg-muted animate-pulse" />
+                <div key={i} className="h-[550px] rounded-[3.5rem] bg-muted animate-pulse" />
               ))}
             </div>
           ) : premiumListings && premiumListings.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16">
               {premiumListings.map((listing) => {
                 const cat = CATEGORIES.find(c => c.id === (listing.locationCategoryId || listing.categoryId));
                 return (
                   <Link key={listing.id} href={`/listing/${listing.id}`}>
-                    <Card className="group overflow-hidden border-none shadow-2xl hover:shadow-primary/20 transition-all duration-700 rounded-[3rem] bg-white h-full flex flex-col">
-                      <div className="relative h-[400px] overflow-hidden">
+                    <Card className="group overflow-hidden border-none shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] hover:shadow-primary/20 transition-all duration-700 rounded-[3.5rem] bg-white h-full flex flex-col">
+                      <div className="relative h-[450px] overflow-hidden">
                         <Image 
                           src={listing.photoUrls?.[0] || 'https://picsum.photos/seed/placeholder/800/1000'} 
                           alt={listing.name} 
                           fill 
                           className="object-cover transition-transform duration-1000 group-hover:scale-110" 
                         />
-                        <Badge className="absolute top-8 left-8 bg-white/95 text-primary border-none shadow-2xl backdrop-blur font-black px-6 py-2.5 rounded-2xl text-[10px] tracking-widest uppercase">
+                        <Badge className="absolute top-10 left-10 bg-white/95 text-primary border-none shadow-2xl backdrop-blur font-black px-8 py-3 rounded-2xl text-[11px] tracking-widest uppercase">
                           {cat?.name}
                         </Badge>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
-                      <CardContent className="p-10 flex-1 flex flex-col space-y-4">
-                        <h3 className="text-4xl font-black leading-none tracking-tighter group-hover:text-primary transition-colors">
+                      <CardContent className="p-12 flex-1 flex flex-col space-y-6">
+                        <h3 className="text-5xl font-black leading-none tracking-tighter group-hover:text-primary transition-colors">
                           {listing.name}
                         </h3>
-                        <div className="flex items-center text-muted-foreground text-base font-bold italic">
-                          <MapPin className="size-5 mr-2 text-secondary" /> {listing.city}
+                        <div className="flex items-center text-muted-foreground text-lg font-bold italic">
+                          <MapPin className="size-6 mr-3 text-secondary" /> {listing.city}
                         </div>
                       </CardContent>
                     </Card>
@@ -250,40 +256,40 @@ export default function Home() {
               })}
             </div>
           ) : (
-            <div className="text-center py-32 border-4 border-dashed rounded-[4rem] border-muted">
-              <p className="text-2xl text-muted-foreground font-body italic">Trenutno nema izdvojenih partnera.</p>
+            <div className="text-center py-32 border-8 border-dashed rounded-[5rem] border-muted bg-muted/5">
+              <p className="text-3xl text-muted-foreground font-body italic">Trenutno nema izdvojenih partnera.</p>
             </div>
           )}
         </section>
 
         {/* PUBLIC GEMS SECTION */}
-        <section className="py-32 bg-secondary/5">
+        <section className="py-32 bg-foreground text-white">
           <div className="container mx-auto px-6">
-            <div className="flex flex-col items-center text-center mb-20 space-y-6">
-              <Badge variant="outline" className="border-secondary text-secondary font-black px-6 py-2 rounded-full text-[10px] tracking-[0.3em] uppercase">
+            <div className="flex flex-col items-center text-center mb-24 space-y-8">
+              <Badge variant="outline" className="border-primary text-primary font-black px-8 py-3 rounded-full text-[12px] tracking-[0.4em] uppercase">
                 Javni Dragulji
               </Badge>
-              <h2 className="text-6xl md:text-7xl font-headline font-black tracking-tight italic">
+              <h2 className="text-6xl md:text-[8rem] font-headline font-black tracking-tighter italic leading-none">
                 Otkrijte skrivenu Hrvatsku
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
               {CITIES.slice(0, 4).map((city) => (
                 <Link key={city.slug} href={`/cities/${city.slug}`}>
-                  <div className="relative h-[500px] rounded-[3rem] overflow-hidden group cursor-pointer shadow-2xl">
+                  <div className="relative h-[550px] rounded-[3.5rem] overflow-hidden group cursor-pointer shadow-2xl">
                     <Image 
                       src={city.image} 
                       alt={city.name} 
                       fill 
-                      className="object-cover transition-transform duration-1000 group-hover:scale-110 grayscale-[0.5] group-hover:grayscale-0" 
+                      className="object-cover transition-transform duration-1000 group-hover:scale-110 grayscale-[0.3] group-hover:grayscale-0" 
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                    <div className="absolute inset-0 p-10 flex flex-col justify-end text-white">
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-2">{city.region}</p>
-                      <h4 className="text-4xl font-black italic tracking-tighter mb-4">{city.name}</h4>
-                      <Button variant="outline" className="w-fit rounded-xl border-white/20 text-white hover:bg-white hover:text-black font-black text-[10px] uppercase">
-                        Vodič kroz grad
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
+                    <div className="absolute inset-0 p-12 flex flex-col justify-end text-white">
+                      <p className="text-[12px] font-black uppercase tracking-[0.4em] text-primary mb-3">{city.region}</p>
+                      <h4 className="text-5xl font-black italic tracking-tighter mb-6">{city.name}</h4>
+                      <Button variant="outline" className="w-full h-14 rounded-2xl border-white/30 text-white hover:bg-white hover:text-black font-black text-xs uppercase tracking-widest">
+                        VODIČ KROZ GRAD
                       </Button>
                     </div>
                   </div>
@@ -295,16 +301,25 @@ export default function Home() {
 
         {/* SUBMIT CTA SECTION */}
         <section className="py-32 container mx-auto px-6">
-          <div className="bg-foreground text-white rounded-[4rem] p-12 md:p-24 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-12 shadow-2xl">
-            <div className="relative z-10 max-w-2xl space-y-8">
-              <h2 className="text-5xl md:text-7xl font-headline font-black leading-[0.9] italic">
+          <div className="bg-primary text-white rounded-[5rem] p-16 md:p-32 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-16 shadow-[0_50px_100px_-30px_rgba(255,49,49,0.4)]">
+            <Sparkles className="absolute -top-20 -left-20 size-96 text-white/10 rotate-12" />
+            <div className="relative z-10 max-w-3xl space-y-10">
+              <h2 className="text-6xl md:text-[7rem] font-headline font-black leading-[0.8] italic tracking-tighter">
                 Vlasnik ste objekta?<br/>Postanite dio elite.
               </h2>
+              <p className="text-2xl font-body italic text-white/80 max-w-xl">
+                Pridružite se najbrže rastućem turističkom portalu u regiji i osigurajte svoje mjesto na karti.
+              </p>
               <Link href="/submit">
-                <Button className="h-16 px-10 bg-primary text-white font-black rounded-2xl text-lg uppercase tracking-widest shadow-2xl">
+                <Button className="h-24 px-16 bg-white text-primary hover:bg-black hover:text-white font-black rounded-3xl text-2xl uppercase tracking-widest shadow-2xl transition-all">
                   PRIJAVI SVOJ POSAO
                 </Button>
               </Link>
+            </div>
+            <div className="hidden lg:block relative z-10">
+               <div className="size-80 rounded-[4rem] border-[12px] border-white/20 flex items-center justify-center rotate-6 overflow-hidden">
+                  <Image src="https://picsum.photos/seed/partner-qr/400/400" alt="QR" width={320} height={320} className="opacity-40 grayscale invert" />
+               </div>
             </div>
           </div>
         </section>
@@ -312,19 +327,32 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-foreground text-white py-32 border-t border-white/5">
-        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-20">
-          <div className="md:col-span-5 space-y-10">
+        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-24">
+          <div className="md:col-span-5 space-y-12">
+            <Logo className="h-16 w-auto" />
             <p className="text-white/40 font-body text-2xl leading-relaxed italic pr-20">
-              {t.footerDesc} Otkrivamo najbolje od Jadrana onima koji traže savršenstvo.
+              {t.footerDesc} Otkrivamo najbolje od Jadrana onima koji traže savršenstvo u svakom detalju putovanja.
             </p>
           </div>
-          <div className="md:col-span-2">
-            <h4 className="font-black mb-10 text-xs uppercase tracking-[0.3em] text-primary">{t.navExplore}</h4>
-            <ul className="space-y-6 text-white/50 font-bold text-sm uppercase tracking-widest">
-              <li><Link href="/explore" className="hover:text-white transition-all">Interaktivna Karta</Link></li>
-              <li><Link href="/blog" className="hover:text-white transition-all">{t.navBlog}</Link></li>
-              <li><Link href="/submit" className="hover:text-white transition-all">Prijavi objekt</Link></li>
+          <div className="md:col-span-3">
+            <h4 className="font-black mb-12 text-sm uppercase tracking-[0.4em] text-primary">{t.navExplore}</h4>
+            <ul className="space-y-8 text-white/50 font-bold text-base uppercase tracking-[0.2em]">
+              <li><Link href="/explore" className="hover:text-primary transition-all">Interaktivna Karta</Link></li>
+              <li><Link href="/blog" className="hover:text-primary transition-all">{t.navBlog}</Link></li>
+              <li><Link href="/submit" className="hover:text-primary transition-all">Prijavi objekt</Link></li>
+              <li><Link href="/dashboard" className="hover:text-primary transition-all">Moj Dashboard</Link></li>
             </ul>
+          </div>
+          <div className="md:col-span-4">
+            <h4 className="font-black mb-12 text-sm uppercase tracking-[0.4em] text-primary">Pratite Nas</h4>
+            <div className="flex gap-6 mb-12">
+               {[1,2,3,4].map(i => (
+                 <div key={i} className="size-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-primary transition-colors cursor-pointer">
+                    <div className="size-6 bg-white/20 rounded-sm" />
+                 </div>
+               ))}
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">&copy; 2024 CroatiaBest Luxury Guide</p>
           </div>
         </div>
       </footer>
