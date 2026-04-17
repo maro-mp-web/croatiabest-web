@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Search, Layers, List, Navigation2, Info, Loader2 } from 'lucide-react';
+import { MapPin, Search, Layers, List, Navigation2, Info, Loader2, Navigation as NavigationIcon, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -45,6 +45,11 @@ export default function ExplorePage() {
   }) || [];
 
   const selectedListing = filteredListings.find(l => l.id === selectedListingId);
+
+  // Funkcija za generiranje linka za Google Maps navigaciju
+  const getDirectionsUrl = (lat: number, lng: number) => {
+    return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  };
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -122,12 +127,6 @@ export default function ExplorePage() {
                 </TabsList>
               </Tabs>
             </div>
-
-            <div className="flex gap-2 pointer-events-auto">
-              <Button variant="secondary" className="bg-white/80 backdrop-blur-md shadow-xl border rounded-xl h-10 px-4 font-bold">
-                <Layers className="size-4 mr-2" /> Slojevi
-              </Button>
-            </div>
           </div>
 
           {isLoading ? (
@@ -140,7 +139,7 @@ export default function ExplorePage() {
                 <Map
                   defaultCenter={MAP_CENTER}
                   defaultZoom={7}
-                  mapId="da6f9479e0000000" // Primjer Map ID-a za Advanced Markers
+                  mapId="da6f9479e0000000"
                   disableDefaultUI={true}
                   gestureHandling={'greedy'}
                   className="w-full h-full"
@@ -169,12 +168,32 @@ export default function ExplorePage() {
                       position={{ lat: selectedListing.latitude, lng: selectedListing.longitude }}
                       onCloseClick={() => setSelectedListingId(null)}
                     >
-                      <div className="p-2 max-w-[200px]">
-                        <h4 className="font-bold text-sm mb-1">{selectedListing.name || selectedListing.objectName}</h4>
-                        <p className="text-xs text-muted-foreground mb-2">{selectedListing.address}</p>
-                        <Link href={`/listing/${selectedListing.id}`}>
-                          <Button size="sm" className="w-full h-8 text-[10px] font-bold rounded-lg">POGLEDAJ VIŠE</Button>
-                        </Link>
+                      <div className="p-3 max-w-[240px] space-y-3">
+                        <div className="space-y-1">
+                          <h4 className="font-black text-base leading-tight">{selectedListing.name || selectedListing.objectName}</h4>
+                          <p className="text-xs text-muted-foreground italic line-clamp-2">{selectedListing.description}</p>
+                          <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-1">
+                            <MapPin className="size-3" /> {selectedListing.address}
+                          </p>
+                        </div>
+                        
+                        <div className="flex flex-col gap-2">
+                          <Link href={`/listing/${selectedListing.id}`} className="w-full">
+                            <Button size="sm" className="w-full h-9 text-[10px] font-black rounded-lg bg-primary">
+                              <ExternalLink className="size-3 mr-2" /> DETALJI OBJEKTA
+                            </Button>
+                          </Link>
+                          <a 
+                            href={getDirectionsUrl(selectedListing.latitude, selectedListing.longitude)} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="w-full"
+                          >
+                            <Button size="sm" variant="outline" className="w-full h-9 text-[10px] font-black rounded-lg border-secondary text-secondary hover:bg-secondary/5">
+                              <NavigationIcon className="size-3 mr-2" /> UPUTE ZA VOŽNJU
+                            </Button>
+                          </a>
+                        </div>
                       </div>
                     </InfoWindow>
                   )}
@@ -185,34 +204,33 @@ export default function ExplorePage() {
               {viewMode === 'list' && (
                 <ScrollArea className="absolute inset-0 z-20 bg-background/50 backdrop-blur-sm p-8">
                   <div className="container mx-auto max-w-6xl">
-                    {filteredListings.length === 0 ? (
-                      <div className="h-96 flex items-center justify-center text-muted-foreground italic border-2 border-dashed rounded-[3rem]">
-                        Nema rezultata za odabranu pretragu.
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredListings.map((listing) => {
-                          const cat = CATEGORIES.find(c => c.id === listing.locationCategoryId);
-                          return (
-                            <Link key={listing.id} href={`/listing/${listing.id}`}>
-                              <Card className="overflow-hidden group hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] border-none shadow-xl bg-white/80 h-full flex flex-col">
-                                <div className="relative h-56">
-                                  <Image src={listing.photoUrls?.[0] || 'https://picsum.photos/seed/placeholder/800/600'} alt={listing.name || listing.objectName} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
-                                  <Badge className="absolute top-4 left-4 bg-white/95 text-primary border-none shadow-lg font-black">{cat?.name}</Badge>
-                                </div>
-                                <CardContent className="p-6 flex-1 flex flex-col">
-                                  <h4 className="text-xl font-black mb-2 leading-tight">{listing.name || listing.objectName}</h4>
-                                  <p className="text-sm text-muted-foreground flex items-center mb-6 font-medium">
-                                    <MapPin className="size-4 mr-2 text-secondary" /> {listing.address}, {listing.city}
-                                  </p>
-                                  <Button className="w-full mt-auto rounded-xl h-12 font-bold bg-foreground hover:bg-primary transition-colors">Pogledaj detalje</Button>
-                                </CardContent>
-                              </Card>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {filteredListings.map((listing) => {
+                        const cat = CATEGORIES.find(c => c.id === listing.locationCategoryId);
+                        return (
+                          <Link key={listing.id} href={`/listing/${listing.id}`}>
+                            <Card className="overflow-hidden group hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] border-none shadow-xl bg-white/80 h-full flex flex-col">
+                              <div className="relative h-56">
+                                <Image 
+                                  src={listing.photoUrls?.[0] || 'https://picsum.photos/seed/placeholder/800/600'} 
+                                  alt={listing.name || listing.objectName} 
+                                  fill 
+                                  className="object-cover group-hover:scale-110 transition-transform duration-700" 
+                                />
+                                <Badge className="absolute top-4 left-4 bg-white/95 text-primary border-none shadow-lg font-black">{cat?.name}</Badge>
+                              </div>
+                              <CardContent className="p-6 flex-1 flex flex-col">
+                                <h4 className="text-xl font-black mb-2 leading-tight">{listing.name || listing.objectName}</h4>
+                                <p className="text-sm text-muted-foreground flex items-center mb-6 font-medium">
+                                  <MapPin className="size-4 mr-2 text-secondary" /> {listing.address}, {listing.city}
+                                </p>
+                                <Button className="w-full mt-auto rounded-xl h-12 font-bold bg-foreground hover:bg-primary transition-colors">Pogledaj detalje</Button>
+                              </CardContent>
+                            </Card>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
                 </ScrollArea>
               )}
