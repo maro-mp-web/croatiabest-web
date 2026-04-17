@@ -10,7 +10,7 @@ export interface Category {
   icon: string;
 }
 
-export interface City {
+export interface Location {
   slug: string;
   name: string;
   description: string;
@@ -19,7 +19,7 @@ export interface City {
   population: string;
 }
 
-export const CITIES: City[] = [
+export const CITIES: Location[] = [
   { 
     slug: 'zagreb', 
     name: 'Zagreb', 
@@ -86,6 +86,65 @@ export const CITIES: City[] = [
   },
 ];
 
+export const ISLANDS: Location[] = [
+  { 
+    slug: 'hvar', 
+    name: 'Hvar', 
+    region: 'Dalmacija',
+    population: '11,077',
+    image: 'https://picsum.photos/seed/hvar1/1200/800',
+    description: 'Najsunčaniji hrvatski otok, poznat po poljima lavande, vrhunskim vinima i noćnom životu.' 
+  },
+  { 
+    slug: 'brac', 
+    name: 'Brač', 
+    region: 'Dalmacija',
+    population: '14,434',
+    image: 'https://picsum.photos/seed/brac1/1200/800',
+    description: 'Dom čuvene plaže Zlatni rat i bijelog kamena od kojeg je građena Bijela kuća.' 
+  },
+  { 
+    slug: 'korcula', 
+    name: 'Korčula', 
+    region: 'Južna Dalmacija',
+    population: '15,522',
+    image: 'https://picsum.photos/seed/korcula1/1200/800',
+    description: 'Srednjovjekovni utvrđeni grad, navodno rodno mjesto Marka Pola.' 
+  },
+  { 
+    slug: 'vis', 
+    name: 'Vis', 
+    region: 'Dalmacija',
+    population: '3,445',
+    image: 'https://picsum.photos/seed/vis1/1200/800',
+    description: 'Najudaljeniji naseljeni otok, poznat po netaknutoj prirodi i Modroj špilji.' 
+  },
+  { 
+    slug: 'krk', 
+    name: 'Krk', 
+    region: 'Kvarner',
+    population: '19,383',
+    image: 'https://picsum.photos/seed/krk1/1200/800',
+    description: 'Zlatni otok povezan mostom s kopnom, bogat poviješću i Bašćanskom pločom.' 
+  },
+  { 
+    slug: 'pag', 
+    name: 'Pag', 
+    region: 'Dalmacija/Lika',
+    population: '9,520',
+    image: 'https://picsum.photos/seed/pag1/1200/800',
+    description: 'Mjesec na Zemlji, poznat po čuvenom paškom siru, čipki i zabavi na Zrću.' 
+  },
+  { 
+    slug: 'losinj', 
+    name: 'Lošinj', 
+    region: 'Kvarner',
+    population: '8,116',
+    image: 'https://picsum.photos/seed/losinj1/1200/800',
+    description: 'Otok vitalnosti s dugom tradicijom lječilišnog turizma i mirisima ljekovitog bilja.' 
+  },
+];
+
 export const CATEGORIES: Category[] = [
   // BESPLATNE KATEGORIJE (FREE)
   { id: 'pharmacy', name: 'Dežurna ljekarna (24/7)', type: 'free', color: '#10B981', icon: 'PlusSquare' },
@@ -97,7 +156,7 @@ export const CATEGORIES: Category[] = [
   { id: 'parks', name: 'Javni parkovi', type: 'free', color: '#15803D', icon: 'Trees' },
 
   // PLAĆENE KATEGORIJE (PAY)
-  { id: 'restaurants', name: 'Restorani', type: 'paid', color: '#E11D48', price: '89€', icon: 'Utensils' },
-  { id: 'cafes', name: 'Kafići', type: 'paid', color: '#BE123C', price: '69€', icon: 'Coffee' },
-  { id: 'hotels', name: 'Hoteli', type: 'paid', color: '#4338CA', price: '390€', icon: 'Hotel' },
+  { id: 'restaurants', name: 'Restorani', type: 'paid', color: '#E11D48', icon: 'Utensils' },
+  { id: 'cafes', name: 'Kafići', type: 'paid', color: '#BE123C', icon: 'Coffee' },
+  { id: 'hotels', name: 'Hoteli', type: 'paid', color: '#4338CA', icon: 'Hotel' },
 ];

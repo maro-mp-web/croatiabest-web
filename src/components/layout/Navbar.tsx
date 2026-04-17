@@ -1,15 +1,16 @@
+
 "use client"
 
 import React from 'react';
 import Link from 'next/link';
-import { Map, Info, Search, Menu, User, BookOpen, Globe, ChevronDown, Building2, PlusCircle, LayoutDashboard } from 'lucide-react';
+import { Map, Info, Search, Menu, User, BookOpen, Globe, ChevronDown, Building2, PlusCircle, LayoutDashboard, Anchor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/brand/Logo';
-import { CITIES } from '@/app/lib/constants';
+import { CITIES, ISLANDS } from '@/app/lib/constants';
 import { useUser } from '@/firebase';
 
 export function Navbar() {
@@ -39,6 +40,23 @@ export function Navbar() {
                   <DropdownMenuItem key={city.slug} asChild>
                     <Link href={`/cities/${city.slug}`} className="w-full cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors">
                       {city.name}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider hover:text-primary transition-colors outline-none">
+                  <Anchor className="size-4" /> {t.navIslands} <ChevronDown className="size-3" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 rounded-xl p-2 grid grid-cols-1 gap-1">
+                {ISLANDS.map((island) => (
+                  <DropdownMenuItem key={island.slug} asChild>
+                    <Link href={`/islands/${island.slug}`} className="w-full cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors">
+                      {island.name}
                     </Link>
                   </DropdownMenuItem>
                 ))}
@@ -113,6 +131,14 @@ export function Navbar() {
                     <div className="grid grid-cols-2 gap-2">
                       {CITIES.map(city => (
                         <Link key={city.slug} href={`/cities/${city.slug}`} className="text-sm font-bold hover:text-primary transition-colors">{city.name}</Link>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="border-t pt-4 pb-2">
+                    <p className="text-xs font-bold text-muted-foreground mb-4 tracking-widest uppercase">{t.navIslands}</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {ISLANDS.map(island => (
+                        <Link key={island.slug} href={`/islands/${island.slug}`} className="text-sm font-bold hover:text-primary transition-colors">{island.name}</Link>
                       ))}
                     </div>
                   </div>
