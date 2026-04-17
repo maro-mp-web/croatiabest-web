@@ -139,7 +139,6 @@ export default function ExplorePage() {
                 <Map
                   defaultCenter={MAP_CENTER}
                   defaultZoom={7}
-                  mapId="da6f9479e0000000"
                   disableDefaultUI={true}
                   gestureHandling={'greedy'}
                   className="w-full h-full"
