@@ -323,6 +323,8 @@ export const CATEGORIES: Category[] = [
   { id: 'beaches', name: 'Plaže', type: 'free', color: '#FCD34D', icon: 'Umbrella' },
   { id: 'wineries', name: 'Vinarije (Domaće)', type: 'free', color: '#7C3AED', icon: 'GlassWater' },
   { id: 'opgs', name: 'OPG - Lokalni proizvodi', type: 'free', color: '#059669', icon: 'Leaf' },
+  { id: 'viewpoints', name: 'Vidikovci', type: 'free', color: '#8B5CF6', icon: 'Binoculars' },
+  { id: 'landmarks', name: 'Povijesne znamenitosti', type: 'free', color: '#B45309', icon: 'Landmark' },
   { id: 'restaurants', name: 'Restorani', type: 'paid', color: '#E11D48', icon: 'Utensils', price: '99€' },
   { id: 'hotels', name: 'Hoteli i Smještaj', type: 'paid', color: '#4338CA', icon: 'Hotel', price: '149€' },
 ];

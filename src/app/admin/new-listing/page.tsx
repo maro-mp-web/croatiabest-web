@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
-import { CATEGORIES, CITIES } from '@/app/lib/constants';
+import { CATEGORIES, CITIES, ISLANDS } from '@/app/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,7 +27,8 @@ import {
   ShieldCheck,
   Loader2,
   Sparkles,
-  Compass
+  Compass,
+  ShoppingBag
 } from 'lucide-react';
 import { useFirestore, useUser } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -49,24 +50,26 @@ export default function AdminNewListingPage() {
     name: '',
     locationCategoryId: '',
     address: '',
-    city: '',
+    city: '', // This can be a City or an Island name
+    region: '',
     latitude: '',
     longitude: '',
     description: '',
     contactPhone: '',
     contactEmail: '',
     webAddress: '',
-    facebookLink: '',
-    instagramLink: '',
-    youtubeLink: '',
-    tiktokLink: '',
-    videoEmbedUrls: [''],
     photoUrls: [] as string[],
-    menuDescription: '',
-    roomCount: '',
-    bedCount: '',
+    products: [] as {name: string, price: string}[],
     status: 'active'
   });
+
+  const [newProduct, setNewProduct] = useState({ name: '', price: '' });
+
+  const addProduct = () => {
+    if (!newProduct.name || !newProduct.price) return;
+    setFormData(prev => ({ ...prev, products: [...prev.products, newProduct] }));
+    setNewProduct({ name: '', price: '' });
+  };
 
   const handleImageUploaded = (url: string) => {
     setFormData(prev => ({
@@ -86,7 +89,7 @@ export default function AdminNewListingPage() {
       const result = await aiContentAssistant({
         contentType: 'listing',
         category: category?.name,
-        promptInstruction: `Napiši luksuzan i privlačan opis za objekt "${formData.name}" u gradu ${formData.city}.`
+        promptInstruction: `Napiši luksuzan i privlačan opis za objekt "${formData.name}" u gradu/na otoku ${formData.city}.`
       });
       setFormData({ ...formData, description: result.generatedContent });
     } catch (error) {
@@ -99,19 +102,22 @@ export default function AdminNewListingPage() {
   const handleSave = async () => {
     if (!firestore || !user) return;
     if (!formData.name || !formData.locationCategoryId || !formData.city) {
-      toast({ title: "Obavezna polja", description: "Naziv, kategorija i grad su obavezni.", variant: "destructive" });
+      toast({ title: "Obavezna polja", description: "Naziv, kategorija i lokacija su obavezni.", variant: "destructive" });
       return;
     }
 
     setIsSaving(true);
     const selectedCategory = CATEGORIES.find(c => c.id === formData.locationCategoryId);
     
+    // Auto-determine region if it's a known city or island
+    const knownLoc = [...CITIES, ...ISLANDS].find(l => l.name === formData.city);
+    const region = knownLoc?.region || formData.region;
+
     const listingData = {
       ...formData,
-      latitude: parseFloat(formData.latitude) || 45.8150,
-      longitude: parseFloat(formData.longitude) || 15.9819,
-      roomCount: parseInt(formData.roomCount) || 0,
-      bedCount: parseInt(formData.bedCount) || 0,
+      region,
+      latitude: parseFloat(formData.latitude) || (knownLoc?.lat || 45.8150),
+      longitude: parseFloat(formData.longitude) || (knownLoc?.lng || 15.9819),
       locationCategoryType: selectedCategory?.type === 'paid' ? 'Paid' : 'Free',
       paymentStatus: selectedCategory?.type === 'paid' ? 'paid' : 'not_applicable',
       createdAt: new Date().toISOString(),
@@ -137,6 +143,8 @@ export default function AdminNewListingPage() {
 
   if (isUserLoading) return <div className="p-20 text-center">Učitavanje...</div>;
   if (!isAdmin) return <div className="p-20 text-center font-black">PRISTUP ODBIJEN</div>;
+
+  const allLocations = [...CITIES, ...ISLANDS].sort((a,b) => a.name.localeCompare(b.name));
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -190,6 +198,27 @@ export default function AdminNewListingPage() {
             </Card>
 
             <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none">
+              <CardHeader className="bg-secondary/5 border-b"><CardTitle>Ponuda & Proizvodi</CardTitle></CardHeader>
+              <CardContent className="p-8 space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <Input placeholder="Naziv proizvoda" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="rounded-xl" />
+                  <div className="flex gap-2">
+                    <Input placeholder="Cijena (npr. 15€)" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} className="rounded-xl" />
+                    <Button onClick={addProduct} variant="secondary" className="rounded-xl"><ShoppingBag className="size-4" /></Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {formData.products.map((p, i) => (
+                    <div key={i} className="flex justify-between p-3 bg-muted/30 rounded-lg text-sm font-medium">
+                      <span>{p.name}</span>
+                      <span className="text-primary font-black">{p.price}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none">
               <CardHeader className="bg-secondary/5 border-b"><CardTitle>Učitavanje fotografija</CardTitle></CardHeader>
               <CardContent className="p-8 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -211,13 +240,13 @@ export default function AdminNewListingPage() {
               <CardHeader className="bg-secondary/5 border-b"><CardTitle>Lokacija</CardTitle></CardHeader>
               <CardContent className="p-6 space-y-4">
                 <Select onValueChange={v => setFormData({...formData, city: v})} value={formData.city}>
-                  <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Grad" /></SelectTrigger>
-                  <SelectContent>{CITIES.map(c => <SelectItem key={c.slug} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
+                  <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Grad ili Otok" /></SelectTrigger>
+                  <SelectContent>{allLocations.map(l => <SelectItem key={l.slug} value={l.name}>{l.name}</SelectItem>)}</SelectContent>
                 </Select>
                 <Input placeholder="Adresa" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="rounded-xl" />
                 <div className="grid grid-cols-2 gap-2">
-                  <Input placeholder="Lat" type="number" value={formData.latitude} onChange={e => setFormData({...formData, latitude: e.target.value})} className="rounded-xl" />
-                  <Input placeholder="Lng" type="number" value={formData.longitude} onChange={e => setFormData({...formData, longitude: e.target.value})} className="rounded-xl" />
+                  <Input placeholder="Lat (Opcionalno)" type="number" value={formData.latitude} onChange={e => setFormData({...formData, latitude: e.target.value})} className="rounded-xl" />
+                  <Input placeholder="Lng (Opcionalno)" type="number" value={formData.longitude} onChange={e => setFormData({...formData, longitude: e.target.value})} className="rounded-xl" />
                 </div>
               </CardContent>
             </Card>
@@ -226,8 +255,8 @@ export default function AdminNewListingPage() {
               <CardHeader className="bg-secondary/5 border-b"><CardTitle>Kontakt</CardTitle></CardHeader>
               <CardContent className="p-6 space-y-4">
                 <Input placeholder="Telefon" value={formData.contactPhone} onChange={e => setFormData({...formData, contactPhone: e.target.value})} className="rounded-xl" />
-                <Input placeholder="Email" value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} className="rounded-xl" />
-                <Input placeholder="Web" value={formData.webAddress} onChange={e => setFormData({...formData, webAddress: e.target.value})} className="rounded-xl" />
+                <Input placeholder="Email (Neće biti javan)" value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} className="rounded-xl" />
+                <Input placeholder="Web stranica" value={formData.webAddress} onChange={e => setFormData({...formData, webAddress: e.target.value})} className="rounded-xl" />
               </CardContent>
             </Card>
           </div>
