@@ -108,6 +108,14 @@ export default function IslandPage() {
                   </div>
                   
                   <div className="w-full md:w-72 space-y-8 bg-foreground/5 rounded-3xl p-8 border border-black/5 h-fit">
+                    {wikiData.thumbnail && (
+                      <div className="relative aspect-square rounded-2xl overflow-hidden mb-8 shadow-inner border border-black/5 bg-white p-4">
+                        <p className="text-[10px] font-black text-center text-muted-foreground uppercase mb-2">Simbol otoka</p>
+                        <div className="relative h-full w-full">
+                          <Image src={wikiData.thumbnail} alt={`Logo otoka ${island.name}`} fill className="object-contain" />
+                        </div>
+                      </div>
+                    )}
                     <h3 className="text-sm font-black uppercase tracking-widest text-secondary mb-6">Otočni podaci</h3>
                     <div className="space-y-6">
                       <div className="flex items-center gap-4">
@@ -132,11 +140,6 @@ export default function IslandPage() {
                         </div>
                       </div>
                     </div>
-                    {wikiData.thumbnail && (
-                      <div className="relative aspect-square rounded-2xl overflow-hidden mt-8 shadow-inner border border-black/5">
-                        <Image src={wikiData.thumbnail} alt={`Vizura otoka ${island.name}`} fill className="object-cover" />
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>

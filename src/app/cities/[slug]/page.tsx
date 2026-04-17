@@ -64,7 +64,7 @@ export default function CityPage() {
           </div>
         </section>
 
-        <div className="container mx-auto px-6 -mt-20 relative z-20">
+        <div className="container mx-auto px-6 -mt-16 relative z-20">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             <div className="lg:col-span-8 space-y-12">
               <Card className="rounded-[3rem] shadow-2xl border-none overflow-hidden bg-white/95 backdrop-blur-3xl p-10 md:p-16">
@@ -76,6 +76,14 @@ export default function CityPage() {
                     </div>
                   </div>
                   <div className="w-full md:w-80 space-y-6 bg-secondary/5 rounded-3xl p-8 border border-black/5">
+                    {wikiData.thumbnail && (
+                      <div className="relative aspect-square rounded-2xl overflow-hidden mb-8 shadow-inner border border-black/5 bg-white p-4">
+                         <p className="text-[10px] font-black text-center text-muted-foreground uppercase mb-2">Simbol grada</p>
+                        <div className="relative h-full w-full">
+                          <Image src={wikiData.thumbnail} alt={`Logo grada ${city.name}`} fill className="object-contain" />
+                        </div>
+                      </div>
+                    )}
                     <h3 className="text-xs font-black uppercase tracking-widest text-primary border-b pb-4">Info Karton</h3>
                     {[
                       { icon: <Users className="size-4" />, label: 'Stanovnika', value: city.population },
