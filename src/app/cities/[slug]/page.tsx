@@ -24,16 +24,18 @@ export default function CityPage() {
 
   useEffect(() => {
     if (city) {
-      // Postavljanje naslova stranice za SEO
       document.title = `${city.name} - Vodič i informacije | CroatiaBest`;
       
-      fetch(`https://hr.wikipedia.org/api/rest_v1/page/summary/${city.name}`)
+      const encodedCity = encodeURIComponent(city.name);
+      fetch(`https://hr.wikipedia.org/api/rest_v1/page/summary/${encodedCity}`)
         .then(res => res.json())
         .then(data => {
-          if (data.extract) setWikiData({
-            extract: data.extract,
-            thumbnail: data.thumbnail?.source
-          });
+          if (data && data.extract) {
+            setWikiData({
+              extract: data.extract,
+              thumbnail: data.thumbnail?.source
+            });
+          }
         })
         .catch(err => console.error('Wiki error', err));
     }
@@ -70,7 +72,6 @@ export default function CityPage() {
       <Navbar />
       
       <main className="flex-1 pb-24">
-        {/* City Hero */}
         <section className="relative h-[65vh] w-full overflow-hidden">
           <Image 
             src={city.image} 
@@ -92,8 +93,6 @@ export default function CityPage() {
 
         <div className="container mx-auto px-6 -mt-32 relative z-20 space-y-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            
-            {/* Main Info - 8 columns */}
             <div className="lg:col-span-8 space-y-16">
               <div className="bg-white/90 backdrop-blur-3xl border border-white/60 shadow-2xl rounded-[3.5rem] p-10 md:p-16 overflow-hidden">
                 <div className="flex flex-col md:flex-row gap-12">
@@ -109,7 +108,6 @@ export default function CityPage() {
                     </div>
                   </div>
                   
-                  {/* Facts Box */}
                   <div className="w-full md:w-72 space-y-8 bg-secondary/5 rounded-3xl p-8 border border-black/5">
                     <h3 className="text-sm font-black uppercase tracking-widest text-primary mb-6">Info iskaznica</h3>
                     <div className="space-y-6">
@@ -144,7 +142,6 @@ export default function CityPage() {
                 </div>
               </div>
 
-              {/* Emergency Services Section */}
               <div className="space-y-10">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <h3 className="text-4xl font-headline font-black flex items-center gap-4">
@@ -177,7 +174,7 @@ export default function CityPage() {
                               <p className="font-black text-xl leading-tight mb-1">{service.name}</p>
                               <p className="text-sm text-muted-foreground mb-4 font-medium">{service.address}</p>
                               <a href={`tel:${service.contactPhone || service.phone}`} className="inline-flex items-center gap-2 text-primary font-black text-sm hover:underline tracking-widest bg-primary/5 px-4 py-2 rounded-xl transition-colors hover:bg-primary hover:text-white">
-                                <Phone className="size-3" /> {service.contactPhone || service.phone}
+                                <PhoneIcon className="size-3" /> {service.contactPhone || service.phone}
                               </a>
                             </div>
                           </CardContent>
@@ -194,7 +191,6 @@ export default function CityPage() {
               </div>
             </div>
 
-            {/* Sidebar - 4 columns */}
             <aside className="lg:col-span-4 space-y-8">
               <div className="bg-primary p-12 rounded-[3.5rem] text-white shadow-2xl shadow-primary/30 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 size-48 bg-white/10 rounded-full -mr-24 -mt-24 transition-transform group-hover:scale-150 duration-700"></div>
@@ -219,7 +215,6 @@ export default function CityPage() {
                 </Link>
               </div>
             </aside>
-
           </div>
         </div>
       </main>
@@ -234,7 +229,7 @@ export default function CityPage() {
   );
 }
 
-function Phone({ className }: { className?: string }) {
+function PhoneIcon({ className }: { className?: string }) {
   return (
     <svg 
       xmlns="http://www.w3.org/2000/svg" 

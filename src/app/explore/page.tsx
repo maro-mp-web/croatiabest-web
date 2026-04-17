@@ -10,14 +10,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Search, Layers, List, Navigation2, Info, Loader2, Navigation as NavigationIcon, ExternalLink } from 'lucide-react';
+import { MapPin, Search, List, Navigation2, Info, Loader2, Navigation as NavigationIcon, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow } from '@vis.gl/react-google-maps';
 
-const MAP_CENTER = { lat: 44.5, lng: 16.5 }; // Sredina Hrvatske
+const MAP_CENTER = { lat: 44.5, lng: 16.5 };
 
 export default function ExplorePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export default function ExplorePage() {
 
   const { data: listings, isLoading } = useCollection(listingsQuery);
 
-  const filteredListings = listings?.filter(l => {
+  const filteredListings = (listings || []).filter(l => {
     const name = l.name || l.objectName || '';
     const address = l.address || '';
     const categoryId = l.locationCategoryId || '';
@@ -42,11 +42,10 @@ export default function ExplorePage() {
     const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           address.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
-  }) || [];
+  });
 
   const selectedListing = filteredListings.find(l => l.id === selectedListingId);
 
-  // Funkcija za generiranje linka za Google Maps navigaciju
   const getDirectionsUrl = (lat: number, lng: number) => {
     return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
   };
@@ -56,7 +55,6 @@ export default function ExplorePage() {
       <Navbar />
       
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar Filters */}
         <aside className="w-80 border-r bg-white hidden lg:flex flex-col">
           <div className="p-4 border-b space-y-4">
             <div className="relative">
@@ -111,9 +109,7 @@ export default function ExplorePage() {
           </ScrollArea>
         </aside>
 
-        {/* Main Content Area */}
         <main className="flex-1 relative flex flex-col">
-          {/* Header Controls */}
           <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-center pointer-events-none">
             <div className="flex gap-2 pointer-events-auto">
               <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border p-1">
@@ -144,7 +140,7 @@ export default function ExplorePage() {
                   className="w-full h-full"
                 >
                   {filteredListings.map((listing) => {
-                    if (!listing.latitude || !listing.longitude) return null;
+                    if (listing.latitude === undefined || listing.longitude === undefined) return null;
                     const cat = CATEGORIES.find(c => c.id === listing.locationCategoryId);
                     
                     return (
@@ -162,7 +158,7 @@ export default function ExplorePage() {
                     );
                   })}
 
-                  {selectedListing && (
+                  {selectedListing && selectedListing.latitude !== undefined && selectedListing.longitude !== undefined && (
                     <InfoWindow
                       position={{ lat: selectedListing.latitude, lng: selectedListing.longitude }}
                       onCloseClick={() => setSelectedListingId(null)}
@@ -199,7 +195,6 @@ export default function ExplorePage() {
                 </Map>
               </div>
 
-              {/* List View */}
               {viewMode === 'list' && (
                 <ScrollArea className="absolute inset-0 z-20 bg-background/50 backdrop-blur-sm p-8">
                   <div className="container mx-auto max-w-6xl">
@@ -236,7 +231,6 @@ export default function ExplorePage() {
             </APIProvider>
           )}
 
-          {/* Quick Info Bar */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 pointer-events-auto">
             <div className="bg-white/90 backdrop-blur p-1 rounded-full shadow-2xl border border-black/5 flex items-center">
               <div className="flex -space-x-2 px-6 py-2 border-r mr-2">

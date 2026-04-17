@@ -26,13 +26,16 @@ export default function IslandPage() {
     if (island) {
       document.title = `Otok ${island.name} - Turistički vodič | CroatiaBest`;
       
-      fetch(`https://hr.wikipedia.org/api/rest_v1/page/summary/${island.name}`)
+      const encodedIsland = encodeURIComponent(island.name);
+      fetch(`https://hr.wikipedia.org/api/rest_v1/page/summary/${encodedIsland}`)
         .then(res => res.json())
         .then(data => {
-          if (data.extract) setWikiData({
-            extract: data.extract,
-            thumbnail: data.thumbnail?.source
-          });
+          if (data && data.extract) {
+            setWikiData({
+              extract: data.extract,
+              thumbnail: data.thumbnail?.source
+            });
+          }
         })
         .catch(err => console.error('Wiki error', err));
     }
@@ -69,7 +72,6 @@ export default function IslandPage() {
       <Navbar />
       
       <main className="flex-1 pb-24">
-        {/* Island Hero */}
         <section className="relative h-[65vh] w-full overflow-hidden">
           <Image 
             src={island.image} 
@@ -91,8 +93,6 @@ export default function IslandPage() {
 
         <div className="container mx-auto px-6 -mt-32 relative z-20 space-y-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            
-            {/* Main Info */}
             <div className="lg:col-span-8 space-y-16">
               <div className="bg-white/95 backdrop-blur-3xl border border-white/60 shadow-2xl rounded-[3.5rem] p-10 md:p-16 overflow-hidden">
                 <div className="flex flex-col md:flex-row gap-12">
@@ -106,7 +106,6 @@ export default function IslandPage() {
                     </div>
                   </div>
                   
-                  {/* Island Facts */}
                   <div className="w-full md:w-72 space-y-8 bg-foreground/5 rounded-3xl p-8 border border-black/5 h-fit">
                     <h3 className="text-sm font-black uppercase tracking-widest text-secondary mb-6">Otočni podaci</h3>
                     <div className="space-y-6">
@@ -141,7 +140,6 @@ export default function IslandPage() {
                 </div>
               </div>
 
-              {/* Emergency Services Section */}
               <div className="space-y-10">
                 <div className="flex items-center justify-between">
                   <h3 className="text-4xl font-headline font-black flex items-center gap-4 uppercase tracking-tighter">
@@ -187,7 +185,6 @@ export default function IslandPage() {
               </div>
             </div>
 
-            {/* Sidebar */}
             <aside className="lg:col-span-4 space-y-8">
               <div className="bg-foreground p-12 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 size-48 bg-primary/20 rounded-full -mr-24 -mt-24 transition-transform group-hover:scale-150 duration-700"></div>
@@ -212,7 +209,6 @@ export default function IslandPage() {
                 </Link>
               </div>
             </aside>
-
           </div>
         </div>
       </main>
