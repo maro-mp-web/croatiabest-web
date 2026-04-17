@@ -72,7 +72,7 @@ export default function IslandPage() {
       <Navbar />
       
       <main className="flex-1 pb-24">
-        <section className="relative h-[65vh] w-full overflow-hidden">
+        <section className="relative h-[75vh] w-full overflow-hidden">
           <Image 
             src={island.image} 
             alt={`Obala otoka ${island.name}`} 
@@ -81,7 +81,7 @@ export default function IslandPage() {
             priority 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/30" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-6">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-6 pb-20">
             <div className="size-16 rounded-full border border-white/40 flex items-center justify-center backdrop-blur-md mb-2">
               <Anchor className="text-white size-8" />
             </div>
@@ -91,7 +91,7 @@ export default function IslandPage() {
           </div>
         </section>
 
-        <div className="container mx-auto px-6 -mt-32 relative z-20 space-y-16">
+        <div className="container mx-auto px-6 -mt-20 relative z-20 space-y-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             <div className="lg:col-span-8 space-y-16">
               <div className="bg-white/95 backdrop-blur-3xl border border-white/60 shadow-2xl rounded-[3.5rem] p-10 md:p-16 overflow-hidden">

@@ -8,7 +8,7 @@ import { CITIES, CATEGORIES } from '@/app/lib/constants';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { MapPin, ArrowLeft, ShieldAlert, HeartPulse, Flame, Pill, Loader2, Users, Landmark, Compass, Info } from 'lucide-react';
+import { MapPin, ArrowLeft, ShieldAlert, HeartPulse, Flame, Pill, Loader2, Users, Landmark, Compass, Info, Phone as PhoneIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -72,7 +72,7 @@ export default function CityPage() {
       <Navbar />
       
       <main className="flex-1 pb-24">
-        <section className="relative h-[65vh] w-full overflow-hidden">
+        <section className="relative h-[75vh] w-full overflow-hidden">
           <Image 
             src={city.image} 
             alt={`Panorama grada ${city.name}`} 
@@ -81,7 +81,7 @@ export default function CityPage() {
             priority 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/20" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-4">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-4 pb-20">
             <Badge className="bg-primary/20 backdrop-blur-md text-white border-white/20 px-6 py-2 rounded-full font-black text-xs uppercase tracking-[0.3em]">
               {city.region}
             </Badge>
@@ -91,7 +91,7 @@ export default function CityPage() {
           </div>
         </section>
 
-        <div className="container mx-auto px-6 -mt-32 relative z-20 space-y-16">
+        <div className="container mx-auto px-6 -mt-20 relative z-20 space-y-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             <div className="lg:col-span-8 space-y-16">
               <div className="bg-white/90 backdrop-blur-3xl border border-white/60 shadow-2xl rounded-[3.5rem] p-10 md:p-16 overflow-hidden">
@@ -226,24 +226,5 @@ export default function CityPage() {
         </div>
       </footer>
     </div>
-  );
-}
-
-function PhoneIcon({ className }: { className?: string }) {
-  return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      className={className}
-    >
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-    </svg>
   );
 }
