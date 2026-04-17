@@ -15,14 +15,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
+import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow } from '@vis.gl/react-google-maps';
+
+const MAP_CENTER = { lat: 44.5, lng: 16.5 }; // Sredina Hrvatske
 
 export default function ExplorePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+  const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const firestore = useFirestore();
 
-  // Dohvaćanje svih aktivnih objekata iz baze
   const listingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'listings'), where('status', '==', 'active'));
@@ -40,6 +43,8 @@ export default function ExplorePage() {
                           address.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   }) || [];
+
+  const selectedListing = filteredListings.find(l => l.id === selectedListingId);
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -122,9 +127,6 @@ export default function ExplorePage() {
               <Button variant="secondary" className="bg-white/80 backdrop-blur-md shadow-xl border rounded-xl h-10 px-4 font-bold">
                 <Layers className="size-4 mr-2" /> Slojevi
               </Button>
-              <Button className="bg-primary text-white shadow-xl rounded-xl h-10 px-6 font-bold">
-                <MapPin className="size-4 mr-2" /> Moja Lokacija
-              </Button>
             </div>
           </div>
 
@@ -133,47 +135,50 @@ export default function ExplorePage() {
               <Loader2 className="size-12 animate-spin text-primary opacity-20" />
             </div>
           ) : (
-            <>
-              {/* Map Simulation */}
-              <div className={`flex-1 bg-[#E5E3DF] relative overflow-hidden transition-opacity duration-300 ${viewMode === 'map' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <Image 
-                  src="https://picsum.photos/seed/map-hr/1920/1080" 
-                  alt="Map Background" 
-                  fill 
-                  className="object-cover opacity-50 contrast-75 grayscale-[0.2]"
-                />
-                
-                {/* Real Markers from Firestore */}
-                {filteredListings.map((listing) => {
-                  const categoryId = listing.locationCategoryId || '';
-                  const category = CATEGORIES.find(c => c.id === categoryId);
-                  
-                  // Koristimo stvarne koordinate ako postoje, inače random za vizualni efekt karte
-                  const lat = listing.latitude ? ((listing.latitude - 42) * 20) % 100 : Math.random() * 60 + 20;
-                  const lng = listing.longitude ? ((listing.longitude - 13) * 15) % 100 : Math.random() * 60 + 20;
+            <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
+              <div className={`flex-1 relative transition-opacity duration-300 ${viewMode === 'map' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                <Map
+                  defaultCenter={MAP_CENTER}
+                  defaultZoom={7}
+                  mapId="da6f9479e0000000" // Primjer Map ID-a za Advanced Markers
+                  disableDefaultUI={true}
+                  gestureHandling={'greedy'}
+                  className="w-full h-full"
+                >
+                  {filteredListings.map((listing) => {
+                    if (!listing.latitude || !listing.longitude) return null;
+                    const cat = CATEGORIES.find(c => c.id === listing.locationCategoryId);
+                    
+                    return (
+                      <AdvancedMarker
+                        key={listing.id}
+                        position={{ lat: listing.latitude, lng: listing.longitude }}
+                        onClick={() => setSelectedListingId(listing.id)}
+                      >
+                        <Pin 
+                          background={cat?.color || '#333'} 
+                          glyphColor={'#fff'} 
+                          borderColor={'#fff'} 
+                        />
+                      </AdvancedMarker>
+                    );
+                  })}
 
-                  return (
-                    <div 
-                      key={listing.id}
-                      className="absolute cursor-pointer group animate-fade-in"
-                      style={{ top: `${lat}%`, left: `${lng}%` }}
+                  {selectedListing && (
+                    <InfoWindow
+                      position={{ lat: selectedListing.latitude, lng: selectedListing.longitude }}
+                      onCloseClick={() => setSelectedListingId(null)}
                     >
-                      <Link href={`/listing/${listing.id}`}>
-                        <div className="relative flex flex-col items-center">
-                          <div className="bg-white/95 backdrop-blur px-3 py-1.5 rounded-xl shadow-2xl text-[10px] font-black mb-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 whitespace-nowrap border border-black/5">
-                            {listing.name || listing.objectName}
-                          </div>
-                          <div 
-                            className="size-10 rounded-full border-4 border-white shadow-2xl flex items-center justify-center map-marker-glow transition-transform group-hover:scale-125"
-                            style={{ backgroundColor: category?.color || '#333' }}
-                          >
-                            <MapPin className="size-5 text-white fill-white/20" />
-                          </div>
-                        </div>
-                      </Link>
-                    </div>
-                  );
-                })}
+                      <div className="p-2 max-w-[200px]">
+                        <h4 className="font-bold text-sm mb-1">{selectedListing.name || selectedListing.objectName}</h4>
+                        <p className="text-xs text-muted-foreground mb-2">{selectedListing.address}</p>
+                        <Link href={`/listing/${selectedListing.id}`}>
+                          <Button size="sm" className="w-full h-8 text-[10px] font-bold rounded-lg">POGLEDAJ VIŠE</Button>
+                        </Link>
+                      </div>
+                    </InfoWindow>
+                  )}
+                </Map>
               </div>
 
               {/* List View */}
@@ -211,18 +216,18 @@ export default function ExplorePage() {
                   </div>
                 </ScrollArea>
               )}
-            </>
+            </APIProvider>
           )}
 
           {/* Quick Info Bar */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 pointer-events-auto">
             <div className="bg-white/90 backdrop-blur p-1 rounded-full shadow-2xl border border-black/5 flex items-center">
               <div className="flex -space-x-2 px-6 py-2 border-r mr-2">
                 <div className="size-6 rounded-full bg-[#E11D48] border-2 border-white shadow-sm" title="Restorani" />
                 <div className="size-6 rounded-full bg-[#4338CA] border-2 border-white shadow-sm" title="Hoteli" />
                 <div className="size-6 rounded-full bg-[#10B981] border-2 border-white shadow-sm" title="Usluge" />
                 <div className="px-4 text-[10px] font-black text-muted-foreground flex items-center uppercase tracking-tighter ml-4">
-                  {listings?.length || 0} lokacija uživo
+                  {filteredListings.length} lokacija na vidiku
                 </div>
               </div>
               <Button variant="ghost" size="sm" className="rounded-full px-6 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/5">
