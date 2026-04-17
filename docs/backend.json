@@ -41,23 +41,34 @@
         "locationCategoryType": { "type": "string", "enum": ["Free", "Paid"] },
         "status": { "type": "string", "enum": ["draft", "pending", "active", "rejected"] },
         "paymentStatus": { "type": "string", "enum": ["paid", "pending", "not_applicable"] },
+        "products": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "price": { "type": "string" }
+            }
+          }
+        },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "name", "address", "city", "ownerId", "status", "locationCategoryType"]
     },
-    "Subscription": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Subscription",
+    "Inquiry": {
+      "title": "Inquiry",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "listingId": { "type": "string" },
-        "listingOwnerId": { "type": "string" },
-        "amountEuro": { "type": "number" },
-        "status": { "type": "string", "enum": ["active", "expired", "pending"] }
-      },
-      "required": ["id", "listingId", "listingOwnerId", "amountEuro", "status"]
+        "listingName": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderEmail": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
     },
     "admin_role": {
       "title": "admin_role",
@@ -87,11 +98,11 @@
         }
       },
       {
-        "path": "/subscriptions/{subscriptionId}",
+        "path": "/inquiries/{inquiryId}",
         "definition": {
-          "entityName": "Subscription",
-          "schema": { "$ref": "#/backend/entities/Subscription" },
-          "description": "Payment records for listings."
+          "entityName": "Inquiry",
+          "schema": { "$ref": "#/backend/entities/Inquiry" },
+          "description": "Messages from visitors to owners."
         }
       },
       {

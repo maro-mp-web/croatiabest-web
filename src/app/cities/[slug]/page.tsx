@@ -8,7 +8,7 @@ import { CITIES, CATEGORIES } from '@/app/lib/constants';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { MapPin, ArrowLeft, ShieldAlert, HeartPulse, Flame, Pill, Loader2, Users, Landmark, Compass, Info, Phone as PhoneIcon, Navigation } from 'lucide-react';
+import { MapPin, ArrowLeft, ShieldAlert, HeartPulse, Flame, Pill, Loader2, Users, Landmark, Compass, Info, Phone as PhoneIcon, Globe, Home as HomeIcon, Map as MapIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,17 +25,13 @@ export default function CityPage() {
 
   useEffect(() => {
     if (city) {
-      document.title = `${city.name} - Vodič i informacije | CroatiaBest`;
-      
+      document.title = `${city.name} - Službeni vodič | CroatiaBest`;
       const encodedCity = encodeURIComponent(city.name);
       fetch(`https://hr.wikipedia.org/api/rest_v1/page/summary/${encodedCity}`)
         .then(res => res.json())
         .then(data => {
           if (data && data.extract) {
-            setWikiData({
-              extract: data.extract,
-              thumbnail: data.thumbnail?.source
-            });
+            setWikiData({ extract: data.extract, thumbnail: data.thumbnail?.source });
           }
         })
         .catch(err => console.error('Wiki error', err));
@@ -52,206 +48,103 @@ export default function CityPage() {
   }, [firestore, city]);
 
   const { data: cityListings, isLoading } = useCollection(cityQuery);
+  const cityEmergency = cityListings?.filter(l => ['pharmacy', 'emergency', 'police', 'firefighters'].includes(l.locationCategoryId || l.categoryId)) || [];
 
-  const cityEmergency = cityListings?.filter(l => 
-    ['pharmacy', 'emergency', 'police', 'firefighters'].includes(l.locationCategoryId || l.categoryId)
-  ) || [];
-
-  if (!city) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <h1 className="text-4xl font-bold">Grad nije pronađen</h1>
-        <Link href="/">
-          <Button variant="link" className="mt-4">{t.backToHome}</Button>
-        </Link>
-      </div>
-    );
-  }
+  if (!city) return null;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      
       <main className="flex-1 pb-24">
-        <section className="relative h-[65vh] w-full overflow-hidden">
-          <Image 
-            src={city.image} 
-            alt={`Panorama grada ${city.name}`} 
-            fill 
-            className="object-cover brightness-[0.65] scale-105" 
-            priority 
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/20" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-4 pb-20">
-            <Badge className="bg-primary/20 backdrop-blur-md text-white border-white/20 px-6 py-2 rounded-full font-black text-xs uppercase tracking-[0.3em]">
-              {city.region}
-            </Badge>
-            <h1 className="text-7xl md:text-[10rem] font-black text-white font-headline drop-shadow-2xl italic tracking-tighter leading-none">
-              {city.name}
-            </h1>
+        <section className="relative h-[60vh] w-full overflow-hidden">
+          <Image src={city.image} alt={city.name} fill className="object-cover brightness-50" priority />
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 pb-20">
+            <Badge className="bg-primary/20 backdrop-blur-md text-white mb-4 px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest">{city.region}</Badge>
+            <h1 className="text-7xl md:text-9xl font-black text-white font-headline drop-shadow-2xl italic tracking-tighter">{city.name}</h1>
           </div>
         </section>
 
-        <div className="container mx-auto px-6 -mt-16 relative z-20 space-y-16">
+        <div className="container mx-auto px-6 -mt-20 relative z-20">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            <div className="lg:col-span-8 space-y-16">
-              <div className="bg-white/90 backdrop-blur-3xl border border-white/60 shadow-2xl rounded-[3.5rem] p-10 md:p-16 overflow-hidden">
+            <div className="lg:col-span-8 space-y-12">
+              <Card className="rounded-[3rem] shadow-2xl border-none overflow-hidden bg-white/95 backdrop-blur-3xl p-10 md:p-16">
                 <div className="flex flex-col md:flex-row gap-12">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-4 mb-10">
-                      <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                        <Landmark className="text-primary size-6" />
-                      </div>
-                      <h2 className="text-4xl font-headline font-black leading-none">Povijest i značaj</h2>
-                    </div>
-                    <div className="prose prose-xl max-w-none text-muted-foreground font-body italic leading-relaxed mb-12">
+                  <div className="flex-1 space-y-8">
+                    <h2 className="text-4xl font-headline font-black">O gradu {city.name}</h2>
+                    <div className="prose prose-xl max-w-none text-muted-foreground font-body italic leading-relaxed">
                       {wikiData.extract || city.description}
                     </div>
                   </div>
-                  
-                  <div className="w-full md:w-72 space-y-8 bg-secondary/5 rounded-3xl p-8 border border-black/5">
-                    <h3 className="text-sm font-black uppercase tracking-widest text-primary mb-6">Info iskaznica</h3>
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-4">
-                        <Users className="size-5 text-muted-foreground" />
+                  <div className="w-full md:w-80 space-y-6 bg-secondary/5 rounded-3xl p-8 border border-black/5">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-primary border-b pb-4">Info Karton</h3>
+                    {[
+                      { icon: <Users className="size-4" />, label: 'Stanovnika', value: city.population },
+                      { icon: <Landmark className="size-4" />, label: 'Gradonačelnik', value: city.mayor },
+                      { icon: <PhoneIcon className="size-4" />, label: 'Pozivni broj', value: city.areaCode },
+                      { icon: <HomeIcon className="size-4" />, label: 'Poštanski broj', value: city.zipCode },
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center gap-4">
+                        <div className="text-muted-foreground">{item.icon}</div>
                         <div>
-                          <p className="text-[10px] font-black text-muted-foreground uppercase">Stanovništvo</p>
-                          <p className="font-bold">{city.population}</p>
+                          <p className="text-[10px] font-black text-muted-foreground uppercase">{item.label}</p>
+                          <p className="font-bold">{item.value || 'N/A'}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <Compass className="size-5 text-muted-foreground" />
-                        <div>
-                          <p className="text-[10px] font-black text-muted-foreground uppercase">Regija</p>
-                          <p className="font-bold">{city.region}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <MapPin className="size-5 text-muted-foreground" />
-                        <div>
-                          <p className="text-[10px] font-black text-muted-foreground uppercase">Država</p>
-                          <p className="font-bold">Hrvatska</p>
-                        </div>
-                      </div>
-                    </div>
-                    {wikiData.thumbnail && (
-                      <div className="relative aspect-square rounded-2xl overflow-hidden mt-8 shadow-inner border border-black/5">
-                        <Image src={wikiData.thumbnail} alt={`Grb ili simbol grada ${city.name}`} fill className="object-cover" />
-                      </div>
+                    ))}
+                    {city.officialWeb && (
+                      <a href={city.officialWeb} target="_blank" className="block pt-4 text-xs font-black text-primary flex items-center gap-2 hover:underline">
+                        <Globe className="size-4" /> SLUŽBENA STRANICA
+                      </a>
                     )}
                   </div>
                 </div>
-              </div>
+              </Card>
 
-              <div className="space-y-10">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <h3 className="text-4xl font-headline font-black flex items-center gap-4">
-                    <ShieldAlert className="text-primary size-10" /> HITNE INFORMACIJE (0-24)
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <div className="size-2 rounded-full bg-red-600 animate-pulse" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-red-600">Provjereno: Danas</span>
-                  </div>
+              <div className="space-y-8">
+                <h3 className="text-4xl font-headline font-black flex items-center gap-4"><ShieldAlert className="text-primary size-10" /> DEŽURNE SLUŽBE</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {cityEmergency.map(s => (
+                    <Card key={s.id} className="border-none shadow-xl rounded-[2.5rem] bg-white hover:scale-[1.02] transition-transform">
+                      <CardContent className="p-8 flex items-center gap-6">
+                        <div className="p-4 bg-primary/5 rounded-2xl">
+                          {s.locationCategoryId === 'pharmacy' ? <Pill className="text-green-600" /> : <HeartPulse className="text-red-600" />}
+                        </div>
+                        <div>
+                          <p className="font-black text-lg">{s.name}</p>
+                          <p className="text-sm text-muted-foreground mb-2">{s.address}</p>
+                          <a href={`tel:${s.contactPhone}`} className="text-sm font-black text-primary flex items-center gap-2"><PhoneIcon className="size-3" /> {s.contactPhone}</a>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-
-                {isLoading ? (
-                  <div className="flex items-center justify-center h-48">
-                    <Loader2 className="size-10 animate-spin text-primary opacity-20" />
-                  </div>
-                ) : cityEmergency.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {cityEmergency.map(service => {
-                      const catId = service.locationCategoryId || service.categoryId;
-                      return (
-                        <Card key={service.id} className="border-none shadow-xl bg-white/50 backdrop-blur-md overflow-hidden rounded-[2.5rem] hover:shadow-2xl transition-all group border border-white/40">
-                          <CardContent className="p-8 flex items-start gap-6">
-                            <div className="p-4 bg-white rounded-2xl shadow-sm group-hover:scale-110 transition-transform">
-                              {catId === 'pharmacy' && <Pill className="text-green-600 size-6" />}
-                              {catId === 'emergency' && <HeartPulse className="text-red-600 size-6" />}
-                              {catId === 'police' && <ShieldAlert className="text-blue-600 size-6" />}
-                              {catId === 'firefighters' && <Flame className="text-orange-600 size-6" />}
-                            </div>
-                            <div className="flex-1">
-                              <p className="font-black text-xl leading-tight mb-1">{service.name}</p>
-                              <p className="text-sm text-muted-foreground mb-4 font-medium">{service.address}</p>
-                              <a href={`tel:${service.contactPhone || service.phone}`} className="inline-flex items-center gap-2 text-primary font-black text-sm hover:underline tracking-widest bg-primary/5 px-4 py-2 rounded-xl transition-colors hover:bg-primary hover:text-white">
-                                <PhoneIcon className="size-3" /> {service.contactPhone || service.phone}
-                              </a>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="p-16 border-2 border-dashed rounded-[3.5rem] text-center text-muted-foreground italic bg-secondary/5">
-                    <Info className="size-12 mx-auto mb-4 opacity-10" />
-                    Trenutno nema unesenih hitnih službi za {city.name}.<br/>Uvijek možete nazvati 112 za hitne slučajeve.
-                  </div>
-                )}
               </div>
             </div>
 
             <aside className="lg:col-span-4 space-y-8">
-              <Card className="rounded-[3.5rem] shadow-2xl border-none overflow-hidden bg-white">
-                <div className="p-8 border-b bg-secondary/5">
-                  <h3 className="text-2xl font-black italic">Mini Karta Grada</h3>
-                  <p className="text-xs text-muted-foreground font-medium">Sve lokacije u gradu {city.name}</p>
+              <Card className="rounded-[3rem] shadow-2xl border-none overflow-hidden bg-white">
+                <div className="p-8 border-b bg-secondary/5 font-black text-xl italic flex items-center gap-2">
+                  <MapIcon className="size-5" /> Karta grada
                 </div>
                 <div className="h-[400px] w-full relative">
                   <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
-                    <Map
-                      defaultCenter={{ lat: city.lat, lng: city.lng }}
-                      defaultZoom={13}
-                      disableDefaultUI={true}
-                      gestureHandling={'greedy'}
-                      className="w-full h-full"
-                    >
-                      {cityListings?.map((listing) => {
-                        if (listing.latitude === undefined || listing.longitude === undefined) return null;
-                        const cat = CATEGORIES.find(c => c.id === listing.locationCategoryId);
-                        return (
-                          <AdvancedMarker
-                            key={listing.id}
-                            position={{ lat: listing.latitude, lng: listing.longitude }}
-                          >
-                            <Pin background={cat?.color || '#333'} glyphColor={'#fff'} borderColor={'#fff'} />
-                          </AdvancedMarker>
-                        );
-                      })}
+                    <Map defaultCenter={{ lat: city.lat, lng: city.lng }} defaultZoom={13} disableDefaultUI={true} gestureHandling={'greedy'} className="w-full h-full">
+                      {cityListings?.map(l => (
+                        <AdvancedMarker key={l.id} position={{ lat: l.latitude, lng: l.longitude }}>
+                          <Pin background={CATEGORIES.find(c => c.id === l.locationCategoryId)?.color || '#333'} />
+                        </AdvancedMarker>
+                      ))}
                     </Map>
                   </APIProvider>
                 </div>
-                <div className="p-8 space-y-4">
-                  <p className="text-sm text-muted-foreground font-body italic">Istražite restorane, plaže i usluge u gradu {city.name} na našoj interaktivnoj karti Hrvatske.</p>
-                  <Link href="/explore">
-                    <Button className="w-full h-14 bg-primary text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20">
-                      OTVORI VELIKU KARTU
-                    </Button>
-                  </Link>
+                <div className="p-8">
+                  <Link href="/explore"><Button className="w-full h-14 bg-primary rounded-2xl font-black uppercase tracking-widest shadow-xl">ISTRAŽI SVE LOKACIJE</Button></Link>
                 </div>
               </Card>
-
-              <div className="p-12 border-2 border-dashed rounded-[3.5rem] text-center space-y-4 bg-white/40">
-                <p className="text-[10px] font-black text-muted-foreground tracking-[0.3em] uppercase">Partnerstvo</p>
-                <div className="h-48 flex items-center justify-center text-muted-foreground/30 italic text-sm px-6">
-                  Vaš hotel ili restoran u gradu {city.name}? Postanite dio najbrže rastućeg portala.
-                </div>
-                <Link href="/submit">
-                  <Button variant="outline" className="w-full rounded-2xl border-primary/20 text-primary hover:bg-primary/5 font-black uppercase tracking-widest">PRIJAVI OBJEKT</Button>
-                </Link>
-              </div>
             </aside>
           </div>
         </div>
       </main>
-
-      <footer className="bg-foreground text-white py-16">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.5em]">&copy; 2024 CroatiaBest Luxury Guide</p>
-          <Link href="/"><Button variant="ghost" className="text-white/60 hover:text-white uppercase font-black text-xs tracking-widest"><ArrowLeft className="mr-3 size-4" /> POČETNA</Button></Link>
-        </div>
-      </footer>
     </div>
   );
 }
