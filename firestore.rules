@@ -2,128 +2,67 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * CORE SECURITY PHILOSOPHY:
-     * 1. Database-Backed Access Control (DBAC): Administrative privileges are managed via a dedicated 
-     *    'roles_admin' collection. Existence of a document named with the user's UID grants full access.
-     * 2. Authorization Independence: Critical ownership data (ownerId, listingOwnerId) is denormalized 
-     *    onto documents to allow for high-performance, single-read security checks without collection traversal.
-     * 3. Public vs. Private: Global metadata (categories, tags, amenities) is publicly readable. 
-     *    Business listings and articles are conditionally public based on their 'status' (active/published).
-     * 4. Owner Empowerment: Authenticated users who own listings have full CRUD access to their own data 
-     *    to allow for management of drafts and archived content.
-     */
-
-    // --- Helper Functions ---
-
-    /** @description Checks if the user is authenticated. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** @description Checks if the user has an entry in the administrative roles collection. */
     function isAdmin() {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
-    /** @description Checks if the provided ID matches the authenticated user's UID. */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** @description Combines ownership check with a check that the resource exists for updates/deletes. */
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
+    function isExistingOwner() {
+      return resource != null && isOwner(resource.data.ownerId);
     }
 
-    // --- Collection Rules ---
-
-    /**
-     * @description Global definitions for listing categories. Public read, Admin write.
-     * @path /location_categories/{locationCategoryId}
-     */
     match /location_categories/{locationCategoryId} {
       allow get, list: if true;
       allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Global definitions for amenities. Public read, Admin write.
-     * @path /amenities/{amenityId}
-     */
     match /amenities/{amenityId} {
       allow get, list: if true;
       allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Global definitions for article categories. Public read, Admin write.
-     * @path /article_categories/{articleCategoryId}
-     */
     match /article_categories/{articleCategoryId} {
       allow get, list: if true;
       allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Global tags for content classification. Public read, Admin write.
-     * @path /tags/{tagId}
-     */
     match /tags/{tagId} {
       allow get, list: if true;
       allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Public advertising banners. Readable if active or by admin.
-     * @path /advertisements/{advertisementId}
-     */
     match /advertisements/{advertisementId} {
-      allow get: if isAdmin() || resource.data.isActive == true;
-      // Allow public listing only for active ads
-      allow list: if isAdmin() || resource.data.isActive == true; 
+      allow get, list: if isAdmin() || resource.data.isActive == true;
       allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Business/Location listings. Owners can manage all states; Public can only see 'active'.
-     * @path /listings/{listingId}
-     */
     match /listings/{listingId} {
       allow get: if isAdmin() || resource.data.status == 'active' || isOwner(resource.data.ownerId);
-      // Allow public listing for active items, or for owners to see their own items (drafts etc)
       allow list: if isAdmin() || resource.data.status == 'active' || (isSignedIn() && request.auth.uid == resource.data.ownerId); 
       
       allow create: if isAdmin() || (isSignedIn() && request.resource.data.ownerId == request.auth.uid);
-      allow update: if isAdmin() || (isExistingOwner(resource.data.ownerId) && request.resource.data.ownerId == resource.data.ownerId);
-      allow delete: if isAdmin() || isExistingOwner(resource.data.ownerId);
+      allow update: if isAdmin() || (isExistingOwner() && request.resource.data.ownerId == resource.data.ownerId);
+      allow delete: if isAdmin() || isExistingOwner();
     }
 
-    /**
-     * @description Annual subscription records. Private to the listing owner and admins.
-     * @path /subscriptions/{subscriptionId}
-     */
     match /subscriptions/{subscriptionId} {
       allow get: if isAdmin() || isOwner(resource.data.listingOwnerId);
       allow list: if isAdmin() || (isSignedIn() && request.auth.uid == resource.data.listingOwnerId); 
       allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Informational articles/blog posts. Public read for published, admin-only write.
-     * @path /articles/{articleId}
-     */
     match /articles/{articleId} {
-      allow get: if isAdmin() || resource.data.status == 'published';
-      // Allow public listing for published articles
-      allow list: if isAdmin() || resource.data.status == 'published';
+      allow get, list: if isAdmin() || resource.data.status == 'published';
       allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Admin role definitions. Used for DBAC.
-     * @path /roles_admin/{adminUid}
-     */
     match /roles_admin/{adminUid} {
       allow get: if isAdmin() || isOwner(adminUid);
       allow list: if isAdmin();
