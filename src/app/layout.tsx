@@ -6,12 +6,15 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'CroatiaBest - Premium Guide to Croatia',
-  description: 'Explore the best hidden beaches, luxury restaurants, and top hotels in Croatia with our interactive map and expert guides.',
-  keywords: ['Croatia', 'Travel', 'Beaches', 'Restaurants', 'Hotels', 'Adriatic Sea', 'Tourism'],
+  title: 'CroatiaBest - Premium vodič kroz Hrvatsku',
+  description: 'Istražite najbolje skrivene plaže, luksuzne restorane i vrhunske hotele u Hrvatskoj uz našu interaktivnu kartu i stručne vodiče.',
+  keywords: ['Hrvatska', 'Putovanja', 'Plaže', 'Restorani', 'Hoteli', 'Jadran', 'Turizam', 'Iznajmljivanje'],
+  authors: [{ name: 'CroatiaBest Team' }],
+  viewport: 'width=device-width, initial-scale=1',
+  robots: 'index, follow',
   openGraph: {
-    title: 'CroatiaBest - Your Ultimate Adriatic Guide',
-    description: 'Pin the best of Croatia on our live interactive map.',
+    title: 'CroatiaBest - Vaš ultimativni jadranski vodič',
+    description: 'Pronađite najbolje od Hrvatske na našoj interaktivnoj karti uživo.',
     url: 'https://croatiabest.hr',
     siteName: 'CroatiaBest',
     images: [
@@ -19,6 +22,7 @@ export const metadata: Metadata = {
         url: 'https://picsum.photos/seed/cb-og/1200/630',
         width: 1200,
         height: 630,
+        alt: 'CroatiaBest Travel Guide',
       },
     ],
     locale: 'hr_HR',
@@ -26,8 +30,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CroatiaBest - Discover the Soul of Croatia',
-    description: 'Expert travel guides and interactive map for Croatia.',
+    title: 'CroatiaBest - Otkrijte dušu Hrvatske',
+    description: 'Stručni vodiči i interaktivna karta za savršeno ljetovanje.',
     images: ['https://picsum.photos/seed/cb-og/1200/630'],
   },
 };
