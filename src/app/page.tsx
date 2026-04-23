@@ -101,8 +101,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CATEGORIES SECTION */}
-        <section className="py-24 bg-white/50 backdrop-blur-sm relative z-30">
+        {/* CATEGORIES SECTION - Adjusted margin to avoid overlap */}
+        <section className="py-24 bg-white/80 backdrop-blur-sm relative z-30">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {[
@@ -162,12 +162,16 @@ export default function Home() {
                       className="w-full h-full"
                     >
                       {allListings?.map((l) => {
-                        if (l.latitude === undefined || l.longitude === undefined) return null;
+                        const lat = typeof l.latitude === 'string' ? parseFloat(l.latitude) : l.latitude;
+                        const lng = typeof l.longitude === 'string' ? parseFloat(l.longitude) : l.longitude;
+                        
+                        if (isNaN(lat) || isNaN(lng)) return null;
+
                         const cat = CATEGORIES.find(c => c.id === (l.locationCategoryId || l.categoryId));
                         return (
                           <AdvancedMarker
                             key={l.id}
-                            position={{ lat: l.latitude, lng: l.longitude }}
+                            position={{ lat, lng }}
                             onClick={() => setSelectedListingId(l.id)}
                           >
                             <Pin background={cat?.color || '#333'} glyphColor={'#fff'} borderColor={'#fff'} />
@@ -177,7 +181,10 @@ export default function Home() {
 
                       {selectedListing && selectedListing.latitude !== undefined && selectedListing.longitude !== undefined && (
                         <InfoWindow
-                          position={{ lat: selectedListing.latitude, lng: selectedListing.longitude }}
+                          position={{ 
+                            lat: typeof selectedListing.latitude === 'string' ? parseFloat(selectedListing.latitude) : selectedListing.latitude, 
+                            lng: typeof selectedListing.longitude === 'string' ? parseFloat(selectedListing.longitude) : selectedListing.longitude 
+                          }}
                           onCloseClick={() => setSelectedListingId(null)}
                         >
                           <div className="p-4 max-w-[240px] space-y-4">

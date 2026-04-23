@@ -140,13 +140,17 @@ export default function ExplorePage() {
                   className="w-full h-full"
                 >
                   {filteredListings.map((listing) => {
-                    if (listing.latitude === undefined || listing.longitude === undefined) return null;
+                    const lat = typeof listing.latitude === 'string' ? parseFloat(listing.latitude) : listing.latitude;
+                    const lng = typeof listing.longitude === 'string' ? parseFloat(listing.longitude) : listing.longitude;
+                    
+                    if (isNaN(lat) || isNaN(lng)) return null;
+                    
                     const cat = CATEGORIES.find(c => c.id === listing.locationCategoryId);
                     
                     return (
                       <AdvancedMarker
                         key={listing.id}
-                        position={{ lat: listing.latitude, lng: listing.longitude }}
+                        position={{ lat, lng }}
                         onClick={() => setSelectedListingId(listing.id)}
                       >
                         <Pin 
@@ -158,9 +162,12 @@ export default function ExplorePage() {
                     );
                   })}
 
-                  {selectedListing && selectedListing.latitude !== undefined && selectedListing.longitude !== undefined && (
+                  {selectedListing && (
                     <InfoWindow
-                      position={{ lat: selectedListing.latitude, lng: selectedListing.longitude }}
+                      position={{ 
+                        lat: typeof selectedListing.latitude === 'string' ? parseFloat(selectedListing.latitude) : selectedListing.latitude, 
+                        lng: typeof selectedListing.longitude === 'string' ? parseFloat(selectedListing.longitude) : selectedListing.longitude 
+                      }}
                       onCloseClick={() => setSelectedListingId(null)}
                     >
                       <div className="p-3 max-w-[240px] space-y-3">
@@ -179,7 +186,10 @@ export default function ExplorePage() {
                             </Button>
                           </Link>
                           <a 
-                            href={getDirectionsUrl(selectedListing.latitude, selectedListing.longitude)} 
+                            href={getDirectionsUrl(
+                              typeof selectedListing.latitude === 'string' ? parseFloat(selectedListing.latitude) : selectedListing.latitude, 
+                              typeof selectedListing.longitude === 'string' ? parseFloat(selectedListing.longitude) : selectedListing.longitude
+                            )} 
                             target="_blank" 
                             rel="noopener noreferrer" 
                             className="w-full"
