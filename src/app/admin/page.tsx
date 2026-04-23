@@ -28,7 +28,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { useRouter } from 'next/navigation';
 
 export default function AdminDashboard() {
-  const { user, loading: userLoading } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
   
@@ -36,7 +36,7 @@ export default function AdminDashboard() {
   const adminDocRef = React.useMemo(() => {
     if (!firestore || !user?.uid) return null;
     return doc(firestore, 'roles_admin', user.uid);
-  }, [firestore, user]);
+  }, [firestore, user?.uid]);
 
   const { data: adminRole, isLoading: adminRoleLoading } = useDoc(adminDocRef);
 
@@ -45,16 +45,17 @@ export default function AdminDashboard() {
   const isAdmin = !!adminRole || isVlasnik;
 
   const listingsQuery = React.useMemo(() => {
-    if (!firestore) return null;
+    // KLJUČNO: Ne pokrećemo upit ako korisnik nije prijavljen (kako bismo izbjegli permission error)
+    if (!firestore || !user) return null;
     return query(collection(firestore, 'listings'), orderBy('createdAt', 'desc'));
-  }, [firestore]);
+  }, [firestore, user]);
 
-  const { data: listings, loading: listingsLoading } = useCollection(listingsQuery);
+  const { data: listings, isLoading: listingsLoading } = useCollection(listingsQuery);
 
   const handleApprove = async (id: string) => {
     if (!firestore) return;
     const docRef = doc(firestore, 'listings', id);
-    updateDoc(docRef, { status: 'active' }) // Status mjenjamo u active kako bi bio vidljiv svuda
+    updateDoc(docRef, { status: 'active' })
       .catch(async (error) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: docRef.path,
@@ -77,7 +78,7 @@ export default function AdminDashboard() {
       });
   };
 
-  if (userLoading || listingsLoading || adminRoleLoading) {
+  if (isUserLoading || adminRoleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="size-12 animate-spin text-primary" />
@@ -85,7 +86,7 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!isAdmin) {
+  if (!user || !isAdmin) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
@@ -102,10 +103,11 @@ export default function AdminDashboard() {
   }
 
   const totalRevenue = listings?.filter(l => l.paymentStatus === 'paid').reduce((acc, curr) => {
-    const category = CATEGORIES.find(c => c.id === (curr.locationCategoryId || curr.categoryId));
+    const categoryId = curr.locationCategoryId || curr.categoryId;
+    const category = CATEGORIES.find(c => c.id === categoryId);
     const priceStr = category?.price?.replace('€', '') || '0';
     return acc + parseInt(priceStr);
-  }, 0);
+  }, 0) || 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -168,7 +170,7 @@ export default function AdminDashboard() {
             <CardContent className="p-8">
               <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-4">Premium</p>
               <div className="flex items-center justify-between">
-                <p className="text-6xl font-black text-primary">{listings?.filter(l => l.type === 'paid').length || 0}</p>
+                <p className="text-6xl font-black text-primary">{listings?.filter(l => l.locationCategoryType === 'Paid').length || 0}</p>
                 <CreditCard className="size-12 text-primary opacity-20" />
               </div>
             </CardContent>
@@ -187,83 +189,87 @@ export default function AdminDashboard() {
             </Badge>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-black/5">
-              {!listings || listings.length === 0 ? (
-                <div className="p-32 text-center text-muted-foreground italic text-xl">Nema prijava u sustavu.</div>
-              ) : (
-                listings.map((listing) => {
-                  const categoryId = listing.locationCategoryId || listing.categoryId;
-                  const category = CATEGORIES.find(c => c.id === categoryId);
-                  const name = listing.name || listing.objectName || 'Bez naziva';
-                  
-                  return (
-                    <div key={listing.id} className="flex flex-col md:flex-row items-center justify-between p-10 hover:bg-secondary/5 transition-colors gap-8">
-                      <div className="flex items-center gap-6 w-full md:w-auto">
-                        <div className={`size-20 rounded-[2rem] flex items-center justify-center font-black text-3xl shadow-inner ${listing.type === 'paid' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                          {name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-black text-2xl mb-1">{name}</p>
-                          <p className="text-muted-foreground flex items-center gap-3 font-medium">
-                            {category?.name} <span className="opacity-30">•</span> {listing.city}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-wrap items-center justify-end gap-12 w-full md:w-auto">
-                        <div className="flex flex-col items-end">
-                          <p className="text-[10px] font-black uppercase text-muted-foreground/50 tracking-widest mb-2">Plaćanje</p>
-                          {listing.paymentStatus === 'paid' ? (
-                            <Badge className="bg-green-500 hover:bg-green-600 text-[10px] font-black h-6 px-4">PROKNJIŽENO</Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-[10px] h-6 px-4 font-black opacity-30">NIJE PLAĆENO</Badge>
-                          )}
+            {listingsLoading ? (
+              <div className="p-32 flex justify-center"><Loader2 className="animate-spin size-8 text-primary" /></div>
+            ) : (
+              <div className="divide-y divide-black/5">
+                {!listings || listings.length === 0 ? (
+                  <div className="p-32 text-center text-muted-foreground italic text-xl">Nema prijava u sustavu.</div>
+                ) : (
+                  listings.map((listing) => {
+                    const categoryId = listing.locationCategoryId || listing.categoryId;
+                    const category = CATEGORIES.find(c => c.id === categoryId);
+                    const name = listing.name || listing.objectName || 'Bez naziva';
+                    
+                    return (
+                      <div key={listing.id} className="flex flex-col md:flex-row items-center justify-between p-10 hover:bg-secondary/5 transition-colors gap-8">
+                        <div className="flex items-center gap-6 w-full md:w-auto">
+                          <div className={`size-20 rounded-[2rem] flex items-center justify-center font-black text-3xl shadow-inner ${listing.locationCategoryType === 'Paid' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                            {name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-black text-2xl mb-1">{name}</p>
+                            <p className="text-muted-foreground flex items-center gap-3 font-medium">
+                              {category?.name} <span className="opacity-30">•</span> {listing.city}
+                            </p>
+                          </div>
                         </div>
                         
-                        <div className="flex flex-col items-end">
-                          <p className="text-[10px] font-black uppercase text-muted-foreground/50 tracking-widest mb-2">Sustav</p>
-                          <Badge variant="outline" className={`
-                            ${listing.status === 'pending' ? 'border-orange-500 text-orange-500 bg-orange-50' : ''}
-                            ${listing.status === 'active' || listing.status === 'approved' ? 'border-blue-500 text-blue-500 bg-blue-50' : ''}
-                            ${listing.status === 'rejected' ? 'border-red-500 text-red-500 bg-red-50' : ''}
-                            uppercase font-black text-[10px] px-4 h-6 rounded-lg
-                          `}>
-                            {listing.status}
-                          </Badge>
-                        </div>
-                        
-                        <div className="flex gap-4">
-                          {listing.status === 'pending' && (
-                            <>
-                              <Button variant="ghost" size="icon" onClick={() => handleReject(listing.id)} className="text-red-500 hover:bg-red-50 rounded-2xl size-14 transition-transform active:scale-90 border border-black/5">
-                                <XCircle className="size-8" />
+                        <div className="flex flex-wrap items-center justify-end gap-12 w-full md:w-auto">
+                          <div className="flex flex-col items-end">
+                            <p className="text-[10px] font-black uppercase text-muted-foreground/50 tracking-widest mb-2">Plaćanje</p>
+                            {listing.paymentStatus === 'paid' ? (
+                              <Badge className="bg-green-500 hover:bg-green-600 text-[10px] font-black h-6 px-4">PROKNJIŽENO</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-[10px] h-6 px-4 font-black opacity-30">NIJE PLAĆENO</Badge>
+                            )}
+                          </div>
+                          
+                          <div className="flex flex-col items-end">
+                            <p className="text-[10px] font-black uppercase text-muted-foreground/50 tracking-widest mb-2">Sustav</p>
+                            <Badge variant="outline" className={`
+                              ${listing.status === 'pending' ? 'border-orange-500 text-orange-500 bg-orange-50' : ''}
+                              ${listing.status === 'active' || listing.status === 'approved' ? 'border-blue-500 text-blue-500 bg-blue-50' : ''}
+                              ${listing.status === 'rejected' ? 'border-red-500 text-red-500 bg-red-50' : ''}
+                              uppercase font-black text-[10px] px-4 h-6 rounded-lg
+                            `}>
+                              {listing.status}
+                            </Badge>
+                          </div>
+                          
+                          <div className="flex gap-4">
+                            {listing.status === 'pending' && (
+                              <>
+                                <Button variant="ghost" size="icon" onClick={() => handleReject(listing.id)} className="text-red-500 hover:bg-red-50 rounded-2xl size-14 transition-transform active:scale-90 border border-black/5">
+                                  <XCircle className="size-8" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleApprove(listing.id)} className="text-blue-500 hover:bg-blue-50 rounded-2xl size-14 transition-transform active:scale-90 border border-black/5">
+                                  <CheckCircle2 className="size-8" />
+                                </Button>
+                              </>
+                            )}
+                            {(listing.status === 'active' || listing.status === 'approved' || listing.status === 'rejected') && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => {
+                                  if (!firestore) return;
+                                  const docRef = doc(firestore, 'listings', listing.id);
+                                  updateDoc(docRef, { status: 'pending' });
+                                }} 
+                                className="text-muted-foreground text-[10px] font-black uppercase tracking-widest hover:text-primary rounded-xl h-12 px-6"
+                              >
+                                Resetiraj Status
                               </Button>
-                              <Button variant="ghost" size="icon" onClick={() => handleApprove(listing.id)} className="text-blue-500 hover:bg-blue-50 rounded-2xl size-14 transition-transform active:scale-90 border border-black/5">
-                                <CheckCircle2 className="size-8" />
-                              </Button>
-                            </>
-                          )}
-                          {(listing.status === 'active' || listing.status === 'approved' || listing.status === 'rejected') && (
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => {
-                                if (!firestore) return;
-                                const docRef = doc(firestore, 'listings', listing.id);
-                                updateDoc(docRef, { status: 'pending' });
-                              }} 
-                              className="text-muted-foreground text-[10px] font-black uppercase tracking-widest hover:text-primary rounded-xl h-12 px-6"
-                            >
-                              Resetiraj Status
-                            </Button>
-                          )}
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>
