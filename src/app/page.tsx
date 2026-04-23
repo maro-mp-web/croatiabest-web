@@ -20,13 +20,13 @@ import {
   Hotel,
   Umbrella,
   GlassWater,
-  Map as MapIcon,
   Navigation,
-  Info
+  Info,
+  ChevronLeft
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, limit } from 'firebase/firestore';
+import { collection, query, where, limit, orderBy } from 'firebase/firestore';
 import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow } from '@vis.gl/react-google-maps';
 
 const MAP_CENTER = { lat: 44.5, lng: 16.5 };
@@ -36,7 +36,7 @@ export default function Home() {
   const firestore = useFirestore();
   const [selectedListingId, setSelectedListingId] = React.useState<string | null>(null);
 
-  // Premium listings for featured section
+  // Premium listings for featured section (Main Spotlight)
   const premiumQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(
@@ -49,14 +49,28 @@ export default function Home() {
 
   const { data: premiumListings, isLoading: isPremiumLoading } = useCollection(premiumQuery);
 
-  // All active listings for the map
+  // All active listings for categories highlights and map
   const allListingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'listings'), where('status', '==', 'active'));
+    return query(collection(firestore, 'listings'), where('status', '==', 'active'), orderBy('createdAt', 'desc'));
   }, [firestore]);
 
   const { data: allListings } = useCollection(allListingsQuery);
   const selectedListing = allListings?.find(l => l.id === selectedListingId);
+
+  // Helper to get 5 listings per category
+  const getFeaturedByCategory = (categoryId: string) => {
+    return (allListings || [])
+      .filter(l => (l.locationCategoryId || l.categoryId) === categoryId)
+      .slice(0, 5);
+  };
+
+  const mainCategories = [
+    { id: 'restaurants', name: 'Gastronomija', icon: <Utensils className="size-5" /> },
+    { id: 'hotels', name: 'Smještaj', icon: <Hotel className="size-5" /> },
+    { id: 'beaches', name: 'Najljepše Plaže', icon: <Umbrella className="size-5" /> },
+    { id: 'wineries', name: 'Vinarije i OPG', icon: <GlassWater className="size-5" /> },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
@@ -64,7 +78,7 @@ export default function Home() {
       
       <main className="flex-1">
         {/* HERO SECTION */}
-        <section className="relative min-h-[90vh] w-full overflow-hidden flex items-center pt-20">
+        <section className="relative min-h-[90vh] w-full overflow-hidden flex items-center pt-24 pb-12">
           <div className="absolute inset-0 z-0">
             <video 
               autoPlay 
@@ -79,7 +93,7 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent z-10" />
           </div>
 
-          <div className="container mx-auto px-6 relative z-20 pb-12">
+          <div className="container mx-auto px-6 relative z-20">
             <div className="max-w-4xl animate-fade-in space-y-8">
               <div className="inline-flex items-center gap-3 px-6 py-2 bg-primary/20 backdrop-blur-xl border border-primary/30 rounded-full text-white text-[12px] font-black tracking-[0.4em] uppercase">
                 <Sparkles className="size-4 text-primary fill-primary animate-pulse" /> {t.heroBadge}
@@ -92,8 +106,8 @@ export default function Home() {
               </p>
               <div className="flex flex-wrap gap-6 pt-8">
                 <Link href="/explore">
-                  <Button className="h-24 px-16 text-2xl font-black bg-primary hover:bg-primary/90 rounded-[2.5rem] shadow-2xl shadow-primary/40 group transition-all">
-                    {t.heroVideoCTA} <ArrowRight className="ml-4 size-8 group-hover:translate-x-3 transition-transform" />
+                  <Button className="h-20 px-12 text-xl font-black bg-primary hover:bg-primary/90 rounded-[2rem] shadow-2xl shadow-primary/40 group transition-all">
+                    {t.heroVideoCTA} <ArrowRight className="ml-4 size-6 group-hover:translate-x-3 transition-transform" />
                   </Button>
                 </Link>
               </div>
@@ -101,33 +115,85 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CATEGORIES SECTION - Adjusted margin to avoid overlap */}
-        <section className="py-24 bg-white/80 backdrop-blur-sm relative z-30">
+        {/* CATEGORIES NAVIGATION & HIGHLIGHTS */}
+        <section className="py-24 bg-white relative z-30 shadow-2xl rounded-t-[4rem] -mt-12">
           <div className="container mx-auto px-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {[
-                { id: 'restaurants', icon: <Utensils className="size-8" />, name: 'Gastronomija', color: 'bg-primary' },
-                { id: 'hotels', icon: <Hotel className="size-8" />, name: 'Smještaj', color: 'bg-secondary' },
-                { id: 'beaches', icon: <Umbrella className="size-8" />, name: 'Plaže', color: 'bg-blue-400' },
-                { id: 'wineries', icon: <GlassWater className="size-8" />, name: 'Vinarije', color: 'bg-purple-500' },
-              ].map((cat) => (
+            {/* Quick Category Icons */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24">
+              {mainCategories.map((cat) => (
                 <Link key={cat.id} href={`/explore?category=${cat.id}`}>
-                  <Card className="group hover:scale-110 transition-all duration-500 rounded-[3rem] border-none shadow-2xl overflow-hidden bg-white cursor-pointer hover:shadow-primary/10">
-                    <CardContent className="p-10 flex flex-col items-center text-center gap-6">
-                      <div className={`size-20 rounded-[1.5rem] ${cat.color} text-white flex items-center justify-center shadow-xl group-hover:rotate-12 transition-transform`}>
-                        {cat.icon}
+                  <Card className="group hover:scale-110 transition-all duration-500 rounded-[3rem] border-none shadow-xl overflow-hidden bg-white cursor-pointer hover:shadow-primary/10">
+                    <CardContent className="p-8 flex flex-col items-center text-center gap-4">
+                      <div className={`size-16 rounded-[1.2rem] bg-primary/5 text-primary flex items-center justify-center shadow-inner group-hover:bg-primary group-hover:text-white transition-all duration-500`}>
+                        {React.cloneElement(cat.icon as React.ReactElement, { className: 'size-8' })}
                       </div>
-                      <p className="font-black text-lg uppercase tracking-[0.2em]">{cat.name}</p>
+                      <p className="font-black text-sm uppercase tracking-[0.2em]">{cat.name}</p>
                     </CardContent>
                   </Card>
                 </Link>
               ))}
             </div>
+
+            {/* Featured items per category */}
+            <div className="space-y-32">
+              {mainCategories.map((cat) => {
+                const listings = getFeaturedByCategory(cat.id);
+                if (listings.length === 0) return null;
+
+                return (
+                  <div key={cat.id} className="space-y-12">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-6">
+                        <div className="size-14 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl rotate-3">
+                          {cat.icon}
+                        </div>
+                        <div>
+                          <h3 className="text-4xl font-headline font-black italic tracking-tight">{cat.name}</h3>
+                          <p className="text-muted-foreground font-body italic">Izdvojene lokacije koje morate posjetiti</p>
+                        </div>
+                      </div>
+                      <Link href={`/explore?category=${cat.id}`}>
+                        <Button variant="ghost" className="text-primary font-black uppercase tracking-widest group">
+                          VIDI SVE <ChevronRight className="ml-2 size-4 group-hover:translate-x-2 transition-transform" />
+                        </Button>
+                      </Link>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                      {listings.map((l) => (
+                        <Link key={l.id} href={`/listing/${l.id}`}>
+                          <Card className="group border-none shadow-lg hover:shadow-2xl transition-all duration-500 rounded-[2rem] overflow-hidden bg-secondary/5 h-full flex flex-col">
+                            <div className="relative aspect-[4/5] overflow-hidden">
+                              <Image 
+                                src={l.photoUrls?.[0] || 'https://picsum.photos/seed/placeholder/400/500'} 
+                                alt={l.name} 
+                                fill 
+                                className="object-cover group-hover:scale-110 transition-transform duration-700" 
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                              <Badge className="absolute top-4 right-4 bg-white/95 text-primary border-none shadow-md font-black text-[9px] px-3 py-1">
+                                {l.city}
+                              </Badge>
+                            </div>
+                            <CardContent className="p-6 flex-1 flex flex-col justify-center">
+                              <h4 className="font-black text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">{l.name}</h4>
+                              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1 font-bold italic">
+                                <MapPin className="size-3 text-secondary" /> {l.city}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </section>
 
         {/* INTERACTIVE MAP SECTION */}
-        <section className="py-32 bg-white">
+        <section className="py-32 bg-secondary/5">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
               <div className="lg:col-span-4 space-y-8">
@@ -138,7 +204,7 @@ export default function Home() {
                 </p>
                 <div className="space-y-4 pt-6">
                   {CATEGORIES.slice(0, 5).map(cat => (
-                    <div key={cat.id} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/5 border border-black/5">
+                    <div key={cat.id} className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-black/5 shadow-sm">
                       <div className="size-3 rounded-full shadow-sm" style={{ backgroundColor: cat.color }} />
                       <span className="text-sm font-black uppercase tracking-widest">{cat.name}</span>
                     </div>
@@ -206,7 +272,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* PREMIUM PARTNERS SECTION */}
+        {/* PREMIUM PARTNERS SECTION (HIGHLIGHTS REPEATED FOR PRESTIGE) */}
         <section className="py-32 container mx-auto px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
             <div className="space-y-6">
