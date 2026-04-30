@@ -50,7 +50,6 @@ export default function Home() {
   const { data: premiumListings, isLoading: isPremiumLoading } = useCollection(premiumQuery);
 
   // All active listings for categories highlights and map
-  // Simplified query to avoid composite index requirements for initial load
   const allListingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'listings'), where('status', '==', 'active'));
@@ -77,7 +76,7 @@ export default function Home() {
       <Navbar />
       
       <main className="flex-1">
-        {/* HERO SECTION - Increased padding for visibility */}
+        {/* HERO SECTION */}
         <section className="relative min-h-[90vh] w-full overflow-hidden flex items-center pt-32 pb-24">
           <div className="absolute inset-0 z-0">
             <video 
@@ -115,7 +114,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CATEGORIES NAVIGATION & HIGHLIGHTS */}
+        {/* CATEGORIES NAVIGATION */}
         <section className="py-24 bg-white relative z-30 shadow-2xl rounded-t-[4rem] -mt-20">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24">
@@ -190,7 +189,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* INTERACTIVE MAP SECTION - Standard Marker to fix ApiProjectMapError */}
+        {/* INTERACTIVE MAP SECTION */}
         <section className="py-32 bg-secondary/5">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -228,9 +227,7 @@ export default function Home() {
                       {allListings?.map((l) => {
                         const lat = typeof l.latitude === 'string' ? parseFloat(l.latitude) : l.latitude;
                         const lng = typeof l.longitude === 'string' ? parseFloat(l.longitude) : l.longitude;
-                        
                         if (isNaN(lat) || isNaN(lng)) return null;
-
                         return (
                           <Marker
                             key={l.id}
@@ -356,7 +353,7 @@ export default function Home() {
                     <div className="absolute inset-0 p-12 flex flex-col justify-end text-white">
                       <p className="text-[12px] font-black uppercase tracking-[0.4em] text-primary mb-3">{city.region}</p>
                       <h4 className="text-5xl font-black italic tracking-tighter mb-6">{city.name}</h4>
-                      <Button variant="outline" className="w-full h-14 rounded-2xl border-white/30 text-white hover:bg-white hover:text-black font-black text-xs uppercase tracking-widest">
+                      <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white border-none font-black text-xs uppercase tracking-widest transition-all">
                         VODIČ KROZ GRAD
                       </Button>
                     </div>
@@ -388,7 +385,6 @@ export default function Home() {
         </section>
       </main>
 
-      {/* Footer */}
       <footer className="bg-foreground text-white py-32 border-t border-white/5">
         <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-24">
           <div className="md:col-span-5 space-y-12">
