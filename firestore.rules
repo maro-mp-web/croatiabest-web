@@ -24,38 +24,29 @@ service cloud.firestore {
 
     match /listings/{listingId} {
       // Javno vidljivi samo aktivni oglasi.
-      // Vlasnici i admini vide sve (nacrte, odbijene).
-      
       allow get: if resource.data.status == 'active' 
                  || isAdmin() 
                  || isOwner(resource.data.ownerId);
       
       // Za listanje: 
-      // 1. Ako korisnik filtrira po status == 'active', dozvoli svima.
-      // 2. Ako je admin, dozvoli sve.
-      // 3. Ako je vlasnik i filtrira po svom ownerId, dozvoli.
+      // 1. Dozvoli svima (uključujući anonimne) ako upit eksplicitno filtrira po status == 'active'.
+      // 2. Dozvoli adminu sve.
+      // 3. Dozvoli vlasniku njegove oglase.
       allow list: if (resource.data.status == 'active')
                   || isAdmin()
                   || (isSignedIn() && resource.data.ownerId == request.auth.uid);
       
-      // Kreiranje: Korisnik mora postaviti sebe kao vlasnika.
       allow create: if isAdmin() || (isSignedIn() && request.resource.data.ownerId == request.auth.uid);
-      
-      // Ažuriranje: Samo vlasnik ili admin. Vlasnik ne smije mijenjati ownerId.
       allow update: if isAdmin() || (isOwner(resource.data.ownerId) && request.resource.data.ownerId == resource.data.ownerId);
-      
       allow delete: if isAdmin() || isOwner(resource.data.ownerId);
     }
 
     match /inquiries/{inquiryId} {
-      // Svatko može poslati upit, samo vlasnik oglasa ili admin može čitati.
       allow create: if true;
       allow get, list: if isAdmin() || isOwner(resource.data.ownerId);
     }
 
     match /roles_admin/{adminUid} {
-      // DBAC: Samo postojeći admin može dodijeliti novog admina. 
-      // Korisnik može vidjeti svoj vlastiti admin status.
       allow get: if isAdmin() || isOwner(adminUid);
       allow list: if isAdmin();
       allow create, update, delete: if isAdmin();

@@ -36,7 +36,7 @@ export default function Home() {
   const firestore = useFirestore();
   const [selectedListingId, setSelectedListingId] = React.useState<string | null>(null);
 
-  // Premium listings for featured section (Main Spotlight)
+  // Premium listings for featured section
   const premiumQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(
@@ -50,15 +50,15 @@ export default function Home() {
   const { data: premiumListings, isLoading: isPremiumLoading } = useCollection(premiumQuery);
 
   // All active listings for categories highlights and map
+  // Simplified query to avoid composite index requirements for initial load
   const allListingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'listings'), where('status', '==', 'active'), orderBy('createdAt', 'desc'));
+    return query(collection(firestore, 'listings'), where('status', '==', 'active'));
   }, [firestore]);
 
   const { data: allListings } = useCollection(allListingsQuery);
   const selectedListing = allListings?.find(l => l.id === selectedListingId);
 
-  // Helper to get 5 listings per category
   const getFeaturedByCategory = (categoryId: string) => {
     return (allListings || [])
       .filter(l => (l.locationCategoryId || l.categoryId) === categoryId)
@@ -77,8 +77,8 @@ export default function Home() {
       <Navbar />
       
       <main className="flex-1">
-        {/* HERO SECTION */}
-        <section className="relative min-h-[85vh] w-full overflow-hidden flex items-center pt-32 pb-24">
+        {/* HERO SECTION - Increased padding for visibility */}
+        <section className="relative min-h-[90vh] w-full overflow-hidden flex items-center pt-32 pb-24">
           <div className="absolute inset-0 z-0">
             <video 
               autoPlay 
@@ -118,7 +118,6 @@ export default function Home() {
         {/* CATEGORIES NAVIGATION & HIGHLIGHTS */}
         <section className="py-24 bg-white relative z-30 shadow-2xl rounded-t-[4rem] -mt-20">
           <div className="container mx-auto px-6">
-            {/* Quick Category Icons */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24">
               {mainCategories.map((cat) => (
                 <Link key={cat.id} href={`/explore?category=${cat.id}`}>
@@ -134,7 +133,6 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Featured items per category */}
             <div className="space-y-32">
               {mainCategories.map((cat) => {
                 const listings = getFeaturedByCategory(cat.id);
@@ -192,7 +190,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* INTERACTIVE MAP SECTION */}
+        {/* INTERACTIVE MAP SECTION - Standard Marker to fix ApiProjectMapError */}
         <section className="py-32 bg-secondary/5">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -242,7 +240,7 @@ export default function Home() {
                         );
                       })}
 
-                      {selectedListing && selectedListing.latitude !== undefined && selectedListing.longitude !== undefined && (
+                      {selectedListing && (
                         <InfoWindow
                           position={{ 
                             lat: typeof selectedListing.latitude === 'string' ? parseFloat(selectedListing.latitude) : selectedListing.latitude, 

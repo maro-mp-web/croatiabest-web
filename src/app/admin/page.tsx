@@ -32,7 +32,6 @@ export default function AdminDashboard() {
   const firestore = useFirestore();
   const router = useRouter();
   
-  // Provjera DBAC (Admin Role) putem kolekcije roles_admin
   const adminDocRef = React.useMemo(() => {
     if (!firestore || !user?.uid) return null;
     return doc(firestore, 'roles_admin', user.uid);
@@ -40,15 +39,15 @@ export default function AdminDashboard() {
 
   const { data: adminRole, isLoading: adminRoleLoading } = useDoc(adminDocRef);
 
-  // Fallback za tebe (gazdu) dok se ne postavi DBAC u bazi
   const isVlasnik = user?.email === 'vlasnik@croatiabest.hr' || user?.email?.includes('admin');
   const isAdmin = !!adminRole || isVlasnik;
 
   const listingsQuery = React.useMemo(() => {
-    // KLJUČNO: Ne pokrećemo upit ako korisnik nije prijavljen (kako bismo izbjegli permission error)
-    if (!firestore || !user) return null;
+    // KLJUČNO: Ne šaljemo upit ako korisnik nije prijavljen ILI ako još nismo potvrdili Admin ulogu
+    // Ovo sprječava permission error jer anonymous/obični korisnici ne smiju listati cijelu kolekciju bez filtera status=='active'
+    if (!firestore || !user || !isAdmin) return null;
     return query(collection(firestore, 'listings'), orderBy('createdAt', 'desc'));
-  }, [firestore, user]);
+  }, [firestore, user, isAdmin]);
 
   const { data: listings, isLoading: listingsLoading } = useCollection(listingsQuery);
 
@@ -177,7 +176,6 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Listings Table */}
         <Card className="border-none shadow-2xl rounded-[3rem] overflow-hidden bg-white">
           <CardHeader className="flex flex-row items-center justify-between border-b p-10 bg-secondary/5">
             <div>

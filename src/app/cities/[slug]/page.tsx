@@ -72,23 +72,12 @@ export default function CityPage() {
   const viewpoints = cityListings?.filter(l => ['viewpoints', 'landmarks'].includes(l.locationCategoryId || l.categoryId)) || [];
   const gastro = cityListings?.filter(l => ['restaurants'].includes(l.locationCategoryId || l.categoryId)) || [];
 
-  const warArticles = MOCK_ARTICLES.filter(a => 
-    (a.title.toLowerCase().includes('rat') || a.content.toLowerCase().includes('domovinski')) &&
-    (a.title.toLowerCase().includes(city?.name.toLowerCase() || '') || a.content.toLowerCase().includes(city?.name.toLowerCase() || ''))
-  );
-
-  const relatedArticles = MOCK_ARTICLES.filter(a => 
-    !warArticles.includes(a) &&
-    (a.title.toLowerCase().includes(city?.name.toLowerCase() || '') || a.content.toLowerCase().includes(city?.name.toLowerCase() || ''))
-  );
-
   if (!city) return null;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       <main className="flex-1 pb-24">
-        {/* HERO SECTION - SEO Optimized H1 */}
         <section className="relative h-[60vh] w-full overflow-hidden">
           <Image src={city.image} alt={`Vodič kroz grad ${city.name}`} fill className="object-cover brightness-[0.4]" priority />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/20" />
