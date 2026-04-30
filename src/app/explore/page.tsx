@@ -15,7 +15,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
-import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps';
 
 const MAP_CENTER = { lat: 44.5, lng: 16.5 };
 
@@ -145,20 +145,12 @@ export default function ExplorePage() {
                     
                     if (isNaN(lat) || isNaN(lng)) return null;
                     
-                    const cat = CATEGORIES.find(c => c.id === listing.locationCategoryId);
-                    
                     return (
-                      <AdvancedMarker
+                      <Marker
                         key={listing.id}
                         position={{ lat, lng }}
                         onClick={() => setSelectedListingId(listing.id)}
-                      >
-                        <Pin 
-                          background={cat?.color || '#333'} 
-                          glyphColor={'#fff'} 
-                          borderColor={'#fff'} 
-                        />
-                      </AdvancedMarker>
+                      />
                     );
                   })}
 
@@ -240,22 +232,6 @@ export default function ExplorePage() {
               )}
             </APIProvider>
           )}
-
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 pointer-events-auto">
-            <div className="bg-white/90 backdrop-blur p-1 rounded-full shadow-2xl border border-black/5 flex items-center">
-              <div className="flex -space-x-2 px-6 py-2 border-r mr-2">
-                <div className="size-6 rounded-full bg-[#E11D48] border-2 border-white shadow-sm" title="Restorani" />
-                <div className="size-6 rounded-full bg-[#4338CA] border-2 border-white shadow-sm" title="Hoteli" />
-                <div className="size-6 rounded-full bg-[#10B981] border-2 border-white shadow-sm" title="Usluge" />
-                <div className="px-4 text-[10px] font-black text-muted-foreground flex items-center uppercase tracking-tighter ml-4">
-                  {filteredListings.length} lokacija na vidiku
-                </div>
-              </div>
-              <Button variant="ghost" size="sm" className="rounded-full px-6 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/5">
-                <Info className="size-4 mr-2" /> Legenda karte
-              </Button>
-            </div>
-          </div>
         </main>
       </div>
     </div>

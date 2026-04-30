@@ -32,7 +32,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
-import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 
 export default function CityPage() {
   const params = useParams();
@@ -101,7 +101,6 @@ export default function CityPage() {
         </section>
 
         <div className="container mx-auto px-6 -mt-16 relative z-20 space-y-16">
-          {/* INFO CARD & DESCRIPTION */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             <div className="lg:col-span-8 space-y-12">
               <Card className="rounded-[3rem] shadow-2xl border-none overflow-hidden bg-white/95 backdrop-blur-3xl p-8 md:p-12">
@@ -151,17 +150,6 @@ export default function CityPage() {
                 </div>
               </Card>
 
-              {/* BANNER PLACEHOLDER - Professional Look */}
-              <div className="w-full h-32 bg-foreground text-white rounded-[2rem] flex items-center justify-between px-12 relative overflow-hidden group cursor-pointer shadow-xl">
-                <div className="absolute inset-0 bg-primary/10 group-hover:bg-primary/20 transition-colors" />
-                <div className="relative z-10">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Oglasni prostor</p>
-                  <h4 className="text-xl font-black italic">Istaknite svoj objekt u gradu {city.name}</h4>
-                </div>
-                <Button className="relative z-10 bg-white text-black font-black rounded-xl px-8 hover:bg-primary hover:text-white transition-all">DODAJ SVOJ POSAO</Button>
-              </div>
-
-              {/* LOCATIONS GRID */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="space-y-6">
                   <h4 className="font-black text-xs uppercase tracking-[0.2em] text-red-600 flex items-center gap-2"><ShieldAlert className="size-4" /> Hitne službe</h4>
@@ -210,74 +198,8 @@ export default function CityPage() {
                   )) : <p className="text-xs text-muted-foreground italic">Još nema lokacija</p>}
                 </div>
               </div>
-
-              {/* DOMOVINSKI RAT SECTION */}
-              <div className="pt-16 border-t border-black/5 space-y-10">
-                <div className="flex items-center gap-4">
-                  <div className="size-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                    <Flag className="size-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-3xl font-headline font-black uppercase tracking-tighter italic">Domovinski rat u gradu {city.name}</h3>
-                    <p className="text-sm text-muted-foreground font-medium">Svjedočanstva, heroji i povijesne činjenice</p>
-                  </div>
-                </div>
-                {warArticles.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {warArticles.map(article => (
-                      <Link key={article.id} href={`/blog/${article.id}`}>
-                        <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden group bg-white border-l-4 border-primary">
-                          <div className="p-8 space-y-3">
-                            <Badge className="bg-primary text-white text-[10px] uppercase font-black tracking-widest">Domovinski rat</Badge>
-                            <h4 className="text-2xl font-black leading-tight group-hover:text-primary transition-colors">{article.title}</h4>
-                            <p className="text-sm text-muted-foreground line-clamp-2 italic font-body">{article.excerpt}</p>
-                          </div>
-                        </Card>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-16 border-2 border-dashed rounded-[3rem] text-center text-muted-foreground italic bg-secondary/5">
-                    Naši urednici pripremaju detaljan pregled uloge grada {city.name} u Domovinskom ratu.
-                  </div>
-                )}
-              </div>
-
-              {/* TRIVIA (Zanimljivosti) SECTION */}
-              <div className="space-y-10 pt-16 border-t border-black/5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="size-12 bg-secondary/10 rounded-xl flex items-center justify-center">
-                      <Sparkles className="size-6 text-secondary" />
-                    </div>
-                    <h3 className="text-3xl font-headline font-black uppercase tracking-tighter italic">Zanimljivosti i Priče</h3>
-                  </div>
-                  <Link href="/blog"><Button variant="ghost" className="font-black text-xs uppercase tracking-widest">Vidi sve <ArrowRight className="size-4 ml-2" /></Button></Link>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {relatedArticles.length > 0 ? relatedArticles.map(article => (
-                    <Link key={article.id} href={`/blog/${article.id}`}>
-                      <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden group bg-white">
-                        <div className="relative h-48">
-                          <Image src={article.image} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform" />
-                        </div>
-                        <div className="p-8 space-y-3">
-                          <Badge variant="secondary" className="text-[10px] font-black uppercase">{article.category}</Badge>
-                          <h4 className="text-2xl font-black leading-tight group-hover:text-primary transition-colors">{article.title}</h4>
-                          <p className="text-sm text-muted-foreground line-clamp-2 italic font-body">{article.excerpt}</p>
-                        </div>
-                      </Card>
-                    </Link>
-                  )) : (
-                    <div className="col-span-2 p-16 border-2 border-dashed rounded-[3rem] text-center text-muted-foreground italic bg-foreground/5">
-                      Pridružite nam se uskoro u istraživanju nepoznatih detalja o gradu {city.name}.
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
 
-            {/* SIDEBAR: MAP & TRIVIA */}
             <aside className="lg:col-span-4 space-y-12">
               <Card className="rounded-[3rem] shadow-2xl border-none overflow-hidden bg-white">
                 <div className="p-8 border-b bg-secondary/5 font-black text-xl italic flex items-center gap-2">
@@ -286,40 +208,18 @@ export default function CityPage() {
                 <div className="h-[400px] w-full relative">
                   <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
                     <Map defaultCenter={{ lat: city.lat, lng: city.lng }} defaultZoom={13} disableDefaultUI={true} gestureHandling={'greedy'} className="w-full h-full">
-                      {cityListings?.map(l => (
-                        <AdvancedMarker key={l.id} position={{ lat: l.latitude, lng: l.longitude }}>
-                          <Pin background={CATEGORIES.find(c => c.id === (l.locationCategoryId || l.categoryId))?.color || '#333'} />
-                        </AdvancedMarker>
-                      ))}
+                      {cityListings?.map(l => {
+                        const lat = typeof l.latitude === 'string' ? parseFloat(l.latitude) : l.latitude;
+                        const lng = typeof l.longitude === 'string' ? parseFloat(l.longitude) : l.longitude;
+                        if (isNaN(lat) || isNaN(lng)) return null;
+                        return (
+                          <Marker key={l.id} position={{ lat, lng }} />
+                        );
+                      })}
                     </Map>
                   </APIProvider>
                 </div>
-                <div className="p-8">
-                  <Link href="/explore"><Button className="w-full h-14 bg-primary rounded-2xl font-black uppercase tracking-widest shadow-xl">ISTRAŽI SVE LOKACIJE</Button></Link>
-                </div>
               </Card>
-
-              {/* QUICK TRIVIA SIDEBAR */}
-              <div className="bg-foreground text-white p-12 rounded-[3.5rem] space-y-8 shadow-2xl relative overflow-hidden group">
-                <History className="size-20 text-primary absolute -top-4 -right-4 opacity-10 group-hover:rotate-12 transition-transform" />
-                <h4 className="text-3xl font-black italic">Brze Činjenice</h4>
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <p className="text-xs font-black text-primary uppercase tracking-widest">Povijesni značaj</p>
-                    <p className="text-lg font-body italic text-white/80 leading-relaxed">
-                      {city.name} je stoljećima bio ključna točka u regiji {city.region}.
-                    </p>
-                  </div>
-                  <div className="pt-6 border-t border-white/10">
-                     <p className="text-xs font-black text-primary uppercase tracking-widest mb-2">Povezani pojmovi</p>
-                     <div className="flex flex-wrap gap-2">
-                        <Badge className="bg-white/10 text-white border-none">#Povijest</Badge>
-                        <Badge className="bg-white/10 text-white border-none">#Rat</Badge>
-                        <Badge className="bg-white/10 text-white border-none">#Kultura</Badge>
-                     </div>
-                  </div>
-                </div>
-              </div>
             </aside>
           </div>
         </div>

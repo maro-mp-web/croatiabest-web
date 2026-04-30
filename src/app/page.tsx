@@ -27,7 +27,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy } from 'firebase/firestore';
-import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps';
 
 const MAP_CENTER = { lat: 44.5, lng: 16.5 };
 
@@ -78,7 +78,7 @@ export default function Home() {
       
       <main className="flex-1">
         {/* HERO SECTION */}
-        <section className="relative min-h-[90vh] w-full overflow-hidden flex items-center pt-24 pb-12">
+        <section className="relative min-h-[85vh] w-full overflow-hidden flex items-center pt-32 pb-24">
           <div className="absolute inset-0 z-0">
             <video 
               autoPlay 
@@ -94,17 +94,17 @@ export default function Home() {
           </div>
 
           <div className="container mx-auto px-6 relative z-20">
-            <div className="max-w-4xl animate-fade-in space-y-8">
+            <div className="max-w-4xl animate-fade-in space-y-10">
               <div className="inline-flex items-center gap-3 px-6 py-2 bg-primary/20 backdrop-blur-xl border border-primary/30 rounded-full text-white text-[12px] font-black tracking-[0.4em] uppercase">
                 <Sparkles className="size-4 text-primary fill-primary animate-pulse" /> {t.heroBadge}
               </div>
-              <h1 className="text-6xl md:text-[9rem] font-black text-white leading-[0.85] tracking-tighter font-headline italic drop-shadow-2xl">
+              <h1 className="text-6xl md:text-[8rem] font-black text-white leading-[0.9] tracking-tighter font-headline italic drop-shadow-2xl">
                 {t.heroVideoTitle}
               </h1>
               <p className="text-xl md:text-3xl text-white/80 font-body italic max-w-2xl leading-relaxed">
                 {t.heroVideoSub}
               </p>
-              <div className="flex flex-wrap gap-6 pt-8">
+              <div className="flex flex-wrap gap-6 pt-4">
                 <Link href="/explore">
                   <Button className="h-20 px-12 text-xl font-black bg-primary hover:bg-primary/90 rounded-[2rem] shadow-2xl shadow-primary/40 group transition-all">
                     {t.heroVideoCTA} <ArrowRight className="ml-4 size-6 group-hover:translate-x-3 transition-transform" />
@@ -116,13 +116,13 @@ export default function Home() {
         </section>
 
         {/* CATEGORIES NAVIGATION & HIGHLIGHTS */}
-        <section className="py-24 bg-white relative z-30 shadow-2xl rounded-t-[4rem] -mt-12">
+        <section className="py-24 bg-white relative z-30 shadow-2xl rounded-t-[4rem] -mt-20">
           <div className="container mx-auto px-6">
             {/* Quick Category Icons */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24">
               {mainCategories.map((cat) => (
                 <Link key={cat.id} href={`/explore?category=${cat.id}`}>
-                  <Card className="group hover:scale-110 transition-all duration-500 rounded-[3rem] border-none shadow-xl overflow-hidden bg-white cursor-pointer hover:shadow-primary/10">
+                  <Card className="group hover:scale-105 transition-all duration-500 rounded-[3rem] border-none shadow-xl overflow-hidden bg-white cursor-pointer hover:shadow-primary/10">
                     <CardContent className="p-8 flex flex-col items-center text-center gap-4">
                       <div className={`size-16 rounded-[1.2rem] bg-primary/5 text-primary flex items-center justify-center shadow-inner group-hover:bg-primary group-hover:text-white transition-all duration-500`}>
                         {React.cloneElement(cat.icon as React.ReactElement, { className: 'size-8' })}
@@ -233,15 +233,12 @@ export default function Home() {
                         
                         if (isNaN(lat) || isNaN(lng)) return null;
 
-                        const cat = CATEGORIES.find(c => c.id === (l.locationCategoryId || l.categoryId));
                         return (
-                          <AdvancedMarker
+                          <Marker
                             key={l.id}
                             position={{ lat, lng }}
                             onClick={() => setSelectedListingId(l.id)}
-                          >
-                            <Pin background={cat?.color || '#333'} glyphColor={'#fff'} borderColor={'#fff'} />
-                          </AdvancedMarker>
+                          />
                         );
                       })}
 
@@ -272,7 +269,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* PREMIUM PARTNERS SECTION (HIGHLIGHTS REPEATED FOR PRESTIGE) */}
+        {/* PREMIUM PARTNERS SECTION */}
         <section className="py-32 container mx-auto px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
             <div className="space-y-6">
@@ -388,11 +385,6 @@ export default function Home() {
                   PRIJAVI SVOJ POSAO
                 </Button>
               </Link>
-            </div>
-            <div className="hidden lg:block relative z-10">
-               <div className="size-80 rounded-[4rem] border-[12px] border-white/20 flex items-center justify-center rotate-6 overflow-hidden">
-                  <Image src="https://picsum.photos/seed/partner-qr/400/400" alt="QR" width={320} height={320} className="opacity-40 grayscale invert" />
-               </div>
             </div>
           </div>
         </section>
