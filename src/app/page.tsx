@@ -208,7 +208,7 @@ export default function Home() {
                   ))}
                 </div>
                 <Link href="/explore" className="block pt-6">
-                  <Button variant="outline" className="w-full h-16 rounded-2xl border-primary text-primary font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
+                  <Button variant="outline" className="w-full h-16 rounded-2xl border-primary text-primary font-black uppercase tracking-wider hover:bg-primary hover:text-white transition-all">
                     OTVORI CIJELU KARTU <Navigation className="ml-2 size-4" />
                   </Button>
                 </Link>
@@ -353,7 +353,7 @@ export default function Home() {
                     <div className="absolute inset-0 p-12 flex flex-col justify-end text-white">
                       <p className="text-[12px] font-black uppercase tracking-[0.4em] text-primary mb-3">{city.region}</p>
                       <h4 className="text-5xl font-black italic tracking-tighter mb-6">{city.name}</h4>
-                      <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white border-none font-black text-xs uppercase tracking-widest transition-all">
+                      <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white border-none font-black text-xs uppercase tracking-normal transition-all">
                         VODIČ KROZ GRAD
                       </Button>
                     </div>
@@ -376,7 +376,7 @@ export default function Home() {
                 Pridružite se najbrže rastućem turističkom portalu u regiji i osigurajte svoje mjesto na karti.
               </p>
               <Link href="/submit">
-                <Button className="h-24 px-16 bg-white text-primary hover:bg-black hover:text-white font-black rounded-3xl text-2xl uppercase tracking-widest shadow-2xl transition-all">
+                <Button className="h-24 px-10 md:px-16 bg-white text-primary hover:bg-black hover:text-white font-black rounded-3xl text-xl md:text-2xl uppercase tracking-wider shadow-2xl transition-all">
                   PRIJAVI SVOJ POSAO
                 </Button>
               </Link>
