@@ -350,10 +350,10 @@ export default function Home() {
                       className="object-cover transition-transform duration-1000 group-hover:scale-110 grayscale-[0.3] group-hover:grayscale-0" 
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
-                    <div className="absolute inset-0 p-12 flex flex-col justify-end text-white">
+                    <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end text-white">
                       <p className="text-[12px] font-black uppercase tracking-[0.4em] text-primary mb-3">{city.region}</p>
-                      <h4 className="text-5xl font-black italic tracking-tighter mb-6">{city.name}</h4>
-                      <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white border-none font-black text-xs uppercase tracking-normal transition-all">
+                      <h4 className="text-4xl md:text-5xl font-black italic tracking-tighter mb-6">{city.name}</h4>
+                      <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white border-none font-black text-[10px] uppercase tracking-tight transition-all">
                         VODIČ KROZ GRAD
                       </Button>
                     </div>
