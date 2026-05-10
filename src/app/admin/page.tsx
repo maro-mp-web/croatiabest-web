@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,8 @@ import {
   Loader2,
   CreditCard,
   DollarSign,
-  PlusCircle
+  PlusCircle,
+  RotateCcw
 } from 'lucide-react';
 import { CATEGORIES } from '@/app/lib/constants';
 import Link from 'next/link';
@@ -43,8 +44,7 @@ export default function AdminDashboard() {
   const isAdmin = !!adminRole || isVlasnik;
 
   const listingsQuery = React.useMemo(() => {
-    // KLJUČNO: Ne šaljemo upit bazi dok nismo sigurni da je korisnik administrator
-    // Ovo rješava "Missing or insufficient permissions" grešku pri učitavanju
+    // Only run query if we are sure user is admin to avoid permission errors
     if (!firestore || !user || !isAdmin) return null;
     return query(collection(firestore, 'listings'), orderBy('createdAt', 'desc'));
   }, [firestore, user, isAdmin]);
@@ -75,6 +75,12 @@ export default function AdminDashboard() {
           requestResourceData: { status: 'rejected' },
         }));
       });
+  };
+
+  const handleReset = async (id: string) => {
+    if (!firestore) return;
+    const docRef = doc(firestore, 'listings', id);
+    updateDoc(docRef, { status: 'pending' });
   };
 
   if (isUserLoading || adminRoleLoading) {
@@ -250,14 +256,10 @@ export default function AdminDashboard() {
                               <Button 
                                 variant="outline" 
                                 size="sm" 
-                                onClick={() => {
-                                  if (!firestore) return;
-                                  const docRef = doc(firestore, 'listings', listing.id);
-                                  updateDoc(docRef, { status: 'pending' });
-                                }} 
+                                onClick={() => handleReset(listing.id)} 
                                 className="text-muted-foreground text-[10px] font-black uppercase tracking-widest hover:text-primary rounded-xl h-12 px-6"
                               >
-                                Resetiraj Status
+                                <RotateCcw className="size-3 mr-2" /> Resetiraj
                               </Button>
                             )}
                           </div>
@@ -274,3 +276,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

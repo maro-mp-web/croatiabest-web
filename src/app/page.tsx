@@ -1,7 +1,7 @@
 
 "use client"
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Navbar } from '@/components/layout/Navbar';
@@ -21,7 +21,9 @@ import {
   Umbrella,
   GlassWater,
   Navigation,
-  Loader2
+  Loader2,
+  ExternalLink,
+  Map as MapIcon
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -33,28 +35,15 @@ const MAP_CENTER = { lat: 44.5, lng: 16.5 };
 export default function Home() {
   const { t } = useLanguage();
   const firestore = useFirestore();
-  const [selectedListingId, setSelectedListingId] = React.useState<string | null>(null);
+  const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
 
-  // Premium listings
-  const premiumQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(
-      collection(firestore, 'listings'),
-      where('status', '==', 'active'),
-      where('locationCategoryType', '==', 'Paid'),
-      limit(6)
-    );
-  }, [firestore]);
-
-  const { data: premiumListings, isLoading: isPremiumLoading } = useCollection(premiumQuery);
-
-  // All listings for categories and map
+  // All listings for categories and map - optimized query
   const allListingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'listings'), where('status', '==', 'active'));
   }, [firestore]);
 
-  const { data: allListings } = useCollection(allListingsQuery);
+  const { data: allListings, isLoading: isListingsLoading } = useCollection(allListingsQuery);
   const selectedListing = allListings?.find(l => l.id === selectedListingId);
 
   const mainCategories = [
@@ -69,8 +58,8 @@ export default function Home() {
       <Navbar />
       
       <main className="flex-1">
-        {/* HERO SECTION - Optimiziran padding za vidljivost gornjih znački */}
-        <section className="relative min-h-[90vh] w-full overflow-hidden flex items-center pt-40 pb-32">
+        {/* HERO SECTION - Optimized padding for total visibility */}
+        <section className="relative min-h-[95vh] w-full overflow-hidden flex items-center pt-48 pb-32">
           <div className="absolute inset-0 z-0">
             <video 
               autoPlay 
@@ -87,7 +76,7 @@ export default function Home() {
 
           <div className="container mx-auto px-6 relative z-20">
             <div className="max-w-4xl space-y-10 animate-fade-in">
-              <div className="inline-flex items-center gap-3 px-6 py-2 bg-primary/20 backdrop-blur-xl border border-primary/30 rounded-full text-white text-[12px] font-black tracking-[0.4em] uppercase">
+              <div className="inline-flex items-center gap-3 px-6 py-3 bg-primary/20 backdrop-blur-xl border border-primary/30 rounded-full text-white text-[12px] font-black tracking-[0.4em] uppercase">
                 <Sparkles className="size-4 text-primary fill-primary animate-pulse" /> {t.heroBadge}
               </div>
               <h1 className="text-6xl md:text-[8rem] font-black text-white leading-[0.9] tracking-tighter font-headline italic drop-shadow-2xl">
@@ -96,7 +85,7 @@ export default function Home() {
               <p className="text-xl md:text-3xl text-white/80 font-body italic max-w-2xl leading-relaxed">
                 {t.heroVideoSub}
               </p>
-              <div className="flex flex-wrap gap-6 pt-4">
+              <div className="flex flex-wrap gap-6 pt-6">
                 <Link href="/explore">
                   <Button className="h-20 px-12 text-xl font-black bg-primary hover:bg-primary/90 rounded-[2rem] shadow-2xl shadow-primary/40 group transition-all">
                     {t.heroVideoCTA} <ArrowRight className="ml-4 size-6 group-hover:translate-x-3 transition-transform" />
@@ -107,7 +96,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CATEGORIES SECTION - Ispod Hero sekcije bez preklapanja */}
+        {/* CATEGORIES SECTION - Clean background, no overlap */}
         <section className="py-24 bg-white relative z-30 shadow-2xl rounded-t-[4rem] -mt-20">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24">
@@ -125,7 +114,7 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Highlights po kategorijama */}
+            {/* Highlights by category - Shows top 5 for each */}
             <div className="space-y-32">
               {mainCategories.map((cat) => {
                 const listings = (allListings || []).filter(l => (l.locationCategoryId || l.categoryId) === cat.id).slice(0, 5);
@@ -179,7 +168,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* INTERACTIVE MAP SECTION - Integrirani layout koji radi stabilno */}
+        {/* INTERACTIVE MAP SECTION - Integrated sidebar layout */}
         <section className="py-32 bg-secondary/5">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -248,7 +237,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* PUBLIC GEMS SECTION - Popravljeni gumbi s ispravnim bojama i razmakom */}
+        {/* PUBLIC GEMS SECTION */}
         <section className="py-32 bg-foreground text-white">
           <div className="container mx-auto px-6">
             <div className="flex flex-col items-center text-center mb-24 space-y-8">
@@ -274,7 +263,7 @@ export default function Home() {
                     <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end text-white">
                       <p className="text-[12px] font-black uppercase tracking-[0.2em] text-primary mb-3">{city.region}</p>
                       <h4 className="text-4xl md:text-5xl font-black italic tracking-tighter mb-6">{city.name}</h4>
-                      <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white border-none font-black text-sm uppercase tracking-normal transition-all">
+                      <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white border-none font-black text-xs uppercase tracking-normal transition-all">
                         VODIČ KROZ GRAD
                       </Button>
                     </div>
@@ -319,3 +308,4 @@ export default function Home() {
     </div>
   );
 }
+
