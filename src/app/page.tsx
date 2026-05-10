@@ -21,12 +21,11 @@ import {
   Umbrella,
   GlassWater,
   Navigation,
-  Info,
-  ChevronLeft
+  Loader2
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, limit, orderBy } from 'firebase/firestore';
+import { collection, query, where, limit } from 'firebase/firestore';
 import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps';
 
 const MAP_CENTER = { lat: 44.5, lng: 16.5 };
@@ -36,7 +35,7 @@ export default function Home() {
   const firestore = useFirestore();
   const [selectedListingId, setSelectedListingId] = React.useState<string | null>(null);
 
-  // Premium listings for featured section
+  // Premium listings
   const premiumQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(
@@ -49,7 +48,7 @@ export default function Home() {
 
   const { data: premiumListings, isLoading: isPremiumLoading } = useCollection(premiumQuery);
 
-  // All active listings for categories highlights and map
+  // All listings for categories and map
   const allListingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'listings'), where('status', '==', 'active'));
@@ -57,12 +56,6 @@ export default function Home() {
 
   const { data: allListings } = useCollection(allListingsQuery);
   const selectedListing = allListings?.find(l => l.id === selectedListingId);
-
-  const getFeaturedByCategory = (categoryId: string) => {
-    return (allListings || [])
-      .filter(l => (l.locationCategoryId || l.categoryId) === categoryId)
-      .slice(0, 5);
-  };
 
   const mainCategories = [
     { id: 'restaurants', name: 'Gastronomija', icon: <Utensils className="size-5" /> },
@@ -76,8 +69,8 @@ export default function Home() {
       <Navbar />
       
       <main className="flex-1">
-        {/* HERO SECTION */}
-        <section className="relative min-h-[90vh] w-full overflow-hidden flex items-center pt-32 pb-24">
+        {/* HERO SECTION - Optimiziran padding i visina */}
+        <section className="relative min-h-screen w-full overflow-hidden flex items-center pt-32 pb-32">
           <div className="absolute inset-0 z-0">
             <video 
               autoPlay 
@@ -93,7 +86,7 @@ export default function Home() {
           </div>
 
           <div className="container mx-auto px-6 relative z-20">
-            <div className="max-w-4xl animate-fade-in space-y-10">
+            <div className="max-w-4xl space-y-10 animate-fade-in">
               <div className="inline-flex items-center gap-3 px-6 py-2 bg-primary/20 backdrop-blur-xl border border-primary/30 rounded-full text-white text-[12px] font-black tracking-[0.4em] uppercase">
                 <Sparkles className="size-4 text-primary fill-primary animate-pulse" /> {t.heroBadge}
               </div>
@@ -114,7 +107,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CATEGORIES NAVIGATION */}
+        {/* CATEGORIES SECTION - Ispod Hero sekcije bez preklapanja */}
         <section className="py-24 bg-white relative z-30 shadow-2xl rounded-t-[4rem] -mt-20">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24">
@@ -122,7 +115,7 @@ export default function Home() {
                 <Link key={cat.id} href={`/explore?category=${cat.id}`}>
                   <Card className="group hover:scale-105 transition-all duration-500 rounded-[3rem] border-none shadow-xl overflow-hidden bg-white cursor-pointer hover:shadow-primary/10">
                     <CardContent className="p-8 flex flex-col items-center text-center gap-4">
-                      <div className={`size-16 rounded-[1.2rem] bg-primary/5 text-primary flex items-center justify-center shadow-inner group-hover:bg-primary group-hover:text-white transition-all duration-500`}>
+                      <div className="size-16 rounded-[1.2rem] bg-primary/5 text-primary flex items-center justify-center shadow-inner group-hover:bg-primary group-hover:text-white transition-all duration-500">
                         {React.cloneElement(cat.icon as React.ReactElement, { className: 'size-8' })}
                       </div>
                       <p className="font-black text-sm uppercase tracking-[0.2em]">{cat.name}</p>
@@ -132,9 +125,10 @@ export default function Home() {
               ))}
             </div>
 
+            {/* Highlights po kategorijama */}
             <div className="space-y-32">
               {mainCategories.map((cat) => {
-                const listings = getFeaturedByCategory(cat.id);
+                const listings = (allListings || []).filter(l => (l.locationCategoryId || l.categoryId) === cat.id).slice(0, 5);
                 if (listings.length === 0) return null;
 
                 return (
@@ -146,7 +140,7 @@ export default function Home() {
                         </div>
                         <div>
                           <h3 className="text-4xl font-headline font-black italic tracking-tight">{cat.name}</h3>
-                          <p className="text-muted-foreground font-body italic">Izdvojene lokacije koje morate posjetiti</p>
+                          <p className="text-muted-foreground font-body italic">Najbolje preporuke</p>
                         </div>
                       </div>
                       <Link href={`/explore?category=${cat.id}`}>
@@ -167,16 +161,12 @@ export default function Home() {
                                 fill 
                                 className="object-cover group-hover:scale-110 transition-transform duration-700" 
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                               <Badge className="absolute top-4 right-4 bg-white/95 text-primary border-none shadow-md font-black text-[9px] px-3 py-1">
                                 {l.city}
                               </Badge>
                             </div>
                             <CardContent className="p-6 flex-1 flex flex-col justify-center">
                               <h4 className="font-black text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">{l.name}</h4>
-                              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1 font-bold italic">
-                                <MapPin className="size-3 text-secondary" /> {l.city}
-                              </p>
                             </CardContent>
                           </Card>
                         </Link>
@@ -189,7 +179,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* INTERACTIVE MAP SECTION */}
+        {/* INTERACTIVE MAP SECTION - Integrirani layout */}
         <section className="py-32 bg-secondary/5">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -197,7 +187,7 @@ export default function Home() {
                 <Badge variant="outline" className="border-primary text-primary font-black px-6 py-2 uppercase tracking-[0.3em] text-[10px]">Interaktivni vodič</Badge>
                 <h2 className="text-6xl font-headline font-black italic tracking-tighter leading-none">Istraži Hrvatsku<br/>uživo na karti</h2>
                 <p className="text-xl text-muted-foreground font-body italic leading-relaxed">
-                  Pronađite skrivene ljekarne, najbolje plaže i ekskluzivne restorane. Svi markeri su provjereni i ažurirani.
+                  Pronađite skrivene ljekarne, najbolje plaže i ekskluzivne restorane izravno na karti.
                 </p>
                 <div className="space-y-4 pt-6">
                   {CATEGORIES.slice(0, 5).map(cat => (
@@ -207,15 +197,10 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <Link href="/explore" className="block pt-6">
-                  <Button variant="outline" className="w-full h-16 rounded-2xl border-primary text-primary font-black uppercase tracking-wider hover:bg-primary hover:text-white transition-all">
-                    OTVORI CIJELU KARTU <Navigation className="ml-2 size-4" />
-                  </Button>
-                </Link>
               </div>
 
               <div className="lg:col-span-8">
-                <div className="h-[700px] w-full rounded-[4rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] relative border-[12px] border-white group">
+                <div className="h-[600px] w-full rounded-[4rem] overflow-hidden shadow-2xl relative border-[12px] border-white bg-muted/20">
                   <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
                     <Map
                       defaultCenter={MAP_CENTER}
@@ -246,10 +231,9 @@ export default function Home() {
                           onCloseClick={() => setSelectedListingId(null)}
                         >
                           <div className="p-4 max-w-[240px] space-y-4">
-                            <h4 className="font-black text-lg leading-tight tracking-tight">{selectedListing.name}</h4>
-                            <p className="text-xs text-muted-foreground line-clamp-2 italic">{selectedListing.description}</p>
+                            <h4 className="font-black text-lg leading-tight">{selectedListing.name}</h4>
                             <Link href={`/listing/${selectedListing.id}`} className="block">
-                              <Button size="sm" className="w-full h-10 text-[10px] font-black rounded-xl bg-primary shadow-lg shadow-primary/20">
+                              <Button size="sm" className="w-full h-10 text-[10px] font-black rounded-xl bg-primary">
                                 POGLEDAJ DETALJE
                               </Button>
                             </Link>
@@ -264,70 +248,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* PREMIUM PARTNERS SECTION */}
-        <section className="py-32 container mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 text-primary font-black uppercase tracking-[0.4em] text-[10px]">
-                <Star className="size-6 fill-primary" /> {t.featuredBadge}
-              </div>
-              <h2 className="text-6xl md:text-[7rem] font-headline font-black tracking-tighter leading-none italic">
-                {t.featuredTitle}
-              </h2>
-            </div>
-            <Link href="/explore">
-              <Button variant="ghost" className="text-primary font-black text-base uppercase tracking-widest hover:bg-primary/5 px-10 h-20 rounded-3xl group">
-                {t.viewAll} <ChevronRight className="ml-3 group-hover:translate-x-3 transition-transform" />
-              </Button>
-            </Link>
-          </div>
-
-          {isPremiumLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-[550px] rounded-[3.5rem] bg-muted animate-pulse" />
-              ))}
-            </div>
-          ) : premiumListings && premiumListings.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16">
-              {premiumListings.map((listing) => {
-                const cat = CATEGORIES.find(c => c.id === (listing.locationCategoryId || listing.categoryId));
-                return (
-                  <Link key={listing.id} href={`/listing/${listing.id}`}>
-                    <Card className="group overflow-hidden border-none shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] hover:shadow-primary/20 transition-all duration-700 rounded-[3.5rem] bg-white h-full flex flex-col">
-                      <div className="relative h-[450px] overflow-hidden">
-                        <Image 
-                          src={listing.photoUrls?.[0] || 'https://picsum.photos/seed/placeholder/800/1000'} 
-                          alt={listing.name} 
-                          fill 
-                          className="object-cover transition-transform duration-1000 group-hover:scale-110" 
-                        />
-                        <Badge className="absolute top-10 left-10 bg-white/95 text-primary border-none shadow-2xl backdrop-blur font-black px-8 py-3 rounded-2xl text-[11px] tracking-widest uppercase">
-                          {cat?.name}
-                        </Badge>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                      <CardContent className="p-12 flex-1 flex flex-col space-y-6">
-                        <h3 className="text-5xl font-black leading-none tracking-tighter group-hover:text-primary transition-colors">
-                          {listing.name}
-                        </h3>
-                        <div className="flex items-center text-muted-foreground text-lg font-bold italic">
-                          <MapPin className="size-6 mr-3 text-secondary" /> {listing.city}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-32 border-8 border-dashed rounded-[5rem] border-muted bg-muted/5">
-              <p className="text-3xl text-muted-foreground font-body italic">Trenutno nema izdvojenih partnera.</p>
-            </div>
-          )}
-        </section>
-
-        {/* PUBLIC GEMS SECTION */}
+        {/* PUBLIC GEMS SECTION - Popravljeni gumbi i tekst */}
         <section className="py-32 bg-foreground text-white">
           <div className="container mx-auto px-6">
             <div className="flex flex-col items-center text-center mb-24 space-y-8">
@@ -353,33 +274,13 @@ export default function Home() {
                     <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end text-white">
                       <p className="text-[12px] font-black uppercase tracking-[0.4em] text-primary mb-3">{city.region}</p>
                       <h4 className="text-4xl md:text-5xl font-black italic tracking-tighter mb-6">{city.name}</h4>
-                      <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white border-none font-black text-[10px] uppercase tracking-tight transition-all">
+                      <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white border-none font-black text-sm uppercase tracking-normal transition-all">
                         VODIČ KROZ GRAD
                       </Button>
                     </div>
                   </div>
                 </Link>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* SUBMIT CTA SECTION */}
-        <section className="py-32 container mx-auto px-6">
-          <div className="bg-primary text-white rounded-[5rem] p-16 md:p-32 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-16 shadow-[0_50px_100px_-30px_rgba(255,49,49,0.4)]">
-            <Sparkles className="absolute -top-20 -left-20 size-96 text-white/10 rotate-12" />
-            <div className="relative z-10 max-w-3xl space-y-10">
-              <h2 className="text-6xl md:text-[7rem] font-headline font-black leading-[0.8] italic tracking-tighter">
-                Vlasnik ste objekta?<br/>Postanite dio elite.
-              </h2>
-              <p className="text-2xl font-body italic text-white/80 max-w-xl">
-                Pridružite se najbrže rastućem turističkom portalu u regiji i osigurajte svoje mjesto na karti.
-              </p>
-              <Link href="/submit">
-                <Button className="h-24 px-10 md:px-16 bg-white text-primary hover:bg-black hover:text-white font-black rounded-3xl text-xl md:text-2xl uppercase tracking-wider shadow-2xl transition-all">
-                  PRIJAVI SVOJ POSAO
-                </Button>
-              </Link>
             </div>
           </div>
         </section>

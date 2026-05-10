@@ -43,8 +43,7 @@ export default function AdminDashboard() {
   const isAdmin = !!adminRole || isVlasnik;
 
   const listingsQuery = React.useMemo(() => {
-    // KLJUČNO: Ne šaljemo upit ako korisnik nije prijavljen ILI ako još nismo potvrdili Admin ulogu
-    // Ovo sprječava permission error jer anonymous/obični korisnici ne smiju listati cijelu kolekciju bez filtera status=='active'
+    // KLJUČNO: Ne šaljemo upit ako nismo potvrdili Admin status
     if (!firestore || !user || !isAdmin) return null;
     return query(collection(firestore, 'listings'), orderBy('createdAt', 'desc'));
   }, [firestore, user, isAdmin]);
