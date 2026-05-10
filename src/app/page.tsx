@@ -69,8 +69,8 @@ export default function Home() {
       <Navbar />
       
       <main className="flex-1">
-        {/* HERO SECTION - Optimiziran padding i visina */}
-        <section className="relative min-h-screen w-full overflow-hidden flex items-center pt-32 pb-32">
+        {/* HERO SECTION - Optimiziran padding za vidljivost gornjih znački */}
+        <section className="relative min-h-[90vh] w-full overflow-hidden flex items-center pt-40 pb-32">
           <div className="absolute inset-0 z-0">
             <video 
               autoPlay 
@@ -179,7 +179,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* INTERACTIVE MAP SECTION - Integrirani layout */}
+        {/* INTERACTIVE MAP SECTION - Integrirani layout koji radi stabilno */}
         <section className="py-32 bg-secondary/5">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -248,7 +248,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* PUBLIC GEMS SECTION - Popravljeni gumbi i tekst */}
+        {/* PUBLIC GEMS SECTION - Popravljeni gumbi s ispravnim bojama i razmakom */}
         <section className="py-32 bg-foreground text-white">
           <div className="container mx-auto px-6">
             <div className="flex flex-col items-center text-center mb-24 space-y-8">
@@ -272,7 +272,7 @@ export default function Home() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
                     <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end text-white">
-                      <p className="text-[12px] font-black uppercase tracking-[0.4em] text-primary mb-3">{city.region}</p>
+                      <p className="text-[12px] font-black uppercase tracking-[0.2em] text-primary mb-3">{city.region}</p>
                       <h4 className="text-4xl md:text-5xl font-black italic tracking-tighter mb-6">{city.name}</h4>
                       <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white border-none font-black text-sm uppercase tracking-normal transition-all">
                         VODIČ KROZ GRAD

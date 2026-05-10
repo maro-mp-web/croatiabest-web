@@ -43,7 +43,8 @@ export default function AdminDashboard() {
   const isAdmin = !!adminRole || isVlasnik;
 
   const listingsQuery = React.useMemo(() => {
-    // KLJUČNO: Ne šaljemo upit ako nismo potvrdili Admin status
+    // KLJUČNO: Ne šaljemo upit bazi dok nismo sigurni da je korisnik administrator
+    // Ovo rješava "Missing or insufficient permissions" grešku pri učitavanju
     if (!firestore || !user || !isAdmin) return null;
     return query(collection(firestore, 'listings'), orderBy('createdAt', 'desc'));
   }, [firestore, user, isAdmin]);
