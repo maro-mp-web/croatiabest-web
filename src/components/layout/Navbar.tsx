@@ -17,6 +17,8 @@ export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
   const { user } = useUser();
 
+  const isAdmin = user?.email?.includes('admin') || user?.email === 'vlasnik@croatiabest.hr';
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
@@ -85,13 +87,13 @@ export function Navbar() {
           </Link>
 
           {user ? (
-            <Link href="/admin" className="hidden sm:block">
+            <Link href={isAdmin ? "/admin" : "/dashboard"}>
               <Button variant="outline" className="rounded-full border-primary text-primary font-black px-6">
-                <LayoutDashboard className="size-4 mr-2" /> DASHBOARD
+                <LayoutDashboard className="size-4 mr-2" /> {isAdmin ? "ADMIN" : "DASHBOARD"}
               </Button>
             </Link>
           ) : (
-            <Link href="/login" className="hidden sm:block">
+            <Link href="/login">
               <Button variant="ghost" className="rounded-full font-black px-6 text-muted-foreground hover:text-primary">
                 <LogIn className="size-4 mr-2" /> PRIJAVA
               </Button>
@@ -110,12 +112,6 @@ export function Navbar() {
               <DropdownMenuItem onClick={() => setLanguage('en')} className="font-medium">English (EN)</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <Link href="/admin">
-            <Button variant="ghost" size="icon" className="rounded-full size-10 hover:bg-primary/10 hover:text-primary">
-              <User className="size-5" />
-            </Button>
-          </Link>
           
           <Sheet>
             <SheetTrigger asChild>
@@ -130,7 +126,7 @@ export function Navbar() {
                 <Logo className="mb-4" />
                 <nav className="flex flex-col gap-4">
                   <Link href="/submit" className="text-xl font-black text-primary uppercase tracking-tight">Prijavi Objekt</Link>
-                  <Link href={user ? "/admin" : "/login"} className="text-xl font-black text-secondary uppercase tracking-tight">
+                  <Link href={user ? (isAdmin ? "/admin" : "/dashboard") : "/login"} className="text-xl font-black text-secondary uppercase tracking-tight">
                     {user ? "Dashboard" : "Prijava"}
                   </Link>
                   <Link href="/explore" className="text-xl font-black uppercase tracking-tight hover:text-primary transition-colors">{t.navExplore}</Link>
@@ -151,7 +147,6 @@ export function Navbar() {
                     </div>
                   </div>
                   <Link href="/blog" className="text-xl font-black uppercase tracking-tight hover:text-primary transition-colors">{t.navBlog}</Link>
-                  <Link href="/admin" className="text-xl font-black uppercase tracking-tight hover:text-primary transition-colors">{t.navAdmin}</Link>
                 </nav>
               </div>
             </SheetContent>
