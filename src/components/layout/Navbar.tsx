@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Map, Info, Search, Menu, User, BookOpen, Globe, ChevronDown, Building2, PlusCircle, LayoutDashboard, Anchor } from 'lucide-react';
+import { Map, Info, Search, Menu, User, BookOpen, Globe, ChevronDown, Building2, PlusCircle, LayoutDashboard, Anchor, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -85,25 +85,31 @@ export function Navbar() {
           </Link>
 
           {user ? (
-            <Link href="/dashboard" className="hidden sm:block">
+            <Link href="/admin" className="hidden sm:block">
               <Button variant="outline" className="rounded-full border-primary text-primary font-black px-6">
                 <LayoutDashboard className="size-4 mr-2" /> DASHBOARD
               </Button>
             </Link>
           ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2 font-bold h-10">
-                  <Globe className="size-4 text-secondary" />
-                  <span className="uppercase">{language}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="rounded-xl">
-                <DropdownMenuItem onClick={() => setLanguage('hr')} className="font-medium">Hrvatski (HR)</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage('en')} className="font-medium">English (EN)</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Link href="/login" className="hidden sm:block">
+              <Button variant="ghost" className="rounded-full font-black px-6 text-muted-foreground hover:text-primary">
+                <LogIn className="size-4 mr-2" /> PRIJAVA
+              </Button>
+            </Link>
           )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-2 font-bold h-10">
+                <Globe className="size-4 text-secondary" />
+                <span className="uppercase">{language}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="rounded-xl">
+              <DropdownMenuItem onClick={() => setLanguage('hr')} className="font-medium">Hrvatski (HR)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setLanguage('en')} className="font-medium">English (EN)</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Link href="/admin">
             <Button variant="ghost" size="icon" className="rounded-full size-10 hover:bg-primary/10 hover:text-primary">
@@ -124,7 +130,9 @@ export function Navbar() {
                 <Logo className="mb-4" />
                 <nav className="flex flex-col gap-4">
                   <Link href="/submit" className="text-xl font-black text-primary uppercase tracking-tight">Prijavi Objekt</Link>
-                  {user && <Link href="/dashboard" className="text-xl font-black text-secondary uppercase tracking-tight">Dashboard</Link>}
+                  <Link href={user ? "/admin" : "/login"} className="text-xl font-black text-secondary uppercase tracking-tight">
+                    {user ? "Dashboard" : "Prijava"}
+                  </Link>
                   <Link href="/explore" className="text-xl font-black uppercase tracking-tight hover:text-primary transition-colors">{t.navExplore}</Link>
                   <div className="border-t pt-4 pb-2">
                     <p className="text-xs font-bold text-muted-foreground mb-4 tracking-widest uppercase">{t.navCities}</p>

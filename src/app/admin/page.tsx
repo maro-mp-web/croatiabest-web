@@ -18,7 +18,8 @@ import {
   CreditCard,
   DollarSign,
   PlusCircle,
-  RotateCcw
+  RotateCcw,
+  LogIn
 } from 'lucide-react';
 import { CATEGORIES } from '@/app/lib/constants';
 import Link from 'next/link';
@@ -91,14 +92,32 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!user || !isAdmin) {
+  // Preusmjeravanje ako nije prijavljen uopće
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+          <LogIn className="size-24 text-primary mb-6 opacity-20" />
+          <h1 className="text-5xl font-black mb-4 uppercase tracking-tighter">Potrebna Prijava</h1>
+          <p className="text-muted-foreground text-lg max-w-md mb-10">Prijavite se kako biste pristupili administrativnim alatima CroatiaBest portala.</p>
+          <Link href="/login">
+            <Button className="rounded-2xl h-16 px-12 font-black bg-primary shadow-xl shadow-primary/20 text-lg">PRIJAVI SE ODMAH</Button>
+          </Link>
+        </main>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <main className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <ShieldAlert className="size-24 text-destructive mb-6" />
           <h1 className="text-5xl font-black mb-4 uppercase tracking-tighter">Pristup Odbijen</h1>
-          <p className="text-muted-foreground text-lg max-w-md mb-10">Ova stranica je rezervirana isključivo za Superadmina portala CroatiaBest.</p>
+          <p className="text-muted-foreground text-lg max-w-md mb-4">Vaš email ({user.email}) nema administrativne ovlasti.</p>
+          <p className="text-muted-foreground mb-10 italic">Molimo koristite email koji sadrži "admin" ili se javite sustavu.</p>
           <Link href="/">
             <Button className="rounded-2xl h-14 px-12 font-black bg-primary shadow-xl shadow-primary/20">Povratak na portal</Button>
           </Link>
