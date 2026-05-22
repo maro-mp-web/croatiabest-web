@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Navbar } from '@/components/layout/Navbar';
@@ -13,21 +13,19 @@ import { Logo } from '@/components/brand/Logo';
 import { 
   MapPin, 
   ArrowRight, 
-  Star, 
   Sparkles, 
   ChevronRight,
   Utensils,
   Hotel,
   Umbrella,
   GlassWater,
-  Navigation,
   Loader2,
   ExternalLink,
   Map as MapIcon
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, limit } from 'firebase/firestore';
+import { collection, query, where } from 'firebase/firestore';
 import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps';
 
 const MAP_CENTER = { lat: 44.5, lng: 16.5 };
@@ -37,7 +35,7 @@ export default function Home() {
   const firestore = useFirestore();
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
 
-  // All listings for categories and map - optimized query
+  // Dohvaćanje svih aktivnih oglasa
   const allListingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'listings'), where('status', '==', 'active'));
@@ -58,7 +56,7 @@ export default function Home() {
       <Navbar />
       
       <main className="flex-1">
-        {/* HERO SECTION - Optimized padding for total visibility */}
+        {/* HERO SECTION - Prostran i vidljiv */}
         <section className="relative min-h-[95vh] w-full overflow-hidden flex items-center pt-48 pb-32">
           <div className="absolute inset-0 z-0">
             <video 
@@ -96,7 +94,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CATEGORIES SECTION - Clean background, no overlap */}
+        {/* CATEGORIES & HIGHLIGHTS */}
         <section className="py-24 bg-white relative z-30 shadow-2xl rounded-t-[4rem] -mt-20">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24">
@@ -114,7 +112,7 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Highlights by category - Shows top 5 for each */}
+            {/* Highlights by category */}
             <div className="space-y-32">
               {mainCategories.map((cat) => {
                 const listings = (allListings || []).filter(l => (l.locationCategoryId || l.categoryId) === cat.id).slice(0, 5);
@@ -168,7 +166,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* INTERACTIVE MAP SECTION - Integrated sidebar layout */}
+        {/* INTEGRIRANA KARTA - Pregledno i funkcionalno */}
         <section className="py-32 bg-secondary/5">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -237,7 +235,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* PUBLIC GEMS SECTION */}
+        {/* PUBLIC GEMS */}
         <section className="py-32 bg-foreground text-white">
           <div className="container mx-auto px-6">
             <div className="flex flex-col items-center text-center mb-24 space-y-8">
@@ -308,4 +306,3 @@ export default function Home() {
     </div>
   );
 }
-
