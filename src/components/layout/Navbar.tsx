@@ -3,9 +3,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Map, Search, Menu, BookOpen, ChevronDown, Building2, LayoutDashboard, Anchor } from 'lucide-react';
+import { Map, Menu, BookOpen, ChevronDown, Building2, LayoutDashboard, Anchor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -72,14 +71,6 @@ export function Navbar() {
         </div>
 
         <div className="flex flex-1 items-center justify-end space-x-4">
-          <div className="w-full max-w-[150px] xl:max-w-xs hidden md:flex relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input 
-              placeholder={t.searchPlaceholder}
-              className="pl-10 bg-secondary/5 border-none focus-visible:ring-primary h-10 rounded-full" 
-            />
-          </div>
-
           {user && (
             <Link href={isAdmin ? "/admin" : "/dashboard"}>
               <Button variant="outline" className="rounded-full border-primary text-primary font-black px-6">
