@@ -4,7 +4,7 @@
 import React from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { initiateGoogleSignIn } from '@/firebase';
 import { useUser, useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
@@ -49,7 +49,6 @@ export default function LoginPage() {
             <CardHeader className="bg-primary text-white p-10 text-center">
               <ShieldCheck className="size-12 mx-auto mb-4" />
               <CardTitle className="text-3xl font-black italic">Portal</CardTitle>
-              <CardDescription className="text-white/70">Sigurna prijava putem vašeg Google računa</CardDescription>
             </CardHeader>
             <CardContent className="p-10 space-y-6">
               <Button 

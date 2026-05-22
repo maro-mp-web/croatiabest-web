@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Map, Search, Menu, BookOpen, ChevronDown, Building2, LayoutDashboard, Anchor, LogIn } from 'lucide-react';
+import { Map, Search, Menu, BookOpen, ChevronDown, Building2, LayoutDashboard, Anchor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -17,7 +17,6 @@ export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
   const { user } = useUser();
 
-  // Stroga provjera administratora
   const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
 
   return (
@@ -81,16 +80,10 @@ export function Navbar() {
             />
           </div>
 
-          {user ? (
+          {user && (
             <Link href={isAdmin ? "/admin" : "/dashboard"}>
               <Button variant="outline" className="rounded-full border-primary text-primary font-black px-6">
                 <LayoutDashboard className="size-4 mr-2" /> {isAdmin ? "ADMIN" : "DASHBOARD"}
-              </Button>
-            </Link>
-          ) : (
-            <Link href="/login">
-              <Button variant="ghost" className="rounded-full font-bold px-6">
-                <LogIn className="size-4 mr-2" /> PRIJAVA
               </Button>
             </Link>
           )}
@@ -123,9 +116,6 @@ export function Navbar() {
                     <Link href={isAdmin ? "/admin" : "/dashboard"} className="text-xl font-black text-secondary uppercase tracking-tight">
                       {isAdmin ? "Admin" : "Dashboard"}
                     </Link>
-                  )}
-                  {!user && (
-                    <Link href="/login" className="text-xl font-black uppercase tracking-tight hover:text-primary transition-colors">Prijava</Link>
                   )}
                   <Link href="/explore" className="text-xl font-black uppercase tracking-tight hover:text-primary transition-colors">{t.navExplore}</Link>
                   <div className="border-t pt-4 pb-2">
