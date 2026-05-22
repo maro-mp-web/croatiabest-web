@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,10 +44,10 @@ export default function AdminDashboard() {
   const isAdmin = !!adminRole || isVlasnik;
 
   const listingsQuery = React.useMemo(() => {
-    // Only run query if we are sure user is admin to avoid permission errors
-    if (!firestore || !user || !isAdmin) return null;
+    // Only run query if we are sure user is admin and loaded to avoid permission errors
+    if (!firestore || !user || isUserLoading || !isAdmin) return null;
     return query(collection(firestore, 'listings'), orderBy('createdAt', 'desc'));
-  }, [firestore, user, isAdmin]);
+  }, [firestore, user, isUserLoading, isAdmin]);
 
   const { data: listings, isLoading: listingsLoading } = useCollection(listingsQuery);
 
@@ -276,4 +276,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
