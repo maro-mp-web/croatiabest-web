@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState } from 'react';
@@ -26,22 +25,17 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
-import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps';
-
-const MAP_CENTER = { lat: 44.5, lng: 16.5 };
 
 export default function Home() {
   const { t } = useLanguage();
   const firestore = useFirestore();
-  const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
 
   const allListingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'listings'), where('status', '==', 'active'));
   }, [firestore]);
 
-  const { data: allListings, isLoading: isListingsLoading } = useCollection(allListingsQuery);
-  const selectedListing = allListings?.find(l => l.id === selectedListingId);
+  const { data: allListings } = useCollection(allListingsQuery);
 
   const mainCategories = [
     { id: 'restaurants', name: 'Gastronomija', icon: <Utensils className="size-5" /> },
@@ -104,14 +98,13 @@ export default function Home() {
                       <div className="size-14 rounded-2xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
                         {React.cloneElement(cat.icon as React.ReactElement, { className: 'size-6' })}
                       </div>
-                      <p className="font-black text-xs uppercase tracking-widest">{cat.name}</p>
+                      <p className="font-black text-[10px] uppercase tracking-widest">{cat.name}</p>
                     </CardContent>
                   </Card>
                 </Link>
               ))}
             </div>
 
-            {/* Featured Section for Categories */}
             <div className="space-y-24">
               {mainCategories.map((cat) => {
                 const listings = (allListings || []).filter(l => (l.locationCategoryId || l.categoryId) === cat.id).slice(0, 5);
@@ -127,7 +120,7 @@ export default function Home() {
                         <h3 className="text-3xl font-headline font-black italic">{cat.name}</h3>
                       </div>
                       <Link href={`/explore?category=${cat.id}`}>
-                        <Button variant="link" className="text-primary font-black uppercase tracking-widest text-xs">
+                        <Button variant="link" className="text-primary font-black uppercase tracking-widest text-[10px]">
                           Prikaži sve <ChevronRight className="ml-1 size-4" />
                         </Button>
                       </Link>
@@ -146,8 +139,8 @@ export default function Home() {
                               />
                             </div>
                             <CardContent className="p-5 flex-1 flex flex-col justify-center bg-secondary/5">
-                              <h4 className="font-black text-base leading-tight line-clamp-2">{l.name}</h4>
-                              <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase">{l.city}</p>
+                              <h4 className="font-black text-sm leading-tight line-clamp-2">{l.name}</h4>
+                              <p className="text-[9px] text-muted-foreground mt-2 font-bold uppercase tracking-tight">{l.city}</p>
                             </CardContent>
                           </Card>
                         </Link>
@@ -175,9 +168,9 @@ export default function Home() {
                     <Image src={city.image} alt={city.name} fill className="object-cover transition-all duration-700 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
                     <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                      <p className="text-[10px] font-black uppercase text-primary mb-2">{city.region}</p>
+                      <p className="text-[10px] font-black uppercase text-primary mb-2 tracking-widest">{city.region}</p>
                       <h4 className="text-4xl font-black italic mb-6">{city.name}</h4>
-                      <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white font-black text-xs uppercase tracking-normal transition-all px-4">
+                      <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white font-black text-[10px] uppercase tracking-normal transition-all px-4">
                         VODIČ KROZ GRAD
                       </Button>
                     </div>
@@ -198,16 +191,16 @@ export default function Home() {
             </p>
           </div>
           <div className="md:col-span-3">
-            <h4 className="font-black mb-8 text-xs uppercase tracking-widest text-primary">Navigacija</h4>
-            <ul className="space-y-4 text-white/50 font-bold uppercase text-sm">
+            <h4 className="font-black mb-8 text-[10px] uppercase tracking-widest text-primary">Navigacija</h4>
+            <ul className="space-y-4 text-white/50 font-bold uppercase text-xs">
               <li><Link href="/explore" className="hover:text-primary transition-all">Istraži Kartu</Link></li>
               <li><Link href="/blog" className="hover:text-primary transition-all">Magazin</Link></li>
               <li><Link href="/submit" className="hover:text-primary transition-all">Prijavi Objekt</Link></li>
             </ul>
           </div>
           <div className="md:col-span-4">
-            <h4 className="font-black mb-8 text-xs uppercase tracking-widest text-primary">Pravne informacije</h4>
-            <ul className="space-y-4 text-white/50 font-bold uppercase text-sm">
+            <h4 className="font-black mb-8 text-[10px] uppercase tracking-widest text-primary">Pravne informacije</h4>
+            <ul className="space-y-4 text-white/50 font-bold uppercase text-xs">
               <li><Link href="/privacy" className="hover:text-primary transition-all">Privatnost</Link></li>
               <li><Link href="/terms" className="hover:text-primary transition-all">Uvjeti</Link></li>
             </ul>
