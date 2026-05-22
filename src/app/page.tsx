@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState } from 'react';
@@ -170,7 +171,7 @@ export default function Home() {
                     <div className="absolute inset-0 p-8 flex flex-col justify-end">
                       <p className="text-[10px] font-black uppercase text-primary mb-2 tracking-widest">{city.region}</p>
                       <h4 className="text-4xl font-black italic mb-6">{city.name}</h4>
-                      <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white font-black text-[10px] uppercase tracking-normal transition-all px-4">
+                      <Button className="w-full h-12 rounded-xl bg-primary hover:bg-white hover:text-primary text-white font-black text-[9px] uppercase tracking-tighter transition-all px-2">
                         VODIČ KROZ GRAD
                       </Button>
                     </div>

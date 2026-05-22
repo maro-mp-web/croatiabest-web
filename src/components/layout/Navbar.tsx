@@ -11,13 +11,23 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/brand/Logo';
 import { CITIES, ISLANDS } from '@/app/lib/constants';
-import { useUser } from '@/firebase';
+import { useUser, useDoc, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
   const { user } = useUser();
+  const firestore = useFirestore();
 
-  const isAdmin = user?.email?.includes('admin') || user?.email === 'vlasnik@croatiabest.hr';
+  const adminDocRef = React.useMemo(() => {
+    if (!firestore || !user?.uid) return null;
+    return doc(firestore, 'roles_admin', user.uid);
+  }, [firestore, user?.uid]);
+
+  const { data: adminRole } = useDoc(adminDocRef);
+
+  // Stroga provjera administratora
+  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com' || !!adminRole;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

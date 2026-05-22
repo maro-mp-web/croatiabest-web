@@ -41,11 +41,10 @@ export default function AdminDashboard() {
 
   const { data: adminRole, isLoading: adminRoleLoading } = useDoc(adminDocRef);
 
-  const isVlasnik = user?.email === 'vlasnik@croatiabest.hr' || user?.email?.includes('admin');
-  const isAdmin = !!adminRole || isVlasnik;
+  // Stroga provjera administratora - samo maro.webdeveloper@gmail.com
+  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com' || !!adminRole;
 
   const listingsQuery = React.useMemo(() => {
-    // Only run query if we are sure user is admin and loaded to avoid permission errors
     if (!firestore || !user || isUserLoading || !isAdmin) return null;
     return query(collection(firestore, 'listings'), orderBy('createdAt', 'desc'));
   }, [firestore, user, isUserLoading, isAdmin]);
@@ -92,7 +91,6 @@ export default function AdminDashboard() {
     );
   }
 
-  // Preusmjeravanje ako nije prijavljen uopće
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -116,8 +114,7 @@ export default function AdminDashboard() {
         <main className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <ShieldAlert className="size-24 text-destructive mb-6" />
           <h1 className="text-5xl font-black mb-4 uppercase tracking-tighter">Pristup Odbijen</h1>
-          <p className="text-muted-foreground text-lg max-w-md mb-4">Vaš email ({user.email}) nema administrativne ovlasti.</p>
-          <p className="text-muted-foreground mb-10 italic">Molimo koristite email koji sadrži "admin" ili se javite sustavu.</p>
+          <p className="text-muted-foreground text-lg max-w-md mb-4">Vaš račun ({user.email}) nema administrativne ovlasti.</p>
           <Link href="/">
             <Button className="rounded-2xl h-14 px-12 font-black bg-primary shadow-xl shadow-primary/20">Povratak na portal</Button>
           </Link>
@@ -142,7 +139,6 @@ export default function AdminDashboard() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-widest px-4 py-1">Superadmin Console</Badge>
-              {isVlasnik && <Badge variant="secondary" className="text-[10px] font-black uppercase">Root Access</Badge>}
             </div>
             <h1 className="text-6xl font-headline font-black tracking-tight">Upravljačka ploča</h1>
             <p className="text-muted-foreground mt-2">Prijavljen kao: <span className="font-bold text-foreground">{user?.email}</span></p>
