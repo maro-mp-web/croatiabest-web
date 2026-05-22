@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Users, 
   MapPin, 
   CheckCircle2, 
   XCircle,
@@ -23,26 +22,17 @@ import {
 } from 'lucide-react';
 import { CATEGORIES } from '@/app/lib/constants';
 import Link from 'next/link';
-import { useFirestore, useUser, useCollection, useDoc } from '@/firebase';
+import { useFirestore, useUser, useCollection } from '@/firebase';
 import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { useRouter } from 'next/navigation';
 
 export default function AdminDashboard() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
-  const router = useRouter();
   
-  const adminDocRef = React.useMemo(() => {
-    if (!firestore || !user?.uid) return null;
-    return doc(firestore, 'roles_admin', user.uid);
-  }, [firestore, user?.uid]);
-
-  const { data: adminRole, isLoading: adminRoleLoading } = useDoc(adminDocRef);
-
-  // Stroga provjera administratora - samo maro.webdeveloper@gmail.com
-  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com' || !!adminRole;
+  // Stroga provjera administratora - isključivo maro.webdeveloper@gmail.com
+  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
 
   const listingsQuery = React.useMemo(() => {
     if (!firestore || !user || isUserLoading || !isAdmin) return null;
@@ -83,7 +73,7 @@ export default function AdminDashboard() {
     updateDoc(docRef, { status: 'pending' });
   };
 
-  if (isUserLoading || adminRoleLoading) {
+  if (isUserLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="size-12 animate-spin text-primary" />
@@ -91,32 +81,16 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
-        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-          <LogIn className="size-24 text-primary mb-6 opacity-20" />
-          <h1 className="text-5xl font-black mb-4 uppercase tracking-tighter">Potrebna Prijava</h1>
-          <p className="text-muted-foreground text-lg max-w-md mb-10">Prijavite se kako biste pristupili administrativnim alatima CroatiaBest portala.</p>
-          <Link href="/login">
-            <Button className="rounded-2xl h-16 px-12 font-black bg-primary shadow-xl shadow-primary/20 text-lg">PRIJAVI SE ODMAH</Button>
-          </Link>
-        </main>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
+  if (!user || !isAdmin) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <main className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <ShieldAlert className="size-24 text-destructive mb-6" />
           <h1 className="text-5xl font-black mb-4 uppercase tracking-tighter">Pristup Odbijen</h1>
-          <p className="text-muted-foreground text-lg max-w-md mb-4">Vaš račun ({user.email}) nema administrativne ovlasti.</p>
+          <p className="text-muted-foreground text-lg max-w-md mb-10">Ova stranica rezervirana je isključivo za administratora maro.webdeveloper@gmail.com.</p>
           <Link href="/">
-            <Button className="rounded-2xl h-14 px-12 font-black bg-primary shadow-xl shadow-primary/20">Povratak na portal</Button>
+            <Button className="rounded-2xl h-16 px-12 font-black bg-primary shadow-xl shadow-primary/20 text-lg">POVRATAK NA PORTAL</Button>
           </Link>
         </main>
       </div>

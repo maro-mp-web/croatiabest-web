@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Navbar } from '@/components/layout/Navbar';
@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CATEGORIES, CITIES } from '@/app/lib/constants';
-import { Logo } from '@/components/brand/Logo';
 import { 
   MapPin, 
   ArrowRight, 
@@ -18,10 +17,7 @@ import {
   Utensils,
   Hotel,
   Umbrella,
-  GlassWater,
-  Loader2,
-  ExternalLink,
-  Map as MapIcon
+  GlassWater
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -171,7 +167,7 @@ export default function Home() {
                     <div className="absolute inset-0 p-8 flex flex-col justify-end">
                       <p className="text-[10px] font-black uppercase text-primary mb-2 tracking-widest">{city.region}</p>
                       <h4 className="text-4xl font-black italic mb-6">{city.name}</h4>
-                      <Button className="w-full h-12 rounded-xl bg-primary hover:bg-white hover:text-primary text-white font-black text-[9px] uppercase tracking-tighter transition-all px-2">
+                      <Button className="w-full h-11 rounded-xl bg-primary hover:bg-white hover:text-primary text-white font-black text-[8px] sm:text-[9px] uppercase tracking-tighter transition-all px-1">
                         VODIČ KROZ GRAD
                       </Button>
                     </div>
@@ -186,7 +182,7 @@ export default function Home() {
       <footer className="bg-foreground text-white py-24 border-t border-white/5">
         <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-16">
           <div className="md:col-span-5 space-y-8">
-            <Logo className="h-12 w-auto" />
+            <p className="text-3xl font-black italic text-primary">CroatiaBest</p>
             <p className="text-white/40 font-body text-xl italic leading-relaxed max-w-md">
               {t.footerDesc}
             </p>

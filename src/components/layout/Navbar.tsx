@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Map, Info, Search, Menu, User, BookOpen, Globe, ChevronDown, Building2, PlusCircle, LayoutDashboard, Anchor, LogIn } from 'lucide-react';
+import { Map, Search, Menu, BookOpen, ChevronDown, Building2, PlusCircle, LayoutDashboard, Anchor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -11,23 +11,14 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/brand/Logo';
 import { CITIES, ISLANDS } from '@/app/lib/constants';
-import { useUser, useDoc, useFirestore } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser } from '@/firebase';
 
 export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
   const { user } = useUser();
-  const firestore = useFirestore();
 
-  const adminDocRef = React.useMemo(() => {
-    if (!firestore || !user?.uid) return null;
-    return doc(firestore, 'roles_admin', user.uid);
-  }, [firestore, user?.uid]);
-
-  const { data: adminRole } = useDoc(adminDocRef);
-
-  // Stroga provjera administratora
-  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com' || !!adminRole;
+  // Stroga provjera administratora - isključivo maro.webdeveloper@gmail.com
+  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -96,16 +87,10 @@ export function Navbar() {
             </Button>
           </Link>
 
-          {user ? (
+          {user && (
             <Link href={isAdmin ? "/admin" : "/dashboard"}>
               <Button variant="outline" className="rounded-full border-primary text-primary font-black px-6">
                 <LayoutDashboard className="size-4 mr-2" /> {isAdmin ? "ADMIN" : "DASHBOARD"}
-              </Button>
-            </Link>
-          ) : (
-            <Link href="/login">
-              <Button variant="ghost" className="rounded-full font-black px-6 text-muted-foreground hover:text-primary">
-                <LogIn className="size-4 mr-2" /> PRIJAVA
               </Button>
             </Link>
           )}
@@ -113,7 +98,6 @@ export function Navbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-2 font-bold h-10">
-                <Globe className="size-4 text-secondary" />
                 <span className="uppercase">{language}</span>
               </Button>
             </DropdownMenuTrigger>
@@ -136,9 +120,11 @@ export function Navbar() {
                 <Logo className="mb-4" />
                 <nav className="flex flex-col gap-4">
                   <Link href="/submit" className="text-xl font-black text-primary uppercase tracking-tight">Prijavi Objekt</Link>
-                  <Link href={user ? (isAdmin ? "/admin" : "/dashboard") : "/login"} className="text-xl font-black text-secondary uppercase tracking-tight">
-                    {user ? "Dashboard" : "Prijava"}
-                  </Link>
+                  {user && (
+                    <Link href={isAdmin ? "/admin" : "/dashboard"} className="text-xl font-black text-secondary uppercase tracking-tight">
+                      {isAdmin ? "Admin" : "Dashboard"}
+                    </Link>
+                  )}
                   <Link href="/explore" className="text-xl font-black uppercase tracking-tight hover:text-primary transition-colors">{t.navExplore}</Link>
                   <div className="border-t pt-4 pb-2">
                     <p className="text-xs font-bold text-muted-foreground mb-4 tracking-widest uppercase">{t.navCities}</p>
