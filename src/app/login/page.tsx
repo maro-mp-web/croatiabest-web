@@ -48,7 +48,7 @@ export default function LoginPage() {
           <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-white/80 backdrop-blur-xl">
             <CardHeader className="bg-primary text-white p-10 text-center">
               <ShieldCheck className="size-12 mx-auto mb-4" />
-              <CardTitle className="text-3xl font-black italic">Partner Portal</CardTitle>
+              <CardTitle className="text-3xl font-black italic">Portal</CardTitle>
               <CardDescription className="text-white/70">Sigurna prijava putem vašeg Google računa</CardDescription>
             </CardHeader>
             <CardContent className="p-10 space-y-6">

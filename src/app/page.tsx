@@ -167,7 +167,7 @@ export default function Home() {
                     <div className="absolute inset-0 p-8 flex flex-col justify-end">
                       <p className="text-[10px] font-black uppercase text-primary mb-2 tracking-widest">{city.region}</p>
                       <h4 className="text-4xl font-black italic mb-6">{city.name}</h4>
-                      <Button className="w-full h-11 rounded-xl bg-primary hover:bg-white hover:text-primary text-white font-black text-[7px] tracking-tighter transition-all px-1">
+                      <Button className="w-full h-10 rounded-xl bg-primary hover:bg-white hover:text-primary text-white font-black text-[9px] tracking-tighter transition-all px-2 uppercase leading-none">
                         VODIČ KROZ GRAD
                       </Button>
                     </div>
