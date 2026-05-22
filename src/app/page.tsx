@@ -167,7 +167,7 @@ export default function Home() {
                     <div className="absolute inset-0 p-8 flex flex-col justify-end">
                       <p className="text-[10px] font-black uppercase text-primary mb-2 tracking-widest">{city.region}</p>
                       <h4 className="text-4xl font-black italic mb-6">{city.name}</h4>
-                      <Button className="w-full h-11 rounded-xl bg-primary hover:bg-white hover:text-primary text-white font-black text-[8px] sm:text-[9px] uppercase tracking-tighter transition-all px-1">
+                      <Button className="w-full h-11 rounded-xl bg-primary hover:bg-white hover:text-primary text-white font-black text-[7px] tracking-tighter transition-all px-1">
                         VODIČ KROZ GRAD
                       </Button>
                     </div>
@@ -192,7 +192,6 @@ export default function Home() {
             <ul className="space-y-4 text-white/50 font-bold uppercase text-xs">
               <li><Link href="/explore" className="hover:text-primary transition-all">Istraži Kartu</Link></li>
               <li><Link href="/blog" className="hover:text-primary transition-all">Magazin</Link></li>
-              <li><Link href="/submit" className="hover:text-primary transition-all">Prijavi Objekt</Link></li>
             </ul>
           </div>
           <div className="md:col-span-4">

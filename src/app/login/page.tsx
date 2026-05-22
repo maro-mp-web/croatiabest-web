@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from 'react';
@@ -8,7 +9,6 @@ import { initiateGoogleSignIn } from '@/firebase';
 import { useUser, useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { Loader2, ShieldCheck, Chrome } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const { user, isUserLoading } = useUser();
@@ -17,8 +17,7 @@ export default function LoginPage() {
 
   React.useEffect(() => {
     if (user) {
-      // Ako je admin, idi u admin, inače na početnu/dashboard
-      const isAdmin = user.email === 'vlasnik@croatiabest.hr' || user.email?.includes('admin');
+      const isAdmin = user.email === 'maro.webdeveloper@gmail.com';
       router.push(isAdmin ? '/admin' : '/dashboard');
     }
   }, [user, router]);
@@ -60,13 +59,6 @@ export default function LoginPage() {
                 <Chrome className="size-6 text-primary" />
                 PRIJAVI SE PUTEM GOOGLE-A
               </Button>
-
-              <div className="p-6 bg-secondary/5 rounded-2xl border border-black/5">
-                <p className="text-[10px] font-black uppercase text-muted-foreground mb-2 tracking-widest">Napomena za vlasnika</p>
-                <p className="text-[10px] italic text-muted-foreground/60 leading-relaxed">
-                  Administraciji možete pristupiti isključivo koristeći svoj autorizirani Google račun povezan s adresom <strong className="text-primary">vlasnik@croatiabest.hr</strong>.
-                </p>
-              </div>
             </CardContent>
           </Card>
         </div>

@@ -16,7 +16,7 @@ import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 
 export default function AIWriterPage() {
-  const { user, loading: userLoading } = useUser();
+  const { user, isUserLoading } = useUser();
   const router = useRouter();
   const [contentType, setContentType] = useState<'listing' | 'article'>('listing');
   const [category, setCategory] = useState('');
@@ -25,8 +25,8 @@ export default function AIWriterPage() {
   const [generatedContent, setGeneratedContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Zaštita: Samo superadmin
-  const isAdmin = user?.email?.includes('admin') || user?.email === 'vlasnik@croatiabest.hr';
+  // Stroga provjera administratora
+  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
 
   const handleGenerate = async () => {
     if (!prompt) {
@@ -57,7 +57,7 @@ export default function AIWriterPage() {
     toast({ title: "Kopirano", description: "Tekst je kopiran u međuspremnik." });
   };
 
-  if (userLoading) {
+  if (isUserLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="size-12 animate-spin text-primary" />
@@ -70,7 +70,7 @@ export default function AIWriterPage() {
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
         <ShieldAlert className="size-24 text-destructive mb-6" />
         <h1 className="text-4xl font-black mb-4 uppercase tracking-tighter">Pristup Odbijen</h1>
-        <p className="text-muted-foreground text-lg max-w-md mb-8">Ovaj moćni AI alat rezerviran je samo za Superadmina portala CroatiaBest.</p>
+        <p className="text-muted-foreground text-lg max-w-md mb-8">Ovaj moćni AI alat rezerviran je samo za administratora portala CroatiaBest.</p>
         <Button onClick={() => router.push('/')} className="rounded-xl h-12 px-8 font-bold">Povratak na portal</Button>
       </div>
     );

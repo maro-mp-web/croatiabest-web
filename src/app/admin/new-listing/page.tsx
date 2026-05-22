@@ -44,13 +44,14 @@ export default function AdminNewListingPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
 
-  const isAdmin = user?.email?.includes('admin') || user?.email === 'vlasnik@croatiabest.hr';
+  // Stroga provjera administratora
+  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
 
   const [formData, setFormData] = useState({
     name: '',
     locationCategoryId: '',
     address: '',
-    city: '', // This can be a City or an Island name
+    city: '', 
     region: '',
     latitude: '',
     longitude: '',
@@ -109,7 +110,6 @@ export default function AdminNewListingPage() {
     setIsSaving(true);
     const selectedCategory = CATEGORIES.find(c => c.id === formData.locationCategoryId);
     
-    // Auto-determine region if it's a known city or island
     const knownLoc = [...CITIES, ...ISLANDS].find(l => l.name === formData.city);
     const region = knownLoc?.region || formData.region;
 
@@ -255,7 +255,7 @@ export default function AdminNewListingPage() {
               <CardHeader className="bg-secondary/5 border-b"><CardTitle>Kontakt</CardTitle></CardHeader>
               <CardContent className="p-6 space-y-4">
                 <Input placeholder="Telefon" value={formData.contactPhone} onChange={e => setFormData({...formData, contactPhone: e.target.value})} className="rounded-xl" />
-                <Input placeholder="Email (Neće biti javan)" value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} className="rounded-xl" />
+                <Input placeholder="Email" value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} className="rounded-xl" />
                 <Input placeholder="Web stranica" value={formData.webAddress} onChange={e => setFormData({...formData, webAddress: e.target.value})} className="rounded-xl" />
               </CardContent>
             </Card>

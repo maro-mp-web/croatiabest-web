@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Map, Search, Menu, BookOpen, ChevronDown, Building2, PlusCircle, LayoutDashboard, Anchor } from 'lucide-react';
+import { Map, Search, Menu, BookOpen, ChevronDown, Building2, LayoutDashboard, Anchor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -17,7 +17,7 @@ export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
   const { user } = useUser();
 
-  // Stroga provjera administratora - isključivo maro.webdeveloper@gmail.com
+  // Stroga provjera administratora
   const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
 
   return (
@@ -81,12 +81,6 @@ export function Navbar() {
             />
           </div>
 
-          <Link href="/submit" className="hidden sm:block">
-            <Button className="rounded-full bg-primary hover:bg-primary/90 font-black px-6 shadow-lg shadow-primary/20">
-              <PlusCircle className="size-4 mr-2" /> PRIJAVI OBJEKT
-            </Button>
-          </Link>
-
           {user && (
             <Link href={isAdmin ? "/admin" : "/dashboard"}>
               <Button variant="outline" className="rounded-full border-primary text-primary font-black px-6">
@@ -119,7 +113,6 @@ export function Navbar() {
               <div className="flex flex-col gap-8 pt-12">
                 <Logo className="mb-4" />
                 <nav className="flex flex-col gap-4">
-                  <Link href="/submit" className="text-xl font-black text-primary uppercase tracking-tight">Prijavi Objekt</Link>
                   {user && (
                     <Link href={isAdmin ? "/admin" : "/dashboard"} className="text-xl font-black text-secondary uppercase tracking-tight">
                       {isAdmin ? "Admin" : "Dashboard"}
