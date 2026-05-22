@@ -160,72 +160,12 @@ export default function Home() {
           </div>
         </section>
 
-        {/* MAP SECTION */}
-        <section className="py-24 bg-secondary/5">
-          <div className="container mx-auto px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-              <div className="lg:col-span-4 space-y-6">
-                <Badge variant="outline" className="border-primary text-primary font-black px-4 py-1 uppercase tracking-widest text-[10px]">Interaktivna mapa</Badge>
-                <h2 className="text-5xl font-headline font-black italic leading-none">Istražite cijelu obalu uživo</h2>
-                <p className="text-lg text-muted-foreground font-body italic">
-                  Pratite lokacije u stvarnom vremenu. Od dežurnih ljekarni do ekskluzivnih plaža.
-                </p>
-                <Link href="/explore" className="inline-block pt-4">
-                  <Button className="rounded-2xl h-14 px-8 font-black bg-foreground text-white">OTVORI VELIKU KARTU</Button>
-                </Link>
-              </div>
-              <div className="lg:col-span-8">
-                <div className="h-[500px] w-full rounded-[3rem] overflow-hidden shadow-2xl border-[8px] border-white relative">
-                  <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
-                    <Map
-                      defaultCenter={MAP_CENTER}
-                      defaultZoom={7}
-                      disableDefaultUI={true}
-                      gestureHandling={'greedy'}
-                      className="w-full h-full"
-                    >
-                      {allListings?.map((l) => {
-                        const lat = typeof l.latitude === 'string' ? parseFloat(l.latitude) : l.latitude;
-                        const lng = typeof l.longitude === 'string' ? parseFloat(l.longitude) : l.longitude;
-                        if (isNaN(lat) || isNaN(lng)) return null;
-                        return (
-                          <Marker
-                            key={l.id}
-                            position={{ lat, lng }}
-                            onClick={() => setSelectedListingId(l.id)}
-                          />
-                        );
-                      })}
-                      {selectedListing && (
-                        <InfoWindow
-                          position={{ 
-                            lat: typeof selectedListing.latitude === 'string' ? parseFloat(selectedListing.latitude) : selectedListing.latitude, 
-                            lng: typeof selectedListing.longitude === 'string' ? parseFloat(selectedListing.longitude) : selectedListing.longitude 
-                          }}
-                          onCloseClick={() => setSelectedListingId(null)}
-                        >
-                          <div className="p-3 max-w-[200px] space-y-3">
-                            <h4 className="font-black text-sm">{selectedListing.name}</h4>
-                            <Link href={`/listing/${selectedListing.id}`} className="block">
-                              <Button size="sm" className="w-full h-8 text-[10px] font-black rounded-lg bg-primary">DETALJI</Button>
-                            </Link>
-                          </div>
-                        </InfoWindow>
-                      )}
-                    </Map>
-                  </APIProvider>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* CITY GUIDES */}
         <section className="py-24 bg-foreground text-white">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16 space-y-4">
               <Badge variant="outline" className="border-primary text-primary font-black px-6 py-2 rounded-full text-[10px] uppercase tracking-widest">Gradski Vodiči</Badge>
-              <h2 className="text-5xl md:text-7xl font-headline font-black italic tracking-tighter">Najljepši gradovi Jadrana</h2>
+              <h2 className="text-5xl md:text-7xl font-headline font-black italic tracking-tighter">Najljepši gradovi</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -237,7 +177,7 @@ export default function Home() {
                     <div className="absolute inset-0 p-8 flex flex-col justify-end">
                       <p className="text-[10px] font-black uppercase text-primary mb-2">{city.region}</p>
                       <h4 className="text-4xl font-black italic mb-6">{city.name}</h4>
-                      <Button className="w-full h-12 rounded-xl bg-primary hover:bg-white hover:text-primary text-white font-bold text-xs uppercase tracking-normal transition-all">
+                      <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-white hover:text-primary text-white font-black text-xs uppercase tracking-normal transition-all px-4">
                         VODIČ KROZ GRAD
                       </Button>
                     </div>
@@ -254,7 +194,7 @@ export default function Home() {
           <div className="md:col-span-5 space-y-8">
             <Logo className="h-12 w-auto" />
             <p className="text-white/40 font-body text-xl italic leading-relaxed max-w-md">
-              {t.footerDesc} Otkrivamo dušu Hrvatske svakom putniku namjerniku.
+              {t.footerDesc}
             </p>
           </div>
           <div className="md:col-span-3">

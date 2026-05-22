@@ -48,8 +48,6 @@ export default function LoginPage() {
         variant: "destructive" 
       });
     } finally {
-      // Firebase non-blocking login doesn't await the result here, 
-      // the redirection happens in the useEffect via useUser hook.
       setTimeout(() => setIsLoading(false), 2000);
     }
   };
@@ -68,15 +66,15 @@ export default function LoginPage() {
       <main className="flex-1 flex items-center justify-center p-4 py-20">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center space-y-2">
-            <h1 className="text-5xl font-black italic tracking-tighter">Dobrodošli natrag</h1>
-            <p className="text-muted-foreground font-body italic text-lg">Pristupite svom partnerskom računu na CroatiaBest.</p>
+            <h1 className="text-5xl font-black italic tracking-tighter">Prijava</h1>
+            <p className="text-muted-foreground font-body italic text-lg">Pristupite svom partnerskom računu.</p>
           </div>
 
           <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-white/80 backdrop-blur-xl">
             <CardHeader className="bg-primary text-white p-10 text-center">
               <ShieldCheck className="size-12 mx-auto mb-4" />
               <CardTitle className="text-3xl font-black italic">Partner Portal</CardTitle>
-              <CardDescription className="text-white/70">Sigurna prijava za vlasnike i administraciju</CardDescription>
+              <CardDescription className="text-white/70">Za administraciju i vlasnike objekata</CardDescription>
             </CardHeader>
             <CardContent className="p-10 space-y-6">
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -86,7 +84,7 @@ export default function LoginPage() {
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                     <Input 
                       type="email" 
-                      placeholder="admin@croatiabest.hr" 
+                      placeholder="npr. admin@croatiabest.hr" 
                       className="pl-12 h-14 rounded-2xl border-none bg-secondary/10 focus-visible:ring-primary"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -127,9 +125,9 @@ export default function LoginPage() {
               </div>
 
               <div className="p-6 bg-secondary/5 rounded-2xl border border-black/5">
-                <p className="text-[10px] font-black uppercase text-muted-foreground mb-2 tracking-widest">Savjet za pristup</p>
+                <p className="text-[10px] font-black uppercase text-muted-foreground mb-2 tracking-widest">Savjet za Superadmina</p>
                 <p className="text-[10px] italic text-muted-foreground/60 leading-relaxed">
-                  Za dobivanje administratorskih ovlasti, registrirajte se s emailom koji sadrži riječ <strong className="text-primary">"admin"</strong> (npr. admin@croatiabest.hr) ili se prijavite kao <strong className="text-primary">vlasnik@croatiabest.hr</strong>.
+                  Za pristup upravljačkoj ploči koristite email koji sadrži riječ <strong className="text-primary">"admin"</strong> ili se prijavite kao <strong className="text-primary">vlasnik@croatiabest.hr</strong>.
                 </p>
               </div>
             </CardContent>
