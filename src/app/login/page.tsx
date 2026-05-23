@@ -42,7 +42,6 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center space-y-2">
             <h1 className="text-5xl font-black italic tracking-tighter">Prijava</h1>
-            <p className="text-muted-foreground font-body italic text-lg">Pristupite portalu CroatiaBest.</p>
           </div>
 
           <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-white/80 backdrop-blur-xl">

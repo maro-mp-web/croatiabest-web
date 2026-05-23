@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Loader2, 
-  PlusCircle, 
   MapPin, 
   ExternalLink, 
   Settings, 
@@ -56,7 +55,7 @@ export default function UserDashboard() {
           <ShieldCheck className="size-12 text-primary" />
         </div>
         <h1 className="text-4xl font-black mb-4 tracking-tighter">Pristupite svom Dashboardu</h1>
-        <p className="text-muted-foreground mb-8 text-lg max-w-sm font-body italic">Prijavite se kako biste upravljali svojim premium objektima i pratili analitiku.</p>
+        <p className="text-muted-foreground mb-8 text-lg max-w-sm font-body italic">Prijavite se kako biste upravljali svojim objektima.</p>
         <Link href="/"><Button className="h-14 px-10 rounded-2xl font-black bg-primary">Povratak na početnu</Button></Link>
       </div>
     );
@@ -75,13 +74,8 @@ export default function UserDashboard() {
           <div className="space-y-4">
             <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-widest px-6 py-1">Partner Portal</Badge>
             <h1 className="text-6xl font-headline font-black tracking-tighter">Dobrodošli natrag, {user.displayName?.split(' ')[0] || 'Partner'}</h1>
-            <p className="text-muted-foreground text-xl font-body italic">Upravljajte svojim prisustvom na najljepšem hrvatskom portalu.</p>
+            <p className="text-muted-foreground text-xl font-body italic">Upravljajte svojim prisustvom na CroatiaBest.</p>
           </div>
-          <Link href="/submit">
-            <Button className="rounded-2xl h-16 px-10 font-black bg-primary shadow-2xl shadow-primary/30 text-lg uppercase tracking-widest group">
-              <PlusCircle className="size-5 mr-3" /> NOVA PRIJAVA
-            </Button>
-          </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
@@ -110,13 +104,6 @@ export default function UserDashboard() {
                 </div>
               </CardContent>
             </Card>
-
-            <div className="bg-foreground p-10 rounded-[2.5rem] text-white space-y-6 shadow-2xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 size-32 bg-primary/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
-              <h3 className="text-3xl font-black italic italic leading-none">Premium Podrška</h3>
-              <p className="text-white/60 font-body text-lg italic">Kao naš partner, imate prioritetan pristup našem timu stručnjaka 0-24.</p>
-              <Button className="w-full bg-primary text-white font-black rounded-xl h-14">KONTAKTIRAJ NAS</Button>
-            </div>
           </div>
 
           {/* Main Listings Area */}
@@ -163,9 +150,8 @@ export default function UserDashboard() {
               
               {!listings || listings.length === 0 ? (
                 <div className="border-4 border-dashed rounded-[3rem] p-24 text-center space-y-6">
-                  <PlusCircle className="size-20 text-muted-foreground mx-auto opacity-10" />
                   <p className="text-2xl text-muted-foreground font-body italic">
-                    Još niste dodali niti jedan objekt.<br/>Započnite klikom na gumb "Nova prijava".
+                    Još niste dodali niti jedan objekt.
                   </p>
                 </div>
               ) : (
