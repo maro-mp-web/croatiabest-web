@@ -16,6 +16,7 @@ export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
   const { user } = useUser();
 
+  // Stroga provjera administratora
   const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
 
   return (

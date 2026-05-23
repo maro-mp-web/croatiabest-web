@@ -17,8 +17,7 @@ import {
   CreditCard,
   DollarSign,
   PlusCircle,
-  RotateCcw,
-  LogIn
+  RotateCcw
 } from 'lucide-react';
 import { CATEGORIES } from '@/app/lib/constants';
 import Link from 'next/link';
@@ -83,16 +82,13 @@ export default function AdminDashboard() {
 
   if (!user || !isAdmin) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
-        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-          <ShieldAlert className="size-24 text-destructive mb-6" />
-          <h1 className="text-5xl font-black mb-4 uppercase tracking-tighter">Pristup Odbijen</h1>
-          <p className="text-muted-foreground text-lg max-w-md mb-10">Ova stranica rezervirana je isključivo za administratora maro.webdeveloper@gmail.com.</p>
-          <Link href="/">
-            <Button className="rounded-2xl h-16 px-12 font-black bg-primary shadow-xl shadow-primary/20 text-lg">POVRATAK NA PORTAL</Button>
-          </Link>
-        </main>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <ShieldAlert className="size-24 text-destructive mb-6" />
+        <h1 className="text-5xl font-black mb-4 uppercase tracking-tighter">Pristup Odbijen</h1>
+        <p className="text-muted-foreground text-lg max-w-md mb-10">Ova stranica rezervirana je isključivo za administratora maro.webdeveloper@gmail.com.</p>
+        <Link href="/">
+          <Button className="rounded-2xl h-16 px-12 font-black bg-primary shadow-xl shadow-primary/20 text-lg">POVRATAK NA PORTAL</Button>
+        </Link>
       </div>
     );
   }
@@ -105,10 +101,10 @@ export default function AdminDashboard() {
   }, 0) || 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       
-      <main className="container mx-auto px-4 py-12">
+      <main className="flex-1 container mx-auto px-4 py-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
