@@ -72,10 +72,10 @@ export function Navbar() {
         </div>
 
         <div className="flex flex-1 items-center justify-end space-x-4">
-          {user && (
-            <Link href={isAdmin ? "/admin" : "/dashboard"}>
+          {user && isAdmin && (
+            <Link href="/admin">
               <Button variant="outline" className="rounded-full border-primary text-primary font-black px-6">
-                <LayoutDashboard className="size-4 mr-2" /> {isAdmin ? "ADMIN" : "DASHBOARD"}
+                <LayoutDashboard className="size-4 mr-2" /> ADMIN
               </Button>
             </Link>
           )}
@@ -104,9 +104,9 @@ export function Navbar() {
               <div className="flex flex-col gap-8 pt-12">
                 <Logo className="mb-4" />
                 <nav className="flex flex-col gap-4">
-                  {user && (
-                    <Link href={isAdmin ? "/admin" : "/dashboard"} className="text-xl font-black text-secondary uppercase tracking-tight">
-                      {isAdmin ? "Admin" : "Dashboard"}
+                  {user && isAdmin && (
+                    <Link href="/admin" className="text-xl font-black text-secondary uppercase tracking-tight">
+                      Admin
                     </Link>
                   )}
                   <Link href="/explore" className="text-xl font-black uppercase tracking-tight hover:text-primary transition-colors">{t.navExplore}</Link>
