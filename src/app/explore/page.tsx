@@ -13,8 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Search, List, Navigation2, Info, Loader2, Navigation as NavigationIcon, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { useCollection } from '@/pocketbase';
 import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps';
 
 const MAP_CENTER = { lat: 44.5, lng: 16.5 };
@@ -24,14 +23,11 @@ export default function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
-  const firestore = useFirestore();
 
-  const listingsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'listings'), where('status', '==', 'active'));
-  }, [firestore]);
-
-  const { data: listings, isLoading } = useCollection(listingsQuery);
+  const { data: listings, isLoading } = useCollection('listings', {
+    filter: 'status = "active"',
+    sort: '-created',
+  });
 
   const filteredListings = (listings || []).filter(l => {
     const name = l.name || l.objectName || '';

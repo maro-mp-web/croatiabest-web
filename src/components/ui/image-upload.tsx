@@ -1,8 +1,7 @@
 "use client"
 
 import React, { useState } from 'react';
-import { useStorage } from '@/firebase';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { useStorage } from '@/pocketbase';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ImageIcon, X, Loader2, UploadCloud } from 'lucide-react';
@@ -15,14 +14,12 @@ interface ImageUploadProps {
 }
 
 export function ImageUpload({ onUploadComplete, folder = 'listings' }: ImageUploadProps) {
-  const storage = useStorage();
-  const [isUploading, setIsUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const { uploadFile, isUploading, progress } = useStorage();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !storage) return;
+    if (!file) return;
 
     // Limit size to 2MB for faster uploads and storage management
     if (file.size > 2 * 1024 * 1024) {
@@ -30,32 +27,15 @@ export function ImageUpload({ onUploadComplete, folder = 'listings' }: ImageUplo
       return;
     }
 
-    setIsUploading(true);
-    setProgress(0);
-
-    const fileName = `${Date.now()}-${file.name}`;
-    const storageRef = ref(storage, `${folder}/${fileName}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const p = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setProgress(p);
-      },
-      (error) => {
-        console.error("Upload error:", error);
-        setIsUploading(false);
-        toast({ title: "Greška", description: "Učitavanje slike nije uspjelo.", variant: "destructive" });
-      },
-      async () => {
-        const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-        setPreviewUrl(downloadUrl);
-        setIsUploading(false);
-        onUploadComplete(downloadUrl);
-        toast({ title: "Uspjeh", description: "Slika je uspješno učitana." });
-      }
-    );
+    try {
+      const downloadUrl = await uploadFile(folder, undefined, file);
+      setPreviewUrl(downloadUrl);
+      onUploadComplete(downloadUrl);
+      toast({ title: "Uspjeh", description: "Slika je uspješno učitana." });
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast({ title: "Greška", description: "Učitavanje slike nije uspjelo.", variant: "destructive" });
+    }
   };
 
   return (

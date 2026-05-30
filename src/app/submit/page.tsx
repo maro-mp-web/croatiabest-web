@@ -25,15 +25,12 @@ import {
   Sparkles,
   ShieldCheck
 } from 'lucide-react';
-import { useFirestore, useUser } from '@/firebase';
-import { collection, addDoc } from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { useUser, usePB } from '@/pocketbase';
 import { useRouter } from 'next/navigation';
 
 export default function SubmitListingPage() {
   const { user } = useUser();
-  const firestore = useFirestore();
+  const pb = usePB();
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -71,7 +68,7 @@ export default function SubmitListingPage() {
   };
 
   const saveListing = async (paymentStatus: string) => {
-    if (!firestore || !user) {
+    if (!user || !pb) {
       toast({ title: "Prijava potrebna", description: "Prijavite se kako biste poslali prijavu.", variant: "destructive" });
       return;
     }
@@ -87,28 +84,20 @@ export default function SubmitListingPage() {
       contactPhone: formData.contactPhone,
       photoUrls: formData.photoUrls,
       status: 'pending',
-      ownerId: user.uid,
+      ownerId: user.id,
       locationCategoryType: isPaid ? 'Paid' : 'Free',
       paymentStatus: paymentStatus,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
     };
 
-    const listingsRef = collection(firestore, 'listings');
-    addDoc(listingsRef, listingData)
-      .then(() => {
-        setIsSubmitting(false);
-        setIsSuccess(true);
-        toast({ title: "Prijava poslana!", description: "Naš tim će pregledati vaš objekt u najkraćem roku." });
-      })
-      .catch(async (error) => {
-        setIsSubmitting(false);
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: listingsRef.path,
-          operation: 'create',
-          requestResourceData: listingData,
-        }));
-      });
+    try {
+      await pb.collection('listings').create(listingData);
+      setIsSubmitting(false);
+      setIsSuccess(true);
+      toast({ title: "Prijava poslana!", description: "Naš tim će pregledati vaš objekt u najkraćem roku." });
+    } catch (error) {
+      setIsSubmitting(false);
+      toast({ title: "Greška", description: "Slanje nije uspjelo.", variant: "destructive" });
+    }
   };
 
   if (isSuccess) {

@@ -21,55 +21,44 @@ import {
 } from 'lucide-react';
 import { CATEGORIES } from '@/app/lib/constants';
 import Link from 'next/link';
-import { useFirestore, useUser, useCollection } from '@/firebase';
-import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { useUser, useCollection, usePB } from '@/pocketbase';
 
 export default function AdminDashboard() {
   const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const pb = usePB();
   
   // Stroga provjera administratora - isključivo maro.webdeveloper@gmail.com
   const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
 
-  const listingsQuery = React.useMemo(() => {
-    if (!firestore || !user || isUserLoading || !isAdmin) return null;
-    return query(collection(firestore, 'listings'), orderBy('createdAt', 'desc'));
-  }, [firestore, user, isUserLoading, isAdmin]);
-
-  const { data: listings, isLoading: listingsLoading } = useCollection(listingsQuery);
+  const { data: listings, isLoading: listingsLoading } = useCollection('listings', {
+    sort: '-created',
+  });
 
   const handleApprove = async (id: string) => {
-    if (!firestore) return;
-    const docRef = doc(firestore, 'listings', id);
-    updateDoc(docRef, { status: 'active' })
-      .catch(async (error) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: docRef.path,
-          operation: 'update',
-          requestResourceData: { status: 'active' },
-        }));
-      });
+    if (!pb) return;
+    try {
+      await pb.collection('listings').update(id, { status: 'active' });
+    } catch (error) {
+      console.error('Approve error:', error);
+    }
   };
 
   const handleReject = async (id: string) => {
-    if (!firestore) return;
-    const docRef = doc(firestore, 'listings', id);
-    updateDoc(docRef, { status: 'rejected' })
-      .catch(async (error) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: docRef.path,
-          operation: 'update',
-          requestResourceData: { status: 'rejected' },
-        }));
-      });
+    if (!pb) return;
+    try {
+      await pb.collection('listings').update(id, { status: 'rejected' });
+    } catch (error) {
+      console.error('Reject error:', error);
+    }
   };
 
   const handleReset = async (id: string) => {
-    if (!firestore) return;
-    const docRef = doc(firestore, 'listings', id);
-    updateDoc(docRef, { status: 'pending' });
+    if (!pb) return;
+    try {
+      await pb.collection('listings').update(id, { status: 'pending' });
+    } catch (error) {
+      console.error('Reset error:', error);
+    }
   };
 
   if (isUserLoading) {

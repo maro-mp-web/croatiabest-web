@@ -30,16 +30,13 @@ import {
   Compass,
   ShoppingBag
 } from 'lucide-react';
-import { useFirestore, useUser } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useUser, usePB } from '@/pocketbase';
 import { useRouter } from 'next/navigation';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import { aiContentAssistant } from '@/ai/flows/ai-content-assistant';
 
 export default function AdminNewListingPage() {
   const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const pb = usePB();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
@@ -101,7 +98,7 @@ export default function AdminNewListingPage() {
   };
 
   const handleSave = async () => {
-    if (!firestore || !user) return;
+    if (!user || !pb) return;
     if (!formData.name || !formData.locationCategoryId || !formData.city) {
       toast({ title: "Obavezna polja", description: "Naziv, kategorija i lokacija su obavezni.", variant: "destructive" });
       return;
@@ -120,25 +117,17 @@ export default function AdminNewListingPage() {
       longitude: parseFloat(formData.longitude) || (knownLoc?.lng || 15.9819),
       locationCategoryType: selectedCategory?.type === 'paid' ? 'Paid' : 'Free',
       paymentStatus: selectedCategory?.type === 'paid' ? 'paid' : 'not_applicable',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      ownerId: user.uid
+      ownerId: user.id,
     };
 
-    const listingsRef = collection(firestore, 'listings');
-    addDoc(listingsRef, listingData)
-      .then(() => {
-        toast({ title: "Uspjeh", description: "Objekt spremljen u bazu." });
-        router.push('/admin');
-      })
-      .catch(async (error) => {
-        setIsSaving(false);
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: listingsRef.path,
-          operation: 'create',
-          requestResourceData: listingData,
-        }));
-      });
+    try {
+      await pb.collection('listings').create(listingData);
+      toast({ title: "Uspjeh", description: "Objekt spremljen u bazu." });
+      router.push('/admin');
+    } catch (error) {
+      setIsSaving(false);
+      toast({ title: "Greška", description: "Spremanje nije uspjelo.", variant: "destructive" });
+    }
   };
 
   if (isUserLoading) return <div className="p-20 text-center">Učitavanje...</div>;

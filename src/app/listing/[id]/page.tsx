@@ -14,40 +14,33 @@ import { Textarea } from '@/components/ui/textarea';
 import { CATEGORIES } from '@/app/lib/constants';
 import { MapPin, Phone, Mail, Globe, Calendar, Users, List, Info, Loader2, Send, Tag, ShoppingBag } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useFirestore, useDoc, useUser } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useDoc, useUser, usePB } from '@/pocketbase';
 import { toast } from '@/hooks/use-toast';
 
 export default function ListingDetailPage() {
   const params = useParams();
   const { user } = useUser();
-  const firestore = useFirestore();
+  const pb = usePB();
   const [inquiryText, setInquiryText] = useState('');
   const [isInquiring, setIsInquiring] = useState(false);
 
-  const docRef = React.useMemo(() => {
-    if (!firestore || !params.id) return null;
-    return doc(firestore, 'listings', params.id as string);
-  }, [firestore, params.id]);
-
-  const { data: listing, isLoading } = useDoc(docRef);
+  const { data: listing, isLoading } = useDoc('listings', params.id as string);
   
   const handleSendInquiry = async () => {
-    if (!listing || !firestore) return;
+    if (!listing || !pb) return;
     if (!inquiryText) {
       toast({ title: "Prazna poruka", description: "Napišite nešto u upitu.", variant: "destructive" });
       return;
     }
     setIsInquiring(true);
     try {
-      await addDoc(collection(firestore, 'inquiries'), {
+      await pb.collection('inquiries').create({
         listingId: listing.id,
         listingName: listing.name,
         ownerId: listing.ownerId,
-        senderId: user?.uid || 'anonymous',
+        senderId: user?.id || 'anonymous',
         senderEmail: user?.email || 'anonymous@visitor.com',
         message: inquiryText,
-        createdAt: serverTimestamp()
       });
       toast({ title: "Upit poslan!", description: "Vlasnik će primiti vašu poruku." });
       setInquiryText('');

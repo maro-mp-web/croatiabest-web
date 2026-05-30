@@ -3,7 +3,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Toaster } from '@/components/ui/toaster';
-import { FirebaseClientProvider } from '@/firebase';
+import { PocketBaseProvider } from '@/pocketbase';
 
 export const metadata: Metadata = {
   title: 'CroatiaBest - Premium vodič kroz Hrvatsku',
@@ -48,13 +48,13 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Belleza&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased selection:bg-primary selection:text-white">
-        <FirebaseClientProvider>
+      <body suppressHydrationWarning className="font-body antialiased selection:bg-primary selection:text-white">
+        <PocketBaseProvider>
           <LanguageProvider>
             {children}
             <Toaster />
           </LanguageProvider>
-        </FirebaseClientProvider>
+        </PocketBaseProvider>
       </body>
     </html>
   );

@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { aiContentAssistant } from '@/ai/flows/ai-content-assistant';
 import { Sparkles, Loader2, Copy, RotateCcw, Save, ShieldAlert } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { useUser } from '@/firebase';
+import { useUser } from '@/pocketbase';
 import { useRouter } from 'next/navigation';
 
 export default function AIWriterPage() {

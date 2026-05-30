@@ -5,8 +5,8 @@ Ovo je produkcijski spreman portal za turističke informacije i listinge u Hrvat
 ## Tech Stack
 - **Frontend**: Next.js 15 (App Router), React 19, TypeScript
 - **Styling**: Tailwind CSS, Shadcn UI, Lucide Icons
-- **Backend**: Firebase (Firestore, Auth, Storage)
-- **AI**: Firebase Genkit & Google Gemini
+- **Backend**: PocketBase
+- **AI**: Genkit & Google Gemini
 - **Maps**: Google Maps JavaScript API
 
 ## Lokalno pokretanje
@@ -31,5 +31,5 @@ Ovo je produkcijski spreman portal za turističke informacije i listinge u Hrvat
 ## Struktura projekta
 - `/src/app`: Next.js rute i stranice.
 - `/src/components`: Višekratne UI komponente.
-- `/src/firebase`: Konfiguracija i kuke za bazu podataka.
+- `/src/pocketbase`: Konfiguracija i kuke za PocketBase bazu podataka.
 - `/src/ai`: Genkit flowovi za AI asistente.

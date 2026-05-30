@@ -20,19 +20,15 @@ import {
   GlassWater
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { useCollection } from '@/pocketbase';
 
 export default function Home() {
   const { t } = useLanguage();
-  const firestore = useFirestore();
 
-  const allListingsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'listings'), where('status', '==', 'active'));
-  }, [firestore]);
-
-  const { data: allListings } = useCollection(allListingsQuery);
+  const { data: allListings } = useCollection('listings', {
+    filter: 'status = "active"',
+    sort: '-created',
+  });
 
   const mainCategories = [
     { id: 'restaurants', name: 'Gastronomija', icon: <Utensils className="size-5" /> },

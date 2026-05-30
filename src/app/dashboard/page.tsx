@@ -3,8 +3,7 @@
 
 import React from 'react';
 import { Navbar } from '@/components/layout/Navbar';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { useUser, useCollection } from '@/pocketbase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,18 +26,11 @@ import { CATEGORIES } from '@/app/lib/constants';
 
 export default function UserDashboard() {
   const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
 
-  const userListingsQuery = useMemoFirebase(() => {
-    if (!firestore || !user?.uid) return null;
-    return query(
-      collection(firestore, 'listings'),
-      where('ownerId', '==', user.uid),
-      orderBy('createdAt', 'desc')
-    );
-  }, [firestore, user?.uid]);
-
-  const { data: listings, isLoading: listingsLoading } = useCollection(userListingsQuery);
+  const { data: listings, isLoading: listingsLoading } = useCollection('listings', {
+    filter: user?.id ? `ownerId = "${user.id}"` : '',
+    sort: '-created',
+  });
 
   if (isUserLoading || listingsLoading) {
     return (

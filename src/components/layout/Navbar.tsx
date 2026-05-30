@@ -10,7 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/brand/Logo';
 import { CITIES, ISLANDS } from '@/app/lib/constants';
-import { useUser } from '@/firebase';
+import { useUser } from '@/pocketbase';
 
 export function Navbar() {
   const { language, setLanguage, t } = useLanguage();

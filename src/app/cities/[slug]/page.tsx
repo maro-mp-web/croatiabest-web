@@ -21,14 +21,12 @@ import {
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { useCollection } from '@/pocketbase';
 
 export default function CityPage() {
   const params = useParams();
   const [wikiData, setWikiData] = useState<{extract: string, thumbnail?: string}>({ extract: '' });
   const city = CITIES.find(c => c.slug === params.slug);
-  const firestore = useFirestore();
 
   useEffect(() => {
     if (city) {
@@ -45,16 +43,10 @@ export default function CityPage() {
     }
   }, [city]);
 
-  const cityQuery = useMemoFirebase(() => {
-    if (!firestore || !city) return null;
-    return query(
-      collection(firestore, 'listings'),
-      where('city', '==', city.name),
-      where('status', '==', 'active')
-    );
-  }, [firestore, city]);
-
-  const { data: cityListings } = useCollection(cityQuery);
+  const { data: cityListings } = useCollection('listings', {
+    filter: `city = "${city?.name}" && status = "active"`,
+    sort: '-created',
+  });
 
   if (!city) return null;
 

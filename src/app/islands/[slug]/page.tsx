@@ -22,14 +22,12 @@ import {
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { useCollection } from '@/pocketbase';
 
 export default function IslandPage() {
   const params = useParams();
   const [wikiData, setWikiData] = useState<{extract: string, thumbnail?: string}>({ extract: '' });
   const island = ISLANDS.find(i => i.slug === params.slug);
-  const firestore = useFirestore();
 
   useEffect(() => {
     if (island) {
@@ -46,16 +44,10 @@ export default function IslandPage() {
     }
   }, [island]);
 
-  const islandQuery = useMemoFirebase(() => {
-    if (!firestore || !island) return null;
-    return query(
-      collection(firestore, 'listings'),
-      where('city', '==', island.name),
-      where('status', '==', 'active')
-    );
-  }, [firestore, island]);
-
-  const { data: listings } = useCollection(islandQuery);
+  const { data: listings } = useCollection('listings', {
+    filter: `city = "${island?.name}" && status = "active"`,
+    sort: '-created',
+  });
 
   if (!island) return null;
 
