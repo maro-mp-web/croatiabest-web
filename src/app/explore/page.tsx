@@ -15,10 +15,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCollection } from '@/pocketbase';
 import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const MAP_CENTER = { lat: 44.5, lng: 16.5 };
 
 export default function ExplorePage() {
+  const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
@@ -84,7 +86,7 @@ export default function ExplorePage() {
                   }`}
                 >
                   <div className="size-2 rounded-full shadow-sm" style={{ backgroundColor: cat.color }} />
-                  {cat.name}
+                  {t[`cat_${cat.id}` as keyof typeof t] || cat.name}
                 </button>
               ))}
               
@@ -98,7 +100,7 @@ export default function ExplorePage() {
                   }`}
                 >
                   <div className="size-2 rounded-full opacity-60" style={{ backgroundColor: cat.color }} />
-                  {cat.name}
+                  {t[`cat_${cat.id}` as keyof typeof t] || cat.name}
                 </button>
               ))}
             </div>
@@ -209,7 +211,7 @@ export default function ExplorePage() {
                                   fill 
                                   className="object-cover group-hover:scale-110 transition-transform duration-700" 
                                 />
-                                <Badge className="absolute top-4 left-4 bg-white/95 text-primary border-none shadow-lg font-black">{cat?.name}</Badge>
+                                <Badge className="absolute top-4 left-4 bg-white/95 text-primary border-none shadow-lg font-black">{cat ? (t[`cat_${cat.id}` as keyof typeof t] || cat.name) : ''}</Badge>
                               </div>
                               <CardContent className="p-6 flex-1 flex flex-col">
                                 <h4 className="text-xl font-black mb-2 leading-tight">{listing.name || listing.objectName}</h4>

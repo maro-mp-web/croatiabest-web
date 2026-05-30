@@ -325,6 +325,23 @@ export const CATEGORIES: Category[] = [
   { id: 'opgs', name: 'OPG - Lokalni proizvodi', type: 'free', color: '#059669', icon: 'Leaf' },
   { id: 'viewpoints', name: 'Vidikovci', type: 'free', color: '#8B5CF6', icon: 'Binoculars' },
   { id: 'landmarks', name: 'Povijesne znamenitosti', type: 'free', color: '#B45309', icon: 'Landmark' },
+  
+  // Plaćene (Poslovne) Kategorije
   { id: 'restaurants', name: 'Restorani', type: 'paid', color: '#E11D48', icon: 'Utensils', price: '99€' },
   { id: 'hotels', name: 'Hoteli i Smještaj', type: 'paid', color: '#4338CA', icon: 'Hotel', price: '149€' },
+  { id: 'bars', name: 'Kafići i Barovi', type: 'paid', color: '#D97706', icon: 'Coffee', price: '99€' },
+  { id: 'nightclubs', name: 'Noćni Klubovi', type: 'paid', color: '#9333EA', icon: 'Music', price: '149€' },
+  { id: 'boat_rentals', name: 'Nautika i Najam Brodova', type: 'paid', color: '#0284C7', icon: 'Anchor', price: '149€' },
+  { id: 'rent_a_car', name: 'Rent-a-Car / Skuteri', type: 'paid', color: '#64748B', icon: 'Car', price: '99€' },
+  { id: 'tours', name: 'Izleti i Ture', type: 'paid', color: '#16A34A', icon: 'Map', price: '99€' },
+  { id: 'wellness', name: 'Wellness i Spa', type: 'paid', color: '#F472B6', icon: 'Sparkles', price: '149€' },
+  { id: 'culture', name: 'Muzeji i Kultura', type: 'paid', color: '#CA8A04', icon: 'Museum', price: '99€' },
+  { id: 'shops', name: 'Trgovine i Suvenirnice', type: 'paid', color: '#EC4899', icon: 'ShoppingBag', price: '99€' },
+  { id: 'mechanics', name: 'Auto Servis / Mehaničari', type: 'paid', color: '#64748B', icon: 'Wrench', price: '99€' },
+  { id: 'it', name: 'IT Usluge', type: 'paid', color: '#3B82F6', icon: 'Laptop', price: '99€' },
+  { id: 'marketing', name: 'Marketing', type: 'paid', color: '#F59E0B', icon: 'Megaphone', price: '99€' },
+  { id: 'digital', name: 'Digitalne Usluge', type: 'paid', color: '#8B5CF6', icon: 'Code', price: '99€' },
+  { id: 'accounting', name: 'Knjigovodstvo', type: 'paid', color: '#10B981', icon: 'Calculator', price: '99€' },
+  { id: 'hairdressers', name: 'Frizerski Saloni', type: 'paid', color: '#F43F5E', icon: 'Scissors', price: '99€' },
+  { id: 'beauty', name: 'Saloni Ljepote', type: 'paid', color: '#EC4899', icon: 'Sparkles', price: '99€' },
 ];

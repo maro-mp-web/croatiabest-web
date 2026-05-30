@@ -31,10 +31,10 @@ export default function Home() {
   });
 
   const mainCategories = [
-    { id: 'restaurants', name: 'Gastronomija', icon: <Utensils className="size-5" /> },
-    { id: 'hotels', name: 'Smještaj', icon: <Hotel className="size-5" /> },
-    { id: 'beaches', name: 'Najljepše Plaže', icon: <Umbrella className="size-5" /> },
-    { id: 'wineries', name: 'Vinarije i OPG', icon: <GlassWater className="size-5" /> },
+    { id: 'restaurants', name: t.cat_restaurants || 'Gastronomija', icon: <Utensils className="size-5" /> },
+    { id: 'hotels', name: t.cat_hotels || 'Smještaj', icon: <Hotel className="size-5" /> },
+    { id: 'beaches', name: t.cat_beaches || 'Najljepše Plaže', icon: <Umbrella className="size-5" /> },
+    { id: 'wineries', name: t.cat_wineries || 'Vinarije i OPG', icon: <GlassWater className="size-5" /> },
   ];
 
   return (

@@ -13,7 +13,7 @@ interface ImageUploadProps {
   folder?: string;
 }
 
-export function ImageUpload({ onUploadComplete, folder = 'listings' }: ImageUploadProps) {
+export function ImageUpload({ onUploadComplete, folder = 'media' }: ImageUploadProps) {
   const { uploadFile, isUploading, progress } = useStorage();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 

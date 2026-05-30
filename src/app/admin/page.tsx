@@ -17,7 +17,9 @@ import {
   CreditCard,
   DollarSign,
   PlusCircle,
-  RotateCcw
+  RotateCcw,
+  Trash2,
+  Edit2
 } from 'lucide-react';
 import { CATEGORIES } from '@/app/lib/constants';
 import Link from 'next/link';
@@ -38,6 +40,7 @@ export default function AdminDashboard() {
     if (!pb) return;
     try {
       await pb.collection('listings').update(id, { status: 'active' });
+      window.location.reload();
     } catch (error) {
       console.error('Approve error:', error);
     }
@@ -47,6 +50,7 @@ export default function AdminDashboard() {
     if (!pb) return;
     try {
       await pb.collection('listings').update(id, { status: 'rejected' });
+      window.location.reload();
     } catch (error) {
       console.error('Reject error:', error);
     }
@@ -56,8 +60,20 @@ export default function AdminDashboard() {
     if (!pb) return;
     try {
       await pb.collection('listings').update(id, { status: 'pending' });
+      window.location.reload();
     } catch (error) {
       console.error('Reset error:', error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!pb) return;
+    if (!window.confirm('Jeste li sigurni da želite trajno obrisati ovaj objekt?')) return;
+    try {
+      await pb.collection('listings').delete(id);
+      window.location.reload();
+    } catch (error) {
+      console.error('Delete error:', error);
     }
   };
 
@@ -182,9 +198,15 @@ export default function AdminDashboard() {
                     return (
                       <div key={listing.id} className="flex flex-col md:flex-row items-center justify-between p-10 hover:bg-secondary/5 transition-colors gap-8">
                         <div className="flex items-center gap-6 w-full md:w-auto">
-                          <div className={`size-20 rounded-[2rem] flex items-center justify-center font-black text-3xl shadow-inner ${listing.locationCategoryType === 'Paid' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                            {name.charAt(0)}
-                          </div>
+                          {listing.photoUrls && listing.photoUrls.length > 0 && listing.photoUrls[0] ? (
+                            <div className="relative size-20 rounded-[2rem] overflow-hidden shadow-inner border border-black/5">
+                              <img src={listing.photoUrls[0]} alt={name} className="absolute inset-0 w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className={`size-20 rounded-[2rem] flex items-center justify-center font-black text-3xl shadow-inner ${listing.locationCategoryType === 'Paid' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                              {name.charAt(0)}
+                            </div>
+                          )}
                           <div>
                             <p className="font-black text-2xl mb-1">{name}</p>
                             <p className="text-muted-foreground flex items-center gap-3 font-medium">
@@ -236,6 +258,23 @@ export default function AdminDashboard() {
                                 <RotateCcw className="size-3 mr-2" /> Resetiraj
                               </Button>
                             )}
+                            <Link href={`/admin/edit-listing/${listing.id}`}>
+                              <Button 
+                                variant="outline" 
+                                size="icon" 
+                                className="text-blue-500 hover:bg-blue-50 hover:text-blue-600 rounded-xl size-12 transition-transform active:scale-90 border-blue-500/20 bg-blue-500/5"
+                              >
+                                <Edit2 className="size-5" />
+                              </Button>
+                            </Link>
+                            <Button 
+                              variant="outline" 
+                              size="icon" 
+                              onClick={() => handleDelete(listing.id)} 
+                              className="text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl size-12 transition-transform active:scale-90 border-red-500/20 bg-red-500/5"
+                            >
+                              <Trash2 className="size-5" />
+                            </Button>
                           </div>
                         </div>
                       </div>

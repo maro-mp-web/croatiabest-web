@@ -12,13 +12,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { CATEGORIES } from '@/app/lib/constants';
-import { MapPin, Phone, Mail, Globe, Calendar, Users, List, Info, Loader2, Send, Tag, ShoppingBag } from 'lucide-react';
+import { CATEGORY_FIELDS } from '@/app/lib/category-fields';
+import { MapPin, Phone, Mail, Globe, Calendar, Users, List, Info, Loader2, Send, Tag, ShoppingBag, Check, X } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useDoc, useUser, usePB } from '@/pocketbase';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from '@/hooks/use-toast';
 
 export default function ListingDetailPage() {
   const params = useParams();
+  const { t, language } = useLanguage();
   const { user } = useUser();
   const pb = usePB();
   const [inquiryText, setInquiryText] = useState('');
@@ -80,7 +83,7 @@ export default function ListingDetailPage() {
           <div className="flex-1 space-y-12">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Badge className="bg-primary/10 text-primary border-none px-6 py-1.5 uppercase font-black text-[10px] tracking-widest">{category?.name}</Badge>
+                <Badge className="bg-primary/10 text-primary border-none px-6 py-1.5 uppercase font-black text-[10px] tracking-widest">{category ? (t[`cat_${category.id}` as keyof typeof t] || category.name) : ''}</Badge>
                 <Badge variant="outline" className="text-secondary border-secondary px-6 py-1.5 font-black text-[10px]">{listing.city}</Badge>
               </div>
               <h1 className="text-6xl font-headline font-black tracking-tighter">{listing.name}</h1>
@@ -96,6 +99,27 @@ export default function ListingDetailPage() {
               </TabsList>
               
               <TabsContent value="info" className="pt-10 space-y-8">
+                {CATEGORY_FIELDS[listing.locationCategoryId] && listing.metadata && Object.keys(listing.metadata).length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-10 p-8 bg-secondary/5 rounded-[2rem]">
+                    {CATEGORY_FIELDS[listing.locationCategoryId].map(field => {
+                      const value = listing.metadata[field.id];
+                      if (value === undefined || value === null || value === '' || value === false) return null;
+                      
+                      return (
+                        <div key={field.id} className="flex flex-col space-y-1">
+                          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t[`field_${field.id}` as keyof typeof t] || field.label}</span>
+                          <span className="font-black text-lg flex items-center gap-2">
+                            {field.type === 'checkbox' ? (
+                              <div className="flex items-center gap-2 text-primary"><Check className="size-5" /> {language === 'en' ? 'Yes' : 'Da'}</div>
+                            ) : (
+                              value
+                            )}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
                 <div className="prose prose-2xl max-w-none font-body italic text-foreground/80 leading-relaxed whitespace-pre-wrap">
                   {listing.description}
                 </div>

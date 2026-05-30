@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { CATEGORIES, CITIES, ISLANDS } from '@/app/lib/constants';
 import { CATEGORY_FIELDS } from '@/app/lib/category-fields';
@@ -32,15 +32,18 @@ import {
   ShoppingBag
 } from 'lucide-react';
 import { useUser, usePB } from '@/pocketbase';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { aiContentAssistant } from '@/ai/flows/ai-content-assistant';
 
-export default function AdminNewListingPage() {
+export default function AdminEditListingPage() {
   const { user, isUserLoading } = useUser();
   const pb = usePB();
   const router = useRouter();
+  const params = useParams();
+  const id = params?.id as string;
   const [isSaving, setIsSaving] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Stroga provjera administratora
   const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
@@ -62,6 +65,33 @@ export default function AdminNewListingPage() {
     status: 'active',
     metadata: {} as Record<string, any>
   });
+
+  useEffect(() => {
+    if (!id || !pb) return;
+    pb.collection('listings').getOne(id).then(record => {
+      setFormData({
+        name: record.name || '',
+        locationCategoryId: record.locationCategoryId || '',
+        address: record.address || '',
+        city: record.city || '',
+        region: record.region || '',
+        latitude: record.latitude?.toString() || '',
+        longitude: record.longitude?.toString() || '',
+        description: record.description || '',
+        contactPhone: record.contactPhone || '',
+        contactEmail: record.contactEmail || '',
+        webAddress: record.webAddress || '',
+        photoUrls: record.photoUrls || [],
+        products: record.products || [],
+        status: record.status || 'pending',
+        metadata: record.metadata || {}
+      });
+      setIsLoading(false);
+    }).catch(err => {
+      toast({ title: 'Greška', description: 'Ne mogu učitati oglas.', variant: 'destructive' });
+      setIsLoading(false);
+    });
+  }, [id, pb]);
 
   const [newProduct, setNewProduct] = useState({ name: '', price: '' });
 
@@ -124,8 +154,8 @@ export default function AdminNewListingPage() {
     };
 
     try {
-      await pb.collection('listings').create(listingData);
-      toast({ title: "Uspjeh", description: "Objekt spremljen u bazu." });
+      await pb.collection('listings').update(id, listingData);
+      toast({ title: "Uspjeh", description: "Objekt uspješno ažuriran." });
       router.refresh();
       router.push('/admin');
     } catch (error) {
@@ -134,7 +164,7 @@ export default function AdminNewListingPage() {
     }
   };
 
-  if (isUserLoading) return <div className="p-20 text-center">Učitavanje...</div>;
+  if (isUserLoading || isLoading) return <div className="p-20 text-center"><Loader2 className="animate-spin size-8 mx-auto text-primary" /></div>;
   if (!isAdmin) return <div className="p-20 text-center font-black">PRISTUP ODBIJEN</div>;
 
   const allLocations = [...CITIES, ...ISLANDS].sort((a,b) => a.name.localeCompare(b.name));
@@ -146,7 +176,7 @@ export default function AdminNewListingPage() {
         <div className="flex justify-between items-center mb-12">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full"><ArrowLeft /></Button>
-            <h1 className="text-4xl font-black">Novi Unos</h1>
+            <h1 className="text-4xl font-black">Uredi Unos</h1>
           </div>
           <Button onClick={handleSave} disabled={isSaving} className="h-14 px-10 rounded-2xl font-black bg-primary shadow-xl">
             {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} SPREMI
