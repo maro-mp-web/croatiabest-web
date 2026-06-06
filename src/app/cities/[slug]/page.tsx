@@ -22,9 +22,11 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useCollection } from '@/pocketbase';
+import Map from '@/components/map/Map';
 
 export default function CityPage() {
   const params = useParams();
+  const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [wikiData, setWikiData] = useState<{extract: string, thumbnail?: string}>({ extract: '' });
   const city = CITIES.find(c => c.slug === params.slug);
 
@@ -55,7 +57,7 @@ export default function CityPage() {
   const viewpoints = cityListings?.filter(l => ['viewpoints', 'landmarks'].includes(l.locationCategoryId || l.categoryId)) || [];
   const gastro = cityListings?.filter(l => ['restaurants'].includes(l.locationCategoryId || l.categoryId)) || [];
 
-  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${city.lat},${city.lng}&zoom=13&size=600x400&markers=color:red%7C${city.lat},${city.lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
+  const getDirectionsUrl = (lat: number, lng: number) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -166,11 +168,16 @@ export default function CityPage() {
                 <div className="p-8 border-b bg-secondary/5 font-black text-xl italic flex items-center gap-2">
                   <MapIcon className="size-5" /> Lokacija
                 </div>
-                <div className="relative aspect-square w-full">
-                  <img 
-                    src={staticMapUrl} 
-                    alt="Static Map" 
-                    className="w-full h-full object-cover"
+                <div className="relative aspect-square w-full rounded-b-[3rem] overflow-hidden">
+                  <Map 
+                    center={{ lat: city.lat, lng: city.lng }}
+                    zoom={13}
+                    listings={cityListings || []}
+                    selectedListingId={selectedListingId}
+                    onSelectListing={setSelectedListingId}
+                    getDirectionsUrl={getDirectionsUrl}
+                    showCenterMarker={true}
+                    centerMarkerName={`Centar - ${city.name}`}
                   />
                 </div>
               </Card>

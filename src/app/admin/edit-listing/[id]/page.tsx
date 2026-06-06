@@ -34,6 +34,7 @@ import {
 import { useUser, usePB } from '@/pocketbase';
 import { useRouter, useParams } from 'next/navigation';
 import { aiContentAssistant } from '@/ai/flows/ai-content-assistant';
+import LocationPicker from '@/components/map/LocationPicker';
 
 export default function AdminEditListingPage() {
   const { user, isUserLoading } = useUser();
@@ -44,6 +45,7 @@ export default function AdminEditListingPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingCoords, setIsFetchingCoords] = useState(false);
 
   // Stroga provjera administratora
   const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
@@ -88,7 +90,9 @@ export default function AdminEditListingPage() {
       });
       setIsLoading(false);
     }).catch(err => {
-      toast({ title: 'Greška', description: 'Ne mogu učitati oglas.', variant: 'destructive' });
+      if (err.isAbort) return;
+      toast({ title: 'Greška', description: `Ne mogu učitati oglas: ${err.message}`, variant: 'destructive' });
+      console.error("GET ONE ERROR:", err);
       setIsLoading(false);
     });
   }, [id, pb]);
@@ -106,6 +110,33 @@ export default function AdminEditListingPage() {
       ...prev,
       photoUrls: [...prev.photoUrls, url]
     }));
+  };
+
+  const fetchCoordinates = async () => {
+    if (!formData.address || !formData.city) {
+      toast({ title: "Nedostaju podaci", description: "Unesite adresu i grad za dohvat koordinata.", variant: "destructive" });
+      return;
+    }
+    setIsFetchingCoords(true);
+    try {
+      const query = encodeURIComponent(`${formData.address}, ${formData.city}, Croatia`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          latitude: data[0].lat,
+          longitude: data[0].lon
+        }));
+        toast({ title: "Uspjeh", description: "Koordinate uspješno pronađene!" });
+      } else {
+        toast({ title: "Nije pronađeno", description: "Ne mogu točno locirati tu adresu. Probajte upisati detaljnije ili ručno unesite Lat/Lng.", variant: "destructive" });
+      }
+    } catch (err) {
+      toast({ title: "Greška", description: "Greška kod spajanja na server za mape.", variant: "destructive" });
+    } finally {
+      setIsFetchingCoords(false);
+    }
   };
 
   const generateWithAi = async () => {
@@ -310,10 +341,25 @@ export default function AdminEditListingPage() {
                   <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Grad ili Otok" /></SelectTrigger>
                   <SelectContent>{allLocations.map(l => <SelectItem key={l.slug} value={l.name}>{l.name}</SelectItem>)}</SelectContent>
                 </Select>
-                <Input placeholder="Adresa" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="rounded-xl" />
+                <div className="flex gap-2">
+                  <Input placeholder="Adresa" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="rounded-xl flex-1" />
+                  <Button variant="secondary" onClick={fetchCoordinates} disabled={isFetchingCoords} className="rounded-xl px-4 font-black">
+                    {isFetchingCoords ? <Loader2 className="animate-spin size-4 mr-2" /> : <MapPin className="size-4 mr-2" />}
+                    Dohvati
+                  </Button>
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Input placeholder="Lat (Opcionalno)" type="number" value={formData.latitude} onChange={e => setFormData({...formData, latitude: e.target.value})} className="rounded-xl" />
                   <Input placeholder="Lng (Opcionalno)" type="number" value={formData.longitude} onChange={e => setFormData({...formData, longitude: e.target.value})} className="rounded-xl" />
+                </div>
+                <div className="pt-2">
+                  <LocationPicker 
+                    lat={formData.latitude ? parseFloat(formData.latitude) : null}
+                    lng={formData.longitude ? parseFloat(formData.longitude) : null}
+                    cityCenter={formData.city ? allLocations.find(l => l.name === formData.city) : null}
+                    onChange={(lat, lng) => setFormData({...formData, latitude: lat.toString(), longitude: lng.toString()})}
+                  />
+                  <p className="text-xs text-slate-500 mt-2 font-medium">Kliknite na kartu ili povucite marker za točan odabir lokacije.</p>
                 </div>
               </CardContent>
             </Card>

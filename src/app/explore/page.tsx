@@ -14,7 +14,7 @@ import { MapPin, Search, List, Navigation2, Info, Loader2, Navigation as Navigat
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCollection } from '@/pocketbase';
-import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps';
+import Map from '@/components/map/Map';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const MAP_CENTER = { lat: 44.5, lng: 16.5 };
@@ -128,71 +128,16 @@ export default function ExplorePage() {
               <Loader2 className="size-12 animate-spin text-primary opacity-20" />
             </div>
           ) : (
-            <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
+            <>
               <div className={`flex-1 relative transition-opacity duration-300 ${viewMode === 'map' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <Map
-                  defaultCenter={MAP_CENTER}
-                  defaultZoom={7}
-                  disableDefaultUI={true}
-                  gestureHandling={'greedy'}
-                  className="w-full h-full"
-                >
-                  {filteredListings.map((listing) => {
-                    const lat = typeof listing.latitude === 'string' ? parseFloat(listing.latitude) : listing.latitude;
-                    const lng = typeof listing.longitude === 'string' ? parseFloat(listing.longitude) : listing.longitude;
-                    
-                    if (isNaN(lat) || isNaN(lng)) return null;
-                    
-                    return (
-                      <Marker
-                        key={listing.id}
-                        position={{ lat, lng }}
-                        onClick={() => setSelectedListingId(listing.id)}
-                      />
-                    );
-                  })}
-
-                  {selectedListing && (
-                    <InfoWindow
-                      position={{ 
-                        lat: typeof selectedListing.latitude === 'string' ? parseFloat(selectedListing.latitude) : selectedListing.latitude, 
-                        lng: typeof selectedListing.longitude === 'string' ? parseFloat(selectedListing.longitude) : selectedListing.longitude 
-                      }}
-                      onCloseClick={() => setSelectedListingId(null)}
-                    >
-                      <div className="p-3 max-w-[240px] space-y-3">
-                        <div className="space-y-1">
-                          <h4 className="font-black text-base leading-tight">{selectedListing.name || selectedListing.objectName}</h4>
-                          <p className="text-xs text-muted-foreground italic line-clamp-2">{selectedListing.description}</p>
-                          <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-1">
-                            <MapPin className="size-3" /> {selectedListing.address}
-                          </p>
-                        </div>
-                        
-                        <div className="flex flex-col gap-2">
-                          <Link href={`/listing/${selectedListing.id}`} className="w-full">
-                            <Button size="sm" className="w-full h-9 text-[10px] font-black rounded-lg bg-primary">
-                              <ExternalLink className="size-3 mr-2" /> DETALJI OBJEKTA
-                            </Button>
-                          </Link>
-                          <a 
-                            href={getDirectionsUrl(
-                              typeof selectedListing.latitude === 'string' ? parseFloat(selectedListing.latitude) : selectedListing.latitude, 
-                              typeof selectedListing.longitude === 'string' ? parseFloat(selectedListing.longitude) : selectedListing.longitude
-                            )} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="w-full"
-                          >
-                            <Button size="sm" variant="outline" className="w-full h-9 text-[10px] font-black rounded-lg border-secondary text-secondary hover:bg-secondary/5">
-                              <NavigationIcon className="size-3 mr-2" /> UPUTE ZA VOŽNJU
-                            </Button>
-                          </a>
-                        </div>
-                      </div>
-                    </InfoWindow>
-                  )}
-                </Map>
+                <Map 
+                  center={MAP_CENTER}
+                  zoom={7}
+                  listings={filteredListings}
+                  selectedListingId={selectedListingId}
+                  onSelectListing={setSelectedListingId}
+                  getDirectionsUrl={getDirectionsUrl}
+                />
               </div>
 
               {viewMode === 'list' && (
@@ -228,7 +173,7 @@ export default function ExplorePage() {
                   </div>
                 </ScrollArea>
               )}
-            </APIProvider>
+            </>
           )}
         </main>
       </div>
