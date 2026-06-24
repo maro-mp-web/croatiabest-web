@@ -116,17 +116,13 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
           </div>
         </article>
       </main>
-
-      <footer className="bg-foreground text-white py-12">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-white/40 text-xs font-black tracking-widest uppercase">&copy; 2024 CroatiaBest Magazin</p>
-          <Link href="/blog">
-            <Button variant="ghost" className="text-white/60 hover:text-white flex items-center gap-2">
-              <ArrowLeft className="size-4" /> NATRAG NA MAGAZIN
-            </Button>
-          </Link>
-        </div>
-      </footer>
+      <div className="container mx-auto px-4 py-12 flex justify-center">
+        <Link href="/blog">
+          <Button variant="ghost" className="text-foreground hover:bg-foreground/5 flex items-center gap-2">
+            <ArrowLeft className="size-4" /> NATRAG NA MAGAZIN
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }

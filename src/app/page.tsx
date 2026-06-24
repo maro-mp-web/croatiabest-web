@@ -251,32 +251,6 @@ export default function Home() {
 
 
       </main>
-
-      <footer className="bg-foreground text-white py-24 border-t border-white/5">
-        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-16">
-          <div className="md:col-span-5 space-y-8">
-            <p className="text-3xl font-black italic text-primary">CroatiaBest</p>
-            <p className="text-white/40 font-body text-xl italic leading-relaxed max-w-md">
-              {t.footerDesc}
-            </p>
-          </div>
-          <div className="md:col-span-3">
-            <h4 className="font-black mb-8 text-[10px] uppercase tracking-widest text-primary">Navigacija</h4>
-            <ul className="space-y-4 text-white/50 font-bold uppercase text-xs">
-              <li><Link href="/explore" className="hover:text-primary transition-all">Istraži Kartu</Link></li>
-              <li><Link href="/blog" className="hover:text-primary transition-all">Magazin</Link></li>
-            </ul>
-          </div>
-          <div className="md:col-span-4">
-            <h4 className="font-black mb-8 text-[10px] uppercase tracking-widest text-primary">Pravne informacije</h4>
-            <ul className="space-y-4 text-white/50 font-bold uppercase text-xs">
-              <li><Link href="/privacy" className="hover:text-primary transition-all">Privatnost</Link></li>
-              <li><Link href="/terms" className="hover:text-primary transition-all">Uvjeti</Link></li>
-            </ul>
-            <p className="mt-12 text-[10px] font-black uppercase text-white/20 tracking-widest">&copy; 2024 CroatiaBest Luxury Guide</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
