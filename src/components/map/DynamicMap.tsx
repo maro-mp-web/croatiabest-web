@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { generateListingUrl } from '@/app/lib/utils/slug';
 import * as LucideIcons from 'lucide-react';
 import { MapPin, ExternalLink, Navigation as NavigationIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -221,7 +222,7 @@ export default function DynamicMap({ center, zoom, listings, selectedListingId, 
                     </div>
                     
                     <div className="flex flex-col gap-2 pt-3 border-t mt-3">
-                      <a href={`/listing/${listing.id}`} className="w-full block" style={{textDecoration: 'none'}}>
+                      <a href={generateListingUrl(listing.locationCategoryId || listing.categoryId, listing.name, listing.id)} className="w-full block" style={{textDecoration: 'none'}}>
                         <Button size="sm" className="w-full h-9 text-[10px] font-black rounded-lg bg-black hover:bg-slate-800 text-white flex items-center justify-center">
                           <ExternalLink className="w-3 h-3 mr-2" /> DETALJI OBJEKTA
                         </Button>

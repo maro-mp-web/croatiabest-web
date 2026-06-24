@@ -8,7 +8,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CATEGORIES, CITIES } from '@/app/lib/constants';
+import { CATEGORIES } from '@/app/lib/constants';
 import { 
   MapPin, 
   ArrowRight, 
@@ -17,10 +17,16 @@ import {
   Utensils,
   Hotel,
   Umbrella,
-  GlassWater
+  GlassWater,
+  Shield,
+  Landmark,
+  Library,
+  Binoculars
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCollection } from '@/pocketbase';
+import AdBanner from '@/components/ads/AdBanner';
+import { generateListingUrl } from '@/app/lib/utils/slug';
 
 export default function Home() {
   const { t } = useLanguage();
@@ -30,11 +36,20 @@ export default function Home() {
     sort: '-created',
   });
 
+  const { data: cities } = useCollection('cities');
+
   const mainCategories = [
     { id: 'restaurants', name: t.cat_restaurants || 'Gastronomija', icon: <Utensils className="size-5" /> },
     { id: 'hotels', name: t.cat_hotels || 'Smještaj', icon: <Hotel className="size-5" /> },
     { id: 'beaches', name: t.cat_beaches || 'Najljepše Plaže', icon: <Umbrella className="size-5" /> },
     { id: 'wineries', name: t.cat_wineries || 'Vinarije i OPG', icon: <GlassWater className="size-5" /> },
+  ];
+
+  const otherCategories = [
+    { id: 'homeland_war', name: 'Domovinski rat (Spomenici)', icon: <Shield className="size-5" /> },
+    { id: 'landmarks', name: 'Povijesne znamenitosti', icon: <Landmark className="size-5" /> },
+    { id: 'culture', name: 'Muzeji i Kultura', icon: <Library className="size-5" /> },
+    { id: 'viewpoints', name: 'Vidikovci', icon: <Binoculars className="size-5" /> },
   ];
 
   return (
@@ -121,7 +136,7 @@ export default function Home() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                       {listings.map((l) => (
-                        <Link key={l.id} href={`/listing/${l.id}`}>
+                        <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id)}>
                           <Card className="group border-none shadow-md hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col">
                             <div className="relative aspect-[4/5] overflow-hidden">
                               <Image 
@@ -146,6 +161,69 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ADVERTISEMENT SECTION */}
+        <section className="py-8 bg-white relative z-30">
+          <div className="container mx-auto px-6">
+            <AdBanner format="horizontal" />
+          </div>
+        </section>
+
+        {/* OTHER CATEGORIES SECTION */}
+        <section className="py-20 bg-secondary/5 relative z-30 border-t border-b border-secondary/10">
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-16 space-y-4">
+              <Badge variant="outline" className="border-secondary text-secondary font-black px-6 py-2 rounded-full text-[10px] uppercase tracking-widest">Otkrijte Još</Badge>
+              <h2 className="text-5xl md:text-6xl font-headline font-black italic tracking-tighter">Kultura i Znamenitosti</h2>
+            </div>
+
+            <div className="space-y-24">
+              {otherCategories.map((cat) => {
+                const listings = (allListings || []).filter(l => (l.locationCategoryId || l.categoryId) === cat.id).slice(0, 5);
+                if (listings.length === 0) return null;
+
+                return (
+                  <div key={cat.id} className="space-y-10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="size-12 rounded-xl bg-secondary flex items-center justify-center text-white shadow-lg">
+                          {cat.icon}
+                        </div>
+                        <h3 className="text-3xl font-headline font-black italic">{cat.name}</h3>
+                      </div>
+                      <Link href={`/explore?category=${cat.id}`}>
+                        <Button variant="link" className="text-secondary font-black uppercase tracking-widest text-[10px]">
+                          Prikaži sve <ChevronRight className="ml-1 size-4" />
+                        </Button>
+                      </Link>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                      {listings.map((l) => (
+                        <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id)}>
+                          <Card className="group border border-secondary/10 shadow-sm hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col bg-white">
+                            <div className="relative aspect-[4/5] overflow-hidden">
+                              <Image 
+                                src={l.photoUrls?.[0] || 'https://picsum.photos/seed/placeholder/400/500'} 
+                                alt={l.name} 
+                                fill 
+                                className="object-cover group-hover:scale-110 transition-transform duration-700" 
+                              />
+                            </div>
+                            <CardContent className="p-5 flex-1 flex flex-col justify-center">
+                              <h4 className="font-black text-sm leading-tight line-clamp-2">{l.name}</h4>
+                              <p className="text-[9px] text-muted-foreground mt-2 font-bold uppercase tracking-tight">{l.city}</p>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
         {/* CITY GUIDES */}
         <section className="py-24 bg-foreground text-white">
           <div className="container mx-auto px-6">
@@ -155,7 +233,7 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {CITIES.slice(0, 4).map((city) => (
+              {cities?.slice(0, 4).map((city) => (
                 <Link key={city.slug} href={`/cities/${city.slug}`}>
                   <div className="relative h-[450px] rounded-[2.5rem] overflow-hidden group cursor-pointer shadow-xl">
                     <Image src={city.image} alt={city.name} fill className="object-cover transition-all duration-700 group-hover:scale-105" />

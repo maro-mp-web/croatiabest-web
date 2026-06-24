@@ -14,6 +14,8 @@ import { MapPin, Search, List, Navigation2, Info, Loader2, Navigation as Navigat
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCollection } from '@/pocketbase';
+import AdBanner from '@/components/ads/AdBanner';
+import { generateListingUrl } from '@/app/lib/utils/slug';
 import Map from '@/components/map/Map';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -143,12 +145,12 @@ export default function ExplorePage() {
               {viewMode === 'list' && (
                 <ScrollArea className="absolute inset-0 z-20 bg-background/50 backdrop-blur-sm p-8">
                   <div className="container mx-auto max-w-6xl">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                       {filteredListings.map((listing) => {
                         const cat = CATEGORIES.find(c => c.id === listing.locationCategoryId);
                         return (
-                          <Link key={listing.id} href={`/listing/${listing.id}`}>
-                            <Card className="overflow-hidden group hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] border-none shadow-xl bg-white/80 h-full flex flex-col">
+                          <Link key={listing.id} href={generateListingUrl(listing.locationCategoryId || listing.categoryId, listing.name, listing.id)}>
+                            <Card className="group border-none shadow-md hover:shadow-2xl transition-all rounded-[2rem] overflow-hidden flex flex-col h-full cursor-pointer shadow-xl bg-white/80 h-full flex flex-col">
                               <div className="relative h-56">
                                 <Image 
                                   src={listing.photoUrls?.[0] || 'https://picsum.photos/seed/placeholder/800/600'} 

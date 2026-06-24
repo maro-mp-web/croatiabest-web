@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
-import { CATEGORIES, CITIES, ISLANDS } from '@/app/lib/constants';
+import { CATEGORIES } from '@/app/lib/constants';
 import { CATEGORY_FIELDS } from '@/app/lib/category-fields';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +31,7 @@ import {
   Compass,
   ShoppingBag
 } from 'lucide-react';
-import { useUser, usePB } from '@/pocketbase';
+import { useUser, usePB, useCollection } from '@/pocketbase';
 import { useRouter, useParams } from 'next/navigation';
 import { aiContentAssistant } from '@/ai/flows/ai-content-assistant';
 import LocationPicker from '@/components/map/LocationPicker';
@@ -46,6 +46,13 @@ export default function AdminEditListingPage() {
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isFetchingCoords, setIsFetchingCoords] = useState(false);
+
+  const { data: citiesData } = useCollection('cities', { requestKey: null });
+  const { data: islandsData } = useCollection('islands', { requestKey: null });
+
+  const cities = citiesData || [];
+  const islands = islandsData || [];
+
 
   // Stroga provjera administratora
   const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
@@ -64,6 +71,7 @@ export default function AdminEditListingPage() {
     webAddress: '',
     photoUrls: [] as string[],
     products: [] as {name: string, price: string}[],
+    faq: [] as {question: string, answer: string}[],
     status: 'active',
     metadata: {} as Record<string, any>
   });
@@ -85,6 +93,7 @@ export default function AdminEditListingPage() {
         webAddress: record.webAddress || '',
         photoUrls: record.photoUrls || [],
         products: record.products || [],
+        faq: record.faq || [],
         status: record.status || 'pending',
         metadata: record.metadata || {}
       });
@@ -98,11 +107,18 @@ export default function AdminEditListingPage() {
   }, [id, pb]);
 
   const [newProduct, setNewProduct] = useState({ name: '', price: '' });
+  const [newFaq, setNewFaq] = useState({ question: '', answer: '' });
 
   const addProduct = () => {
     if (!newProduct.name || !newProduct.price) return;
     setFormData(prev => ({ ...prev, products: [...prev.products, newProduct] }));
     setNewProduct({ name: '', price: '' });
+  };
+
+  const addFaq = () => {
+    if (!newFaq.question || !newFaq.answer) return;
+    setFormData(prev => ({ ...prev, faq: [...prev.faq, newFaq] }));
+    setNewFaq({ question: '', answer: '' });
   };
 
   const handleImageUploaded = (url: string) => {
@@ -170,22 +186,24 @@ export default function AdminEditListingPage() {
     setIsSaving(true);
     const selectedCategory = CATEGORIES.find(c => c.id === formData.locationCategoryId);
     
-    const knownLoc = [...CITIES, ...ISLANDS].find(l => l.name === formData.city);
+    const knownLoc = [...cities, ...islands].find(l => l.name === formData.city);
     const region = knownLoc?.region || formData.region;
 
-    const listingData = {
-      ...formData,
-      region,
-      latitude: parseFloat(formData.latitude) || (knownLoc?.lat || 45.8150),
-      longitude: parseFloat(formData.longitude) || (knownLoc?.lng || 15.9819),
-      locationCategoryType: selectedCategory?.type === 'paid' ? 'Paid' : 'Free',
-      paymentStatus: selectedCategory?.type === 'paid' ? 'paid' : 'not_applicable',
-      ownerId: user.id,
-      status: 'pending',
-    };
-
     try {
-      await pb.collection('listings').update(id, listingData);
+      await pb.collection('listings').update(id, {
+        ...formData,
+        region,
+        latitude: parseFloat(formData.latitude) || (knownLoc?.lat || 45.8150),
+        longitude: parseFloat(formData.longitude) || (knownLoc?.lng || 15.9819),
+        locationCategoryType: selectedCategory?.type === 'paid' ? 'Paid' : 'Free',
+        paymentStatus: selectedCategory?.type === 'paid' ? 'paid' : 'not_applicable',
+        ownerId: user.id,
+        status: formData.status,
+        photoUrls: formData.photoUrls,
+        products: formData.products,
+        faq: formData.faq,
+        metadata: formData.metadata
+      });
       toast({ title: "Uspjeh", description: "Objekt uspješno ažuriran." });
       router.refresh();
       router.push('/admin');
@@ -198,7 +216,8 @@ export default function AdminEditListingPage() {
   if (isUserLoading || isLoading) return <div className="p-20 text-center"><Loader2 className="animate-spin size-8 mx-auto text-primary" /></div>;
   if (!isAdmin) return <div className="p-20 text-center font-black">PRISTUP ODBIJEN</div>;
 
-  const allLocations = [...CITIES, ...ISLANDS].sort((a,b) => a.name.localeCompare(b.name));
+  const allLocations = [...cities, ...islands].sort((a,b) => a.name.localeCompare(b.name));
+  const isFreeCategory = CATEGORIES.find(c => c.id === formData.locationCategoryId)?.type === 'free';
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -295,26 +314,69 @@ export default function AdminEditListingPage() {
               </Card>
             )}
 
-            <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none">
-              <CardHeader className="bg-secondary/5 border-b"><CardTitle>Ponuda & Proizvodi</CardTitle></CardHeader>
-              <CardContent className="p-8 space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <Input placeholder="Naziv proizvoda" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="rounded-xl" />
-                  <div className="flex gap-2">
-                    <Input placeholder="Cijena (npr. 15€)" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} className="rounded-xl" />
-                    <Button onClick={addProduct} variant="secondary" className="rounded-xl"><ShoppingBag className="size-4" /></Button>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  {formData.products.map((p, i) => (
-                    <div key={i} className="flex justify-between p-3 bg-muted/30 rounded-lg text-sm font-medium">
-                      <span>{p.name}</span>
-                      <span className="text-primary font-black">{p.price}</span>
+            {!isFreeCategory && (
+              <div className="space-y-8">
+                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none mt-8">
+                  <CardHeader className="bg-secondary/5 border-b"><CardTitle>Ponuda & Proizvodi</CardTitle></CardHeader>
+                  <CardContent className="p-8 space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Naziv proizvoda</Label>
+                        <Input placeholder="npr. Pizza Margarita" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="rounded-xl" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Cijena</Label>
+                        <div className="flex gap-2">
+                          <Input placeholder="npr. 15€" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} className="rounded-xl" />
+                          <Button onClick={addProduct} variant="secondary" className="rounded-xl"><ShoppingBag className="size-4" /></Button>
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="space-y-2">
+                      {formData.products.map((p, i) => (
+                        <div key={i} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg text-sm font-medium">
+                          <span>{p.name}</span>
+                          <div className="flex items-center gap-4">
+                              <span className="text-primary font-black">{p.price}</span>
+                              <Button type="button" variant="ghost" size="sm" onClick={() => setFormData(prev => ({...prev, products: prev.products.filter((_, idx) => idx !== i)}))}>Ukloni</Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none mt-8">
+                  <CardHeader className="bg-secondary/5 border-b"><CardTitle>Česta Pitanja (FAQ)</CardTitle></CardHeader>
+                  <CardContent className="p-8 space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Pitanje</Label>
+                        <Input placeholder="npr. Imate li parking?" value={newFaq.question} onChange={e => setNewFaq({...newFaq, question: e.target.value})} className="rounded-xl" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Odgovor</Label>
+                        <div className="flex gap-2">
+                          <Input placeholder="npr. Da, parking je besplatan." value={newFaq.answer} onChange={e => setNewFaq({...newFaq, answer: e.target.value})} className="rounded-xl" />
+                          <Button type="button" onClick={addFaq} variant="secondary" className="rounded-xl">Dodaj</Button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      {formData.faq.map((f, i) => (
+                        <div key={i} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg text-sm font-medium">
+                          <div className="flex flex-col">
+                              <span className="font-bold">{f.question}</span>
+                              <span className="text-muted-foreground">{f.answer}</span>
+                          </div>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => setFormData(prev => ({...prev, faq: prev.faq.filter((_, idx) => idx !== i)}))}>Ukloni</Button>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none">
               <CardHeader className="bg-secondary/5 border-b"><CardTitle>Učitavanje fotografija</CardTitle></CardHeader>
@@ -364,14 +426,16 @@ export default function AdminEditListingPage() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-[2.5rem] shadow-xl border-none">
-              <CardHeader className="bg-secondary/5 border-b"><CardTitle>Kontakt</CardTitle></CardHeader>
-              <CardContent className="p-6 space-y-4">
-                <Input placeholder="Telefon" value={formData.contactPhone} onChange={e => setFormData({...formData, contactPhone: e.target.value})} className="rounded-xl" />
-                <Input placeholder="Email" value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} className="rounded-xl" />
-                <Input placeholder="Web stranica" value={formData.webAddress} onChange={e => setFormData({...formData, webAddress: e.target.value})} className="rounded-xl" />
-              </CardContent>
-            </Card>
+            {!isFreeCategory && (
+              <Card className="rounded-[2.5rem] shadow-xl border-none">
+                <CardHeader className="bg-secondary/5 border-b"><CardTitle>Kontakt</CardTitle></CardHeader>
+                <CardContent className="p-6 space-y-4">
+                  <Input placeholder="Telefon" value={formData.contactPhone} onChange={e => setFormData({...formData, contactPhone: e.target.value})} className="rounded-xl" />
+                  <Input placeholder="Email" value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} className="rounded-xl" />
+                  <Input placeholder="Web stranica" value={formData.webAddress} onChange={e => setFormData({...formData, webAddress: e.target.value})} className="rounded-xl" />
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </main>

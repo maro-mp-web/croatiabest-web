@@ -163,7 +163,7 @@ export default function UserDashboard() {
                               className="object-cover group-hover:scale-110 transition-transform duration-1000" 
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8">
-                              <Link href={`/listing/${item.id}`}>
+                              <Link href={generateListingUrl(item.locationCategoryId || item.categoryId, item.name, item.id)}>
                                 <Button className="w-full bg-white text-primary font-black rounded-xl">VIDI JAVNO <ChevronRight className="size-4 ml-1" /></Button>
                               </Link>
                             </div>
@@ -205,7 +205,10 @@ export default function UserDashboard() {
                                   </span>
                                 )}
                               </div>
-                              <div className="flex gap-3">
+                              <div className="flex gap-2">
+                                <Link href={generateListingUrl(item.locationCategoryId || item.categoryId, item.name, item.id)}>
+                                  <Button size="sm" variant="outline"><Eye className="w-4 h-4 mr-2" /> Pregledaj</Button>
+                                </Link>
                                 <Button variant="outline" className="rounded-xl px-6 h-12 font-bold border-black/10 hover:bg-black/5">
                                   UREDI
                                 </Button>

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'CroatiaBest - Vaš ultimativni jadranski vodič',
     description: 'Pronađite najbolje od Hrvatske na našoj interaktivnoj karti uživo.',
-    url: 'https://croatiabest.hr',
+    url: 'https://croatiabest.com.hr',
     siteName: 'CroatiaBest',
     images: [
       {
