@@ -52,6 +52,14 @@ export default function Home() {
     { id: 'viewpoints', name: 'Vidikovci', icon: <Binoculars className="size-5" /> },
   ];
 
+  const getFirstPhoto = (urls: any) => {
+    try {
+      if (Array.isArray(urls)) return urls[0];
+      if (typeof urls === 'string') return JSON.parse(urls)[0];
+    } catch (e) {}
+    return null;
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Navbar />
@@ -165,7 +173,7 @@ export default function Home() {
                           <Card className="group border-none shadow-md hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col">
                             <div className="relative aspect-[4/5] overflow-hidden">
                               <Image 
-                                src={l.photoUrls?.[0] || DEFAULT_LISTING_IMAGE} 
+                                src={getFirstPhoto(l.photoUrls) || DEFAULT_LISTING_IMAGE} 
                                 alt={l.name} 
                                 fill 
                                 className="object-cover group-hover:scale-110 transition-transform duration-700" 
@@ -228,7 +236,7 @@ export default function Home() {
                           <Card className="group border border-secondary/10 shadow-sm hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col bg-white">
                             <div className="relative aspect-[4/5] overflow-hidden">
                               <Image 
-                                src={l.photoUrls?.[0] || DEFAULT_LISTING_IMAGE} 
+                                src={getFirstPhoto(l.photoUrls) || DEFAULT_LISTING_IMAGE} 
                                 alt={l.name} 
                                 fill 
                                 className="object-cover group-hover:scale-110 transition-transform duration-700" 
