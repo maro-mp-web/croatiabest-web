@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import PocketBase from 'pocketbase';
+import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 
 const pb = new PocketBase('http://127.0.0.1:8090');
 
@@ -27,7 +28,7 @@ export async function generateMetadata({
     }
     const imageUrl = Array.isArray(photos) && photos.length > 0 
       ? photos[0] 
-      : 'https://croatiabest.com.hr/placeholder.jpg';
+      : DEFAULT_LISTING_IMAGE;
 
     // Description is bilingual (hr \n\n en), we take only the first part for SEO
     const rawDescription = listing.description || '';

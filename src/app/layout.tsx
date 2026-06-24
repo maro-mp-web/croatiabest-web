@@ -4,6 +4,8 @@ import './globals.css';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Toaster } from '@/components/ui/toaster';
 import { PocketBaseProvider } from '@/pocketbase';
+import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
+import Footer from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   title: 'CroatiaBest - Premium vodič kroz Hrvatsku',
@@ -19,7 +21,7 @@ export const metadata: Metadata = {
     siteName: 'CroatiaBest',
     images: [
       {
-        url: 'https://picsum.photos/seed/cb-og/1200/630',
+        url: DEFAULT_LISTING_IMAGE,
         width: 1200,
         height: 630,
         alt: 'CroatiaBest Travel Guide',
@@ -32,7 +34,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'CroatiaBest - Otkrijte dušu Hrvatske',
     description: 'Stručni vodiči i interaktivna karta za savršeno ljetovanje.',
-    images: ['https://picsum.photos/seed/cb-og/1200/630'],
+    images: [DEFAULT_LISTING_IMAGE],
   },
 };
 
@@ -51,7 +53,10 @@ export default function RootLayout({
       <body suppressHydrationWarning className="font-body antialiased selection:bg-primary selection:text-white">
         <PocketBaseProvider>
           <LanguageProvider>
-            {children}
+            <div className="flex flex-col min-h-screen">
+              {children}
+              <Footer />
+            </div>
             <Toaster />
           </LanguageProvider>
         </PocketBaseProvider>
