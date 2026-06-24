@@ -60,17 +60,14 @@ export default function Home() {
         {/* HERO SECTION */}
         <section className="relative min-h-[90vh] w-full overflow-hidden flex items-center pt-32 pb-20">
           <div className="absolute inset-0 z-0">
-            <video 
-              autoPlay 
-              muted 
-              loop 
-              playsInline 
-              className="w-full h-full object-cover"
-              poster="https://picsum.photos/seed/croatia-hero/1920/1080"
-            >
-              <source src="https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-a-shoreline-with-clear-water-4422-large.mp4" type="video/mp4" />
-            </video>
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent z-10" />
+            <Image 
+              src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1920&auto=format&fit=crop"
+              alt="Croatia"
+              fill
+              priority
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10" />
           </div>
 
           <div className="container mx-auto px-6 relative z-20">
