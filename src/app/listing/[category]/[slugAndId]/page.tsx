@@ -99,7 +99,7 @@ export default function ListingDetailPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       <main className="flex-1 pb-24">
-        <section className="h-[60vh] relative flex gap-2 p-2">
+        <section className="h-[50vh] min-h-[400px] relative flex gap-2 p-2">
           <div className="flex-1 relative rounded-[2rem] overflow-hidden">
             <Image src={photos[0]} alt="Hero" fill className="object-cover" priority />
           </div>
@@ -158,7 +158,7 @@ export default function ListingDetailPage() {
                     })}
                   </div>
                 )}
-                <div className="prose prose-2xl max-w-none font-body italic text-foreground/80 leading-relaxed whitespace-pre-wrap">
+                <div className="prose prose-lg max-w-none font-body italic text-foreground/80 leading-relaxed whitespace-pre-wrap">
                   {listing.description}
                 </div>
               </TabsContent>

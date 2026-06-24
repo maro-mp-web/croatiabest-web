@@ -45,9 +45,9 @@ export default function MiniMap({ latitude, longitude, className = 'h-[300px] w-
       <MapContainer 
         center={[latitude, longitude]} 
         zoom={15} 
-        zoomControl={false}
-        scrollWheelZoom={false}
-        dragging={false}
+        zoomControl={true}
+        scrollWheelZoom={true}
+        dragging={true}
         style={{ height: '100%', width: '100%', zIndex: 10 }}
       >
         <TileLayer
