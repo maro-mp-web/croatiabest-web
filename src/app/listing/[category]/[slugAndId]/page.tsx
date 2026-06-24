@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import dynamic from 'next/dynamic';
 
 const MiniMap = dynamic(() => import('@/components/map/MiniMap'), { ssr: false });
-import { CATEGORIES } from '@/app/lib/constants';
+import { CATEGORIES, DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 import { CATEGORY_FIELDS } from '@/app/lib/category-fields';
 import { MapPin, Phone, Mail, Globe, Calendar, Users, List, Info, Loader2, Send, Tag, ShoppingBag, Check, X, Sparkles } from 'lucide-react';
 import { useParams } from 'next/navigation';
@@ -84,7 +84,7 @@ export default function ListingDetailPage() {
     try { photos = JSON.parse(photos); } catch (e) { photos = [photos]; }
   }
   if (!Array.isArray(photos) || photos.length === 0) {
-    photos = ['https://picsum.photos/seed/placeholder/1200/800'];
+    photos = [DEFAULT_LISTING_IMAGE];
   }
 
   const relatedListings = allActiveListings
@@ -263,7 +263,7 @@ export default function ListingDetailPage() {
                   <Link key={l.id} href={generateListingUrl(l.locationCategoryId, l.name, l.id)}>
                     <Card className="group border-none shadow-md hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col bg-white">
                       <div className="relative aspect-square overflow-hidden">
-                        <Image src={Array.isArray(l.photoUrls) ? l.photoUrls[0] : (typeof l.photoUrls === 'string' ? JSON.parse(l.photoUrls)[0] : 'https://picsum.photos/seed/placeholder/400/500')} alt={l.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                        <Image src={Array.isArray(l.photoUrls) ? l.photoUrls[0] : (typeof l.photoUrls === 'string' ? JSON.parse(l.photoUrls)[0] : DEFAULT_LISTING_IMAGE)} alt={l.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
                         <Badge className="absolute top-4 right-4 bg-primary text-white font-black uppercase text-[10px] tracking-widest shadow-lg">Premium</Badge>
                       </div>
                       <CardContent className="p-5 flex-1 flex flex-col justify-center">
@@ -286,7 +286,7 @@ export default function ListingDetailPage() {
                 <Link key={l.id} href={generateListingUrl(l.locationCategoryId, l.name, l.id)}>
                   <Card className="group border-none shadow-md hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col bg-secondary/5">
                     <div className="relative aspect-square overflow-hidden">
-                      <Image src={Array.isArray(l.photoUrls) ? l.photoUrls[0] : (typeof l.photoUrls === 'string' ? JSON.parse(l.photoUrls)[0] : 'https://picsum.photos/seed/placeholder/400/500')} alt={l.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <Image src={Array.isArray(l.photoUrls) ? l.photoUrls[0] : (typeof l.photoUrls === 'string' ? JSON.parse(l.photoUrls)[0] : DEFAULT_LISTING_IMAGE)} alt={l.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
                     </div>
                     <CardContent className="p-5 flex-1 flex flex-col justify-center">
                       <h4 className="font-black text-sm leading-tight line-clamp-2">{l.name}</h4>

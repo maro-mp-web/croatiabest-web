@@ -385,8 +385,11 @@ export default function AdminEditListingPage() {
                   <ImageUpload onUploadComplete={handleImageUploaded} />
                   <div className="grid grid-cols-2 gap-2">
                     {formData.photoUrls.map((url, i) => (
-                      <div key={i} className="relative aspect-square rounded-xl overflow-hidden border">
+                      <div key={i} className="relative aspect-square rounded-xl overflow-hidden border group">
                         <img src={url} className="object-cover w-full h-full" />
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button type="button" variant="destructive" size="icon" onClick={() => setFormData(prev => ({...prev, photoUrls: prev.photoUrls.filter((_, idx) => idx !== i)}))}><X className="size-4" /></Button>
+                        </div>
                       </div>
                     ))}
                   </div>

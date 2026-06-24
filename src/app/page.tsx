@@ -8,7 +8,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CATEGORIES } from '@/app/lib/constants';
+import { CATEGORIES, DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 import { 
   MapPin, 
   ArrowRight, 
@@ -165,7 +165,7 @@ export default function Home() {
                           <Card className="group border-none shadow-md hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col">
                             <div className="relative aspect-[4/5] overflow-hidden">
                               <Image 
-                                src={l.photoUrls?.[0] || 'https://picsum.photos/seed/placeholder/400/500'} 
+                                src={l.photoUrls?.[0] || DEFAULT_LISTING_IMAGE} 
                                 alt={l.name} 
                                 fill 
                                 className="object-cover group-hover:scale-110 transition-transform duration-700" 
@@ -228,7 +228,7 @@ export default function Home() {
                           <Card className="group border border-secondary/10 shadow-sm hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col bg-white">
                             <div className="relative aspect-[4/5] overflow-hidden">
                               <Image 
-                                src={l.photoUrls?.[0] || 'https://picsum.photos/seed/placeholder/400/500'} 
+                                src={l.photoUrls?.[0] || DEFAULT_LISTING_IMAGE} 
                                 alt={l.name} 
                                 fill 
                                 className="object-cover group-hover:scale-110 transition-transform duration-700" 
