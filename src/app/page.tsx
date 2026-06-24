@@ -61,8 +61,8 @@ export default function Home() {
         <section className="relative min-h-[90vh] w-full overflow-hidden flex items-center pt-32 pb-20">
           <div className="absolute inset-0 z-0">
             <Image 
-              src="https://images.unsplash.com/photo-1555217851-6141535824fa?q=80&w=1920&auto=format&fit=crop"
-              alt="Croatia"
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/The_walls_of_the_fortress_and_View_of_the_old_city._panorama.jpg/1920px-The_walls_of_the_fortress_and_View_of_the_old_city._panorama.jpg"
+              alt="Dubrovnik"
               fill
               priority
               className="object-cover"

@@ -12,7 +12,6 @@ export const metadata: Metadata = {
   description: 'Istražite najbolje skrivene plaže, luksuzne restorane i vrhunske hotele u Hrvatskoj uz našu interaktivnu kartu i stručne vodiče.',
   keywords: ['Hrvatska', 'Putovanja', 'Plaže', 'Restorani', 'Hoteli', 'Jadran', 'Turizam', 'Iznajmljivanje'],
   authors: [{ name: 'CroatiaBest Team' }],
-  viewport: 'width=device-width, initial-scale=1',
   robots: 'index, follow',
   openGraph: {
     title: 'CroatiaBest - Vaš ultimativni jadranski vodič',
@@ -36,6 +35,11 @@ export const metadata: Metadata = {
     description: 'Stručni vodiči i interaktivna karta za savršeno ljetovanje.',
     images: [DEFAULT_LISTING_IMAGE],
   },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
