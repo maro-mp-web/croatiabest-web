@@ -61,7 +61,7 @@ export default function Home() {
         <section className="relative min-h-[90vh] w-full overflow-hidden flex items-center pt-32 pb-20">
           <div className="absolute inset-0 z-0">
             <Image 
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/The_walls_of_the_fortress_and_View_of_the_old_city._panorama.jpg/1920px-The_walls_of_the_fortress_and_View_of_the_old_city._panorama.jpg"
+              src="/hero-dubrovnik.jpg"
               alt="Dubrovnik"
               fill
               priority
