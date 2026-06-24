@@ -26,7 +26,7 @@ export interface Location {
   officialWeb?: string;
 }
 
-export const DEFAULT_LISTING_IMAGE = 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop';
+export const DEFAULT_LISTING_IMAGE = '/hero-dubrovnik.jpg';
 
 export const CATEGORIES: Category[] = [
   { id: 'pharmacy', name: 'Dežurna ljekarna (24/7)', type: 'free', color: '#10B981', icon: 'PlusSquare' },
