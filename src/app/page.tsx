@@ -61,7 +61,7 @@ export default function Home() {
         <section className="relative min-h-[90vh] w-full overflow-hidden flex items-center pt-32 pb-20">
           <div className="absolute inset-0 z-0">
             <Image 
-              src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1920&auto=format&fit=crop"
+              src="https://images.unsplash.com/photo-1555217851-6141535824fa?q=80&w=1920&auto=format&fit=crop"
               alt="Croatia"
               fill
               priority
