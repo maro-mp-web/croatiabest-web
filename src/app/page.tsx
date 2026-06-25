@@ -60,6 +60,14 @@ export default function Home() {
     return null;
   };
 
+  const featuredCities = [
+    { name: 'Zagreb', slug: 'zagreb', region: 'Središnja Hrvatska', image: '/cities/zagreb.jpg' },
+    { name: 'Dubrovnik', slug: 'dubrovnik', region: 'Dalmacija', image: '/cities/dubrovnik.jpg' },
+    { name: 'Split', slug: 'split', region: 'Dalmacija', image: '/cities/split.jpg' },
+    { name: 'Rovinj', slug: 'rovinj', region: 'Istra', image: '/cities/rovinj.jpg' },
+    { name: 'Varaždin', slug: 'varazdin', region: 'Središnja Hrvatska', image: '/cities/varazdin.jpg' }
+  ];
+
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Navbar />
@@ -109,7 +117,7 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-              {cities?.filter(c => ['Zagreb', 'Dubrovnik', 'Split', 'Rovinj', 'Varaždin'].includes(c.name)).sort((a,b) => ['Zagreb', 'Dubrovnik', 'Split', 'Rovinj', 'Varaždin'].indexOf(a.name) - ['Zagreb', 'Dubrovnik', 'Split', 'Rovinj', 'Varaždin'].indexOf(b.name)).map((city) => (
+              {featuredCities.map((city) => (
                 <Link key={city.slug} href={`/cities/${city.slug}`}>
                   <div className="relative h-[350px] rounded-[2.5rem] overflow-hidden group cursor-pointer shadow-xl">
                     <Image src={city.image} alt={city.name} fill className="object-cover transition-all duration-700 group-hover:scale-105" />
