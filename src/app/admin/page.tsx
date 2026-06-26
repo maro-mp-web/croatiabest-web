@@ -36,6 +36,10 @@ export default function AdminDashboard() {
     sort: '-created',
   });
 
+  const { data: blogs, isLoading: blogsLoading } = useCollection('blogs', {
+    sort: '-created',
+  });
+
   const handleApprove = async (id: string) => {
     if (!pb) return;
     try {
@@ -68,12 +72,25 @@ export default function AdminDashboard() {
 
   const handleDelete = async (id: string) => {
     if (!pb) return;
-    if (!window.confirm('Jeste li sigurni da želite trajno obrisati ovaj objekt?')) return;
-    try {
-      await pb.collection('listings').delete(id);
-      window.location.reload();
-    } catch (error) {
-      console.error('Delete error:', error);
+    if (confirm('Jeste li sigurni da želite obrisati ovaj objekt?')) {
+      try {
+        await pb.collection('listings').delete(id);
+        window.location.reload();
+      } catch (error) {
+        console.error('Delete error:', error);
+      }
+    }
+  };
+
+  const handleDeleteBlog = async (id: string) => {
+    if (!pb) return;
+    if (confirm('Jeste li sigurni da želite obrisati ovaj članak?')) {
+      try {
+        await pb.collection('blogs').delete(id);
+        window.location.reload();
+      } catch (error) {
+        console.error('Delete error:', error);
+      }
     }
   };
 
@@ -122,6 +139,11 @@ export default function AdminDashboard() {
             <Link href="/admin/new-listing">
               <Button className="bg-foreground text-white hover:bg-foreground/90 rounded-2xl font-black h-16 px-10 shadow-xl">
                 <PlusCircle className="size-5 mr-3" /> Dodaj Objekt
+              </Button>
+            </Link>
+            <Link href="/admin/new-blog">
+              <Button className="bg-primary text-white hover:bg-primary/90 rounded-2xl font-black h-16 px-10 shadow-xl">
+                <PlusCircle className="size-5 mr-3" /> Dodaj Članak
               </Button>
             </Link>
             <Link href="/admin/ai-writer">
@@ -280,6 +302,61 @@ export default function AdminDashboard() {
                       </div>
                     );
                   })
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="border-none shadow-2xl rounded-[3rem] overflow-hidden bg-white mt-8">
+          <CardHeader className="flex flex-row items-center justify-between border-b p-10 bg-primary/5">
+            <div>
+              <CardTitle className="text-3xl">Magazin (Blog)</CardTitle>
+              <CardDescription className="text-lg">Upravljajte postojećim člancima u Magazinu.</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            {blogsLoading ? (
+              <div className="p-32 flex justify-center"><Loader2 className="animate-spin size-8 text-primary" /></div>
+            ) : (
+              <div className="divide-y divide-black/5">
+                {!blogs || blogs.length === 0 ? (
+                  <div className="p-32 text-center text-muted-foreground italic text-xl">Nema objavljenih članaka.</div>
+                ) : (
+                  blogs.map((blog) => (
+                    <div key={blog.id} className="flex flex-col md:flex-row items-center justify-between p-10 hover:bg-secondary/5 transition-colors gap-8">
+                      <div className="flex items-center gap-6 w-full md:w-auto">
+                        <div className="relative size-20 rounded-[2rem] overflow-hidden shadow-inner border border-black/5 bg-muted">
+                          {blog.image && <img src={blog.image} alt={blog.title} className="absolute inset-0 w-full h-full object-cover" />}
+                        </div>
+                        <div>
+                          <p className="font-black text-2xl mb-1">{blog.title}</p>
+                          <p className="text-muted-foreground flex items-center gap-3 font-medium">
+                            {blog.category || 'Nema kategorije'} <span className="opacity-30">•</span> Autor: {blog.author || 'Nepoznato'}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4">
+                        <Link href={`/blog/${blog.id}`}>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="text-primary hover:bg-primary/10 hover:text-primary rounded-xl size-12 transition-transform active:scale-90 border-primary/20 bg-primary/5"
+                          >
+                            <Sparkles className="size-5" />
+                          </Button>
+                        </Link>
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          onClick={() => handleDeleteBlog(blog.id)} 
+                          className="text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl size-12 transition-transform active:scale-90 border-red-500/20 bg-red-500/5"
+                        >
+                          <Trash2 className="size-5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
             )}
