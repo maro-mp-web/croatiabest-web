@@ -47,10 +47,16 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
 
   const getFirstPhoto = (urls: any) => {
     try {
-      if (Array.isArray(urls)) return urls[0];
-      if (typeof urls === 'string') return JSON.parse(urls)[0];
+      if (Array.isArray(urls)) return urls[0] || DEFAULT_LISTING_IMAGE;
+      if (typeof urls === 'string') {
+        if (urls.trim().startsWith('[')) {
+          const parsed = JSON.parse(urls);
+          return parsed[0] || DEFAULT_LISTING_IMAGE;
+        }
+        return urls || DEFAULT_LISTING_IMAGE;
+      }
     } catch (e) {}
-    return null;
+    return DEFAULT_LISTING_IMAGE;
   };
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [wikiData, setWikiData] = useState<{extract: string, thumbnail?: string}>({ extract: '' });
