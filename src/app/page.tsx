@@ -414,109 +414,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ISLANDS BENTO GRID SECTION (Otoci) */}
-        <section className="py-24 bg-slate-50 relative z-30 border-t border-b border-black/5">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-16 space-y-4">
-              <Badge className="bg-primary/10 text-primary border-none font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-widest">
-                {language === 'en' ? 'Islands of Croatia' : 'Hrvatski Otoci'}
-              </Badge>
-              <h2 className="text-5xl md:text-6xl font-headline font-black italic tracking-tighter text-foreground leading-none">
-                {language === 'en' ? 'Explore beautiful islands' : 'Istražite otoke'}
-              </h2>
-              <p className="text-muted-foreground font-body italic text-base max-w-xl mx-auto">
-                {language === 'en' ? 'Highlighted islands Korčula, Hvar, Krk, Cres, and Mljet.' : 'Istaknuti otoci Korčula, Hvar, Krk, Cres i Mljet.'}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
-              {featuredIslands.map((island) => (
-                <Link key={island.slug} href={`/islands/${island.slug}`} className={`${island.colSpan} group`}>
-                  <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden cursor-pointer shadow-lg border border-black/5 hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out bg-slate-900">
-                    
-                    <div className="absolute top-4 right-6 z-20 text-white/20 text-4xl font-black font-headline italic tracking-tighter select-none">
-                      {island.indexStr}
-                    </div>
-
-                    <div className="relative w-full h-full">
-                      <Image src={island.image} alt={island.name} fill className="object-cover transition-all duration-1000 group-hover:scale-105" />
-                    </div>
-                    
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent z-10" />
-                    
-                    <div className="absolute inset-0 p-6 flex flex-col justify-end z-20">
-                      <p className="text-[9px] font-black uppercase text-primary mb-1 tracking-[0.2em]">{island.region}</p>
-                      <h4 className="text-2xl md:text-3xl font-black italic mb-3 text-white group-hover:text-primary transition-colors leading-tight">{island.name}</h4>
-                      
-                      <div className="overflow-hidden h-0 group-hover:h-10 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out flex items-center">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                          {language === 'en' ? 'EXPLORE ISLAND' : 'ISTRAŽI OTOK'} <Compass className="size-4 animate-spin-slow text-primary" />
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* NATIONAL PARKS SECTION */}
-        <section className="py-24 bg-white relative z-30 border-b border-black/5">
-          <div className="container mx-auto px-6">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
-              <div className="text-left space-y-4">
-                <Badge className="bg-emerald-100 text-emerald-700 border-none font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-widest">
-                  {language === 'en' ? 'Nature Heritage' : 'Nacionalni Parkovi'}
-                </Badge>
-                <h2 className="text-4xl md:text-5xl font-headline font-black italic tracking-tighter text-foreground leading-none">
-                  {language === 'en' ? 'Most Visited National Parks' : 'Nacionalni Parkovi'}
-                </h2>
-                <p className="text-muted-foreground font-body italic text-base max-w-xl">
-                  {language === 'en' ? 'Explore Plitvice, Krka, and Mljet National Parks.' : 'Istražite predivne prirodne ljepote Plitvica, Krke i Mljeta.'}
-                </p>
-              </div>
-              <Link href="/explore?category=national_parks">
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest px-6 py-4 rounded-full transition-all">
-                  {language === 'en' ? 'See all parks' : 'Prikaži više'} <ArrowRight className="ml-2 size-4" />
-                </Button>
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {nationalParks.map((park) => {
-                const name = isEn && park.metadata?.nameEn ? park.metadata.nameEn : park.name;
-                const desc = isEn && park.metadata?.descriptionEn ? park.metadata.descriptionEn : park.description;
-                const image = getFirstPhoto(park.photoUrls) || DEFAULT_LISTING_IMAGE;
-                const path = generateListingUrl('national_parks', park.name, park.id);
-                return (
-                  <Link key={park.id} href={path} className="group">
-                    <div className="p-[1px] bg-gradient-to-br from-transparent to-transparent hover:from-emerald-500 hover:to-teal-500 rounded-[2.5rem] shadow-lg hover:shadow-2xl transition-all duration-500 h-full">
-                      <Card className="rounded-[2.5rem] border-none overflow-hidden h-full flex flex-col bg-white">
-                        <div className="relative aspect-[16/10] overflow-hidden">
-                          <Image src={image} alt={name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                          <div className="absolute top-4 left-4">
-                            <Badge className="bg-emerald-600 text-white border-none shadow-md font-black uppercase text-[8px] tracking-wider px-3 py-1">
-                              {language === 'en' ? 'National Park' : 'Nacionalni park'}
-                            </Badge>
-                          </div>
-                        </div>
-                        <CardContent className="p-6 flex-1 flex flex-col justify-between">
-                          <div className="space-y-3">
-                            <h4 className="font-black text-xl text-foreground line-clamp-1 group-hover:text-emerald-600 transition-colors leading-tight">{name}</h4>
-                            <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest flex items-center gap-1"><MapPin className="size-3" /> {park.city}</p>
-                            <p className="text-muted-foreground font-body leading-relaxed text-xs line-clamp-3">{desc}</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
         {/* SECTION 1: POPULAR LOCATIONS & LATEST ARTICLES & SPONSOR TILE */}
         <section className="py-24 bg-slate-50 relative z-30 border-b border-black/5">
           <div className="container mx-auto px-6">
@@ -875,6 +772,109 @@ export default function Home() {
                 </div>
               </div>
 
+            </div>
+          </div>
+        </section>
+
+        {/* ISLANDS BENTO GRID SECTION (Otoci) - PREDZADNJA SEKCIJA */}
+        <section className="py-24 bg-slate-50 relative z-30 border-t border-b border-black/5">
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-16 space-y-4">
+              <Badge className="bg-primary/10 text-primary border-none font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-widest">
+                {language === 'en' ? 'Islands of Croatia' : 'Hrvatski Otoci'}
+              </Badge>
+              <h2 className="text-5xl md:text-6xl font-headline font-black italic tracking-tighter text-foreground leading-none">
+                {language === 'en' ? 'Explore beautiful islands' : 'Istražite otoke'}
+              </h2>
+              <p className="text-muted-foreground font-body italic text-base max-w-xl mx-auto">
+                {language === 'en' ? 'Highlighted islands Korčula, Hvar, Krk, Cres, and Mljet.' : 'Istaknuti otoci Korčula, Hvar, Krk, Cres i Mljet.'}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
+              {featuredIslands.map((island) => (
+                <Link key={island.slug} href={`/islands/${island.slug}`} className={`${island.colSpan} group`}>
+                  <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden cursor-pointer shadow-lg border border-black/5 hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out bg-slate-900">
+                    
+                    <div className="absolute top-4 right-6 z-20 text-white/20 text-4xl font-black font-headline italic tracking-tighter select-none">
+                      {island.indexStr}
+                    </div>
+
+                    <div className="relative w-full h-full">
+                      <Image src={island.image} alt={island.name} fill className="object-cover transition-all duration-1000 group-hover:scale-105" />
+                    </div>
+                    
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent z-10" />
+                    
+                    <div className="absolute inset-0 p-6 flex flex-col justify-end z-20">
+                      <p className="text-[9px] font-black uppercase text-primary mb-1 tracking-[0.2em]">{island.region}</p>
+                      <h4 className="text-2xl md:text-3xl font-black italic mb-3 text-white group-hover:text-primary transition-colors leading-tight">{island.name}</h4>
+                      
+                      <div className="overflow-hidden h-0 group-hover:h-10 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out flex items-center">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                          {language === 'en' ? 'EXPLORE ISLAND' : 'ISTRAŽI OTOK'} <Compass className="size-4 animate-spin-slow text-primary" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* NATIONAL PARKS SECTION - ZADNJA SEKCIJA */}
+        <section className="py-24 bg-white relative z-30 border-b border-black/5">
+          <div className="container mx-auto px-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+              <div className="text-left space-y-4">
+                <Badge className="bg-emerald-100 text-emerald-700 border-none font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-widest">
+                  {language === 'en' ? 'Nature Heritage' : 'Nacionalni Parkovi'}
+                </Badge>
+                <h2 className="text-4xl md:text-5xl font-headline font-black italic tracking-tighter text-foreground leading-none">
+                  {language === 'en' ? 'Most Visited National Parks' : 'Nacionalni Parkovi'}
+                </h2>
+                <p className="text-muted-foreground font-body italic text-base max-w-xl">
+                  {language === 'en' ? 'Explore Plitvice, Krka, and Mljet National Parks.' : 'Istražite predivne prirodne ljepote Plitvica, Krke i Mljeta.'}
+                </p>
+              </div>
+              <Link href="/explore?category=national_parks">
+                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest px-6 py-4 rounded-full transition-all">
+                  {language === 'en' ? 'See all parks' : 'Prikaži više'} <ArrowRight className="ml-2 size-4" />
+                </Button>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {nationalParks.map((park) => {
+                const name = isEn && park.metadata?.nameEn ? park.metadata.nameEn : park.name;
+                const desc = isEn && park.metadata?.descriptionEn ? park.metadata.descriptionEn : park.description;
+                const image = getFirstPhoto(park.photoUrls) || DEFAULT_LISTING_IMAGE;
+                const path = generateListingUrl('national_parks', park.name, park.id);
+                return (
+                  <Link key={park.id} href={path} className="group">
+                    <div className="p-[1px] bg-gradient-to-br from-transparent to-transparent hover:from-emerald-500 hover:to-teal-500 rounded-[2.5rem] shadow-lg hover:shadow-2xl transition-all duration-500 h-full">
+                      <Card className="rounded-[2.5rem] border-none overflow-hidden h-full flex flex-col bg-white">
+                        <div className="relative aspect-[16/10] overflow-hidden">
+                          <Image src={image} alt={name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                          <div className="absolute top-4 left-4">
+                            <Badge className="bg-emerald-600 text-white border-none shadow-md font-black uppercase text-[8px] tracking-wider px-3 py-1">
+                              {language === 'en' ? 'National Park' : 'Nacionalni park'}
+                            </Badge>
+                          </div>
+                        </div>
+                        <CardContent className="p-6 flex-1 flex flex-col justify-between">
+                          <div className="space-y-3">
+                            <h4 className="font-black text-xl text-foreground line-clamp-1 group-hover:text-emerald-600 transition-colors leading-tight">{name}</h4>
+                            <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest flex items-center gap-1"><MapPin className="size-3" /> {park.city}</p>
+                            <p className="text-muted-foreground font-body leading-relaxed text-xs line-clamp-3">{desc}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
