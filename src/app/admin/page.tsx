@@ -35,6 +35,20 @@ import { useUser, useCollection, usePB } from '@/pocketbase';
 export default function AdminDashboard() {
   const { user, isUserLoading } = useUser();
   const pb = usePB();
+
+  const getFirstPhoto = (urls: any) => {
+    try {
+      if (Array.isArray(urls)) return urls[0] || '';
+      if (typeof urls === 'string') {
+        if (urls.trim().startsWith('[')) {
+          const parsed = JSON.parse(urls);
+          return parsed[0] || '';
+        }
+        return urls || '';
+      }
+    } catch (e) {}
+    return '';
+  };
   
   // Stroga provjera administratora - isključivo maro.webdeveloper@gmail.com
   const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
@@ -260,7 +274,7 @@ export default function AdminDashboard() {
         address: parkItem.address || '',
         description: parkItem.description || '',
         descriptionEn: parkItem.metadata?.descriptionEn || '',
-        image: parkItem.photoUrls && parkItem.photoUrls.length > 0 ? parkItem.photoUrls[0] : '',
+        image: getFirstPhoto(parkItem.photoUrls),
         lat: parkItem.latitude || 44.8,
         lng: parkItem.longitude || 15.6,
         region: parkItem.region || '',
@@ -706,9 +720,9 @@ export default function AdminDashboard() {
                         return (
                           <div key={listing.id} className="flex flex-col md:flex-row items-center justify-between p-8 hover:bg-secondary/5 transition-colors gap-6">
                             <div className="flex items-center gap-6 w-full md:w-auto">
-                              {listing.photoUrls && listing.photoUrls.length > 0 && listing.photoUrls[0] ? (
+                              {getFirstPhoto(listing.photoUrls) ? (
                                 <div className="relative size-16 rounded-2xl overflow-hidden shadow-inner border border-black/5 flex-shrink-0">
-                                  <img src={listing.photoUrls[0]} alt={name} className="absolute inset-0 w-full h-full object-cover" />
+                                  <img src={getFirstPhoto(listing.photoUrls)} alt={name} className="absolute inset-0 w-full h-full object-cover" />
                                 </div>
                               ) : (
                                 <div className={`size-16 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner flex-shrink-0 ${listing.locationCategoryType === 'Paid' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
@@ -959,7 +973,7 @@ export default function AdminDashboard() {
                     <div className="p-24 text-center text-muted-foreground italic">Nema upisanih nacionalnih parkova.</div>
                   ) : (
                     nationalParks.map((park) => {
-                      const image = park.photoUrls && park.photoUrls.length > 0 ? (typeof park.photoUrls === 'string' ? JSON.parse(park.photoUrls)[0] : park.photoUrls[0]) : '';
+                      const image = getFirstPhoto(park.photoUrls);
                       return (
                         <div key={park.id} className="flex flex-col md:flex-row items-center justify-between p-8 hover:bg-secondary/5 transition-colors gap-6">
                           <div className="flex items-center gap-6 w-full md:w-auto">
