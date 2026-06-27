@@ -13,7 +13,7 @@ export default async function CityPage({ params }: { params: Promise<{ slug: str
     return notFound();
   }
 
-  let cityListings = [];
+  let cityListings: any[] = [];
   try {
     cityListings = await pb.collection('listings').getFullList({
       filter: `city="${city.name}" && status="active"`,
@@ -24,7 +24,7 @@ export default async function CityPage({ params }: { params: Promise<{ slug: str
     // ignore
   }
 
-  let globalSpecialListings = [];
+  let globalSpecialListings: any[] = [];
   try {
     globalSpecialListings = await pb.collection('listings').getFullList({
       filter: `(locationCategoryId="homeland_war" || locationCategoryId="national_parks") && status="active"`,
@@ -34,7 +34,7 @@ export default async function CityPage({ params }: { params: Promise<{ slug: str
     // ignore
   }
 
-  let allBlogs = [];
+  let allBlogs: any[] = [];
   try {
     allBlogs = await pb.collection('blogs').getFullList({
       sort: '-created',
