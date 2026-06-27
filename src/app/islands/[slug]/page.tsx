@@ -13,7 +13,7 @@ export default async function IslandPage({ params }: { params: Promise<{ slug: s
     return notFound();
   }
 
-  let listings = [];
+  let listings: any[] = [];
   try {
     listings = await pb.collection('listings').getFullList({
       filter: `city="${island.name}" && status="active"`,

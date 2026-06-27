@@ -106,7 +106,7 @@ export default function ListingDetailPage() {
           </div>
           {photos.length > 1 && (
             <div className="w-1/4 hidden md:flex flex-col gap-2">
-              {photos.slice(1, 3).map((p, i) => (
+              {photos.slice(1, 3).map((p: any, i: number) => (
                 <div key={i} className="flex-1 relative rounded-[2rem] overflow-hidden">
                   <Image src={p} alt={`Photo ${i}`} fill className="object-cover" />
                 </div>
