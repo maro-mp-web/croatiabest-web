@@ -38,7 +38,7 @@ export const CATEGORIES: Category[] = [
   { id: 'opgs', name: 'OPG - Lokalni proizvodi', type: 'free', color: '#059669', icon: 'Leaf' },
   { id: 'viewpoints', name: 'Vidikovci', type: 'free', color: '#8B5CF6', icon: 'Binoculars' },
   { id: 'landmarks', name: 'Povijesne znamenitosti', type: 'free', color: '#B45309', icon: 'Landmark' },
-  { id: 'homeland_war', name: 'Domovinski rat (Spomenici)', type: 'free', color: '#4338CA', icon: 'Shield' },
+  { id: 'homeland_war', name: 'Spomenici', type: 'free', color: '#4338CA', icon: 'Shield' },
   { id: 'bus_stations', name: 'Međugradski autobusi', type: 'free', color: '#F59E0B', icon: 'BusFront' },
   { id: 'train_stations', name: 'Željeznički kolodvori', type: 'free', color: '#64748B', icon: 'Train' },
   { id: 'ferry_ports', name: 'Trajektne luke', type: 'free', color: '#0284C7', icon: 'Ship' },

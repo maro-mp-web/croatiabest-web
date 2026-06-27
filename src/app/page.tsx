@@ -229,7 +229,7 @@ export default function Home() {
 
   // Public/free categories
   const publicCategories = [
-    { id: 'homeland_war', name: 'Domovinski rat', icon: <Shield className="size-5" /> },
+    { id: 'homeland_war', name: 'Spomenici', icon: <Shield className="size-5" /> },
     { id: 'landmarks', name: 'Znamenitosti', icon: <Landmark className="size-5" /> },
     { id: 'culture', name: 'Kultura & Muzeji', icon: <Library className="size-5" /> },
     { id: 'viewpoints', name: 'Vidikovci', icon: <Binoculars className="size-5" /> },
