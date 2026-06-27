@@ -49,6 +49,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/dodaj-objekt',
+        destination: '/submit',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
