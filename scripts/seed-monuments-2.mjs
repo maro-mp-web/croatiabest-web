@@ -1,4 +1,11 @@
 import PocketBase from 'pocketbase';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const pb = new PocketBase('http://127.0.0.1:8090');
 
@@ -261,23 +268,26 @@ async function run() {
   console.log("Seeding monuments...");
   for (const monument of MONUMENTS) {
     try {
+      const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+      const streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?size=800x600&location=${monument.lat},${monument.lng}&fov=90&heading=0&pitch=10&key=${key}`;
+      
       const data = {
         name: monument.name,
-        locationCategoryId: 'landmarks',
-        categoryId: 'landmarks', // in case both are used
+        locationCategoryId: 'homeland_war',
+        categoryId: 'homeland_war', // in case both are used
         city: monument.city,
         latitude: monument.lat,
         longitude: monument.lng,
         description: monument.description,
         status: 'active',
         ownerId: ownerId,
-        photoUrls: ['https://picsum.photos/seed/' + monument.name.replace(/\s+/g, '') + '/800/600'],
+        photoUrls: [streetViewUrl],
       };
       
       await pb.collection('listings').create(data);
       console.log(`Created monument: ${monument.name} in ${monument.city}`);
     } catch (e) {
-      console.log(`Error creating monument ${monument.name}:`, e.response?.data || e.message);
+      console.log(`Error creating monument ${monument.name}:`, e.message);
     }
   }
 

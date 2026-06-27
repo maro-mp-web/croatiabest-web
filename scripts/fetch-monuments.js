@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const crypto = require('crypto');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const DB_PATH = path.join(__dirname, '..', 'pb_data', 'data.db');
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
@@ -146,9 +147,13 @@ async function run() {
                     lowerName.includes('žrtv') || lowerName.includes('poginu') || 
                     lowerName.includes('vukovar');
                     
-      const category = isWar ? 'homeland_war' : 'landmarks';
+      const category = 'homeland_war';
       const description = getDescriptions(name, isWar);
       const id = generateId();
+      
+      const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+      const streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?size=800x600&location=${lat},${lng}&fov=90&heading=0&pitch=10&key=${key}`;
+      const photoUrlsJson = JSON.stringify([streetViewUrl]);
       
       const query = `
         INSERT INTO listings (
@@ -166,7 +171,7 @@ async function run() {
           ${lng}, 
           '${escapeSql(description)}', 
           'active', 
-          '[]', 
+          '${escapeSql(photoUrlsJson)}', 
           'not_applicable', 
           '${now}', 
           '${now}'
@@ -174,7 +179,11 @@ async function run() {
       `;
       
       try {
-        execSync(`sqlite3 "${DB_PATH}" "${query}"`);
+        const sqlPath = path.join(__dirname, 'temp_monument.sql');
+        fs.writeFileSync(sqlPath, query, 'utf8');
+        execSync(`sqlite3 "${DB_PATH}" < "${sqlPath}"`);
+        fs.unlinkSync(sqlPath);
+        
         existingNames.add(lowerName);
         totalInserted++;
       } catch (err) {
