@@ -8,6 +8,7 @@ import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 import Footer from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://croatiabest.com.hr'),
   title: 'CroatiaBest - Premium vodič kroz Hrvatsku',
   description: 'Istražite najbolje skrivene plaže, luksuzne restorane i vrhunske hotele u Hrvatskoj uz našu interaktivnu kartu i stručne vodiče.',
   keywords: ['Hrvatska', 'Putovanja', 'Plaže', 'Restorani', 'Hoteli', 'Jadran', 'Turizam', 'Iznajmljivanje'],
