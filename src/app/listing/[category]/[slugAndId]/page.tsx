@@ -79,6 +79,20 @@ export default function ListingDetailPage() {
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
   if (!listing) return null;
 
+  const getFirstPhoto = (urls: any) => {
+    try {
+      if (Array.isArray(urls)) return urls[0] || DEFAULT_LISTING_IMAGE;
+      if (typeof urls === 'string') {
+        if (urls.trim().startsWith('[')) {
+          const parsed = JSON.parse(urls);
+          return parsed[0] || DEFAULT_LISTING_IMAGE;
+        }
+        return urls || DEFAULT_LISTING_IMAGE;
+      }
+    } catch (e) {}
+    return DEFAULT_LISTING_IMAGE;
+  };
+
   const category = CATEGORIES.find(c => c.id === listing.locationCategoryId);
   let photos = listing.photoUrls || [];
   if (typeof photos === 'string') {
@@ -266,7 +280,7 @@ export default function ListingDetailPage() {
                   <Link key={l.id} href={generateListingUrl(l.locationCategoryId, l.name, l.id)}>
                     <Card className="group border-none shadow-md hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col bg-white">
                       <div className="relative aspect-square overflow-hidden">
-                        <Image src={Array.isArray(l.photoUrls) ? l.photoUrls[0] : (typeof l.photoUrls === 'string' ? JSON.parse(l.photoUrls)[0] : DEFAULT_LISTING_IMAGE)} alt={l.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                        <Image src={getFirstPhoto(l.photoUrls)} alt={l.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
                         <Badge className="absolute top-4 right-4 bg-primary text-white font-black uppercase text-[10px] tracking-widest shadow-lg">Premium</Badge>
                       </div>
                       <CardContent className="p-5 flex-1 flex flex-col justify-center">
@@ -289,7 +303,7 @@ export default function ListingDetailPage() {
                 <Link key={l.id} href={generateListingUrl(l.locationCategoryId, l.name, l.id)}>
                   <Card className="group border-none shadow-md hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col bg-secondary/5">
                     <div className="relative aspect-square overflow-hidden">
-                      <Image src={Array.isArray(l.photoUrls) ? l.photoUrls[0] : (typeof l.photoUrls === 'string' ? JSON.parse(l.photoUrls)[0] : DEFAULT_LISTING_IMAGE)} alt={l.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <Image src={getFirstPhoto(l.photoUrls)} alt={l.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
                     </div>
                     <CardContent className="p-5 flex-1 flex flex-col justify-center">
                       <h4 className="font-black text-sm leading-tight line-clamp-2">{l.name}</h4>
