@@ -24,6 +24,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from '@/hooks/use-toast';
 import AdBanner from '@/components/ads/AdBanner';
 import { generateListingUrl } from '@/app/lib/utils/slug';
+import FAQSection from '@/components/ui/FAQSection';
 
 export default function ListingDetailPage() {
   const params = useParams();
@@ -121,7 +122,9 @@ export default function ListingDetailPage() {
                 <Badge className="bg-primary/10 text-primary border-none px-6 py-1.5 uppercase font-black text-[10px] tracking-widest">{category ? (t[`cat_${category.id}` as keyof typeof t] || category.name) : ''}</Badge>
                 <Badge variant="outline" className="text-secondary border-secondary px-6 py-1.5 font-black text-[10px]">{listing.city}</Badge>
               </div>
-              <h1 className="text-6xl font-headline font-black tracking-tighter">{listing.name}</h1>
+              <h1 className="text-6xl font-headline font-black tracking-tighter">
+                {language === 'en' && listing.metadata?.nameEn ? listing.metadata.nameEn : listing.name}
+              </h1>
               <p className="text-xl text-muted-foreground flex items-center gap-2"><MapPin className="size-5 text-primary" /> {listing.address}</p>
             </div>
 
@@ -145,7 +148,7 @@ export default function ListingDetailPage() {
                       
                       return (
                         <div key={field.id} className="flex flex-col space-y-1">
-                          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t[`field_${field.id}` as keyof typeof t] || field.label}</span>
+                           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t[`field_${field.id}` as keyof typeof t] || field.label}</span>
                           <span className="font-black text-lg flex items-center gap-2">
                             {field.type === 'checkbox' ? (
                               <div className="flex items-center gap-2 text-primary"><Check className="size-5" /> {language === 'en' ? 'Yes' : 'Da'}</div>
@@ -159,7 +162,7 @@ export default function ListingDetailPage() {
                   </div>
                 )}
                 <div className="prose prose-lg max-w-none font-body italic text-foreground/80 leading-relaxed whitespace-pre-wrap">
-                  {listing.description}
+                  {language === 'en' && listing.metadata?.descriptionEn ? listing.metadata.descriptionEn : listing.description}
                 </div>
               </TabsContent>
 
@@ -234,7 +237,7 @@ export default function ListingDetailPage() {
                 <h4 className="text-xl font-black">Detalji</h4>
                 <div className="space-y-3">
                   {listing.contactPhone && <div className="flex items-center gap-3 font-bold text-sm"><Phone className="size-4 text-primary" /> {listing.contactPhone}</div>}
-                  {listing.webAddress && <a href={listing.webAddress} target="_blank" className="flex items-center gap-3 font-bold text-sm text-secondary hover:underline"><Globe className="size-4" /> Web stranica</a>}
+                  {listing.webAddress && <a href={listing.webAddress} target="_blank" rel="dofollow noopener" className="flex items-center gap-3 font-bold text-sm text-secondary hover:underline"><Globe className="size-4" /> Web stranica</a>}
                 </div>
               </Card>
             )}
@@ -297,6 +300,13 @@ export default function ListingDetailPage() {
               ))}
             </div>
           </section>
+        )}
+
+        {/* DYNAMIC FAQ SECTION */}
+        {listing && (
+          <div className="container mx-auto px-4 mt-16">
+            <FAQSection type="listing" name={listing.name} cityContext={listing.city} />
+          </div>
         )}
       </main>
     </div>

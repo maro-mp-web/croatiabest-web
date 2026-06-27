@@ -4,14 +4,23 @@
 import React from 'react';
 import { useParams } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, User, Clock, Share2, Facebook, Twitter, Link as LinkIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import FAQSection from '@/components/ui/FAQSection';
+import AdBanner from '@/components/ads/AdBanner';
 
 export default function ArticleClient({ article, relatedArticles }: { article: any, relatedArticles: any[] }) {
+  const { language } = useLanguage();
+  const isEn = language === 'en';
+
+  const title = isEn && article.titleEn ? article.titleEn : article.title;
+  const excerpt = isEn && article.excerptEn ? article.excerptEn : article.excerpt;
+  const content = isEn && article.contentEn ? article.contentEn : article.content;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -20,7 +29,7 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
       <main className="flex-1 pb-24">
         {/* Article Header */}
         <section className="relative h-[70vh] w-full">
-          <Image src={article.image} alt={article.title} fill className="object-cover brightness-[0.7]" priority />
+          <Image src={article.image} alt={title} fill className="object-cover brightness-[0.7]" priority />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
           
           <div className="absolute inset-0 flex items-center justify-center">
@@ -29,12 +38,15 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
                 {article.category}
               </Badge>
               <h1 className="text-4xl md:text-7xl font-headline font-black text-white leading-[1.1] drop-shadow-2xl">
-                {article.title}
+                {title}
               </h1>
               <div className="flex flex-wrap items-center justify-center gap-6 text-white/90 font-bold">
                 <span className="flex items-center gap-2"><User className="size-5 text-primary" /> {article.author}</span>
-                <span className="flex items-center gap-2"><Calendar className="size-5 text-primary" /> {article.date}</span>
-                <span className="flex items-center gap-2"><Clock className="size-5 text-primary" /> {article.readTime} čitanja</span>
+                <span className="flex items-center gap-2"><Calendar className="size-5 text-primary" /> {article.date || new Date(article.created).toLocaleDateString()}</span>
+                <span className="flex items-center gap-2">
+                  <Clock className="size-5 text-primary" /> 
+                  {isEn ? `${article.readTime || '5 min'} read` : `${article.readTime || '5 min'} čitanja`}
+                </span>
               </div>
             </div>
           </div>
@@ -54,11 +66,13 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
             {/* Main Body */}
             <div className="lg:col-span-8 space-y-12">
               <div className="bg-white/80 backdrop-blur-xl rounded-[3rem] p-8 md:p-16 shadow-2xl border border-white/40">
-                <p className="text-2xl font-bold italic text-primary/80 mb-10 leading-relaxed font-body">
-                  "{article.excerpt}"
-                </p>
+                {excerpt && (
+                  <p className="text-2xl font-bold italic text-primary/80 mb-10 leading-relaxed font-body">
+                    "{excerpt}"
+                  </p>
+                )}
                 
-                <div className="prose prose-xl max-w-none font-body leading-loose text-foreground/90 whitespace-pre-wrap" dangerouslySetInnerHTML={{__html: article.content}}>
+                <div className="prose prose-xl max-w-none font-body leading-loose text-foreground/90 whitespace-pre-wrap" dangerouslySetInnerHTML={{__html: content}}>
                 </div>
 
                 <div className="mt-16 pt-12 border-t flex flex-col md:flex-row items-center justify-between gap-8">
@@ -67,33 +81,44 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
                       <User className="size-8 text-secondary" />
                     </div>
                     <div>
-                      <p className="text-sm font-black text-muted-foreground uppercase tracking-widest">Napisao/la</p>
+                      <p className="text-sm font-black text-muted-foreground uppercase tracking-widest">
+                        {isEn ? 'Written by' : 'Napisao/la'}
+                      </p>
                       <p className="text-xl font-bold">{article.author}</p>
                     </div>
                   </div>
                   <div className="flex gap-4">
-                    <Button variant="secondary" className="rounded-xl px-8 font-bold"><Share2 className="size-4 mr-2" /> PODIJELI ČLANAK</Button>
+                    <Button variant="secondary" className="rounded-xl px-8 font-bold">
+                      <Share2 className="size-4 mr-2" /> 
+                      {isEn ? 'SHARE ARTICLE' : 'PODIJELI ČLANAK'}
+                    </Button>
                   </div>
                 </div>
               </div>
 
               {/* Related articles mockup */}
               <div className="space-y-8">
-                <h4 className="text-3xl font-headline font-black">Možda će vas zanimati</h4>
+                <h4 className="text-3xl font-headline font-black">
+                  {isEn ? 'You might also be interested in' : 'Možda će vas zanimati'}
+                </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {relatedArticles.slice(0, 2).map(item => (
-                    <Link key={item.id} href={`/blog/${item.id}`}>
-                      <div className="bg-white rounded-[2rem] overflow-hidden shadow-lg group">
-                        <div className="relative h-48">
-                          <Image src={item.image} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform" />
+                  {relatedArticles.slice(0, 2).map(item => {
+                    const rTitle = isEn && item.titleEn ? item.titleEn : item.title;
+                    const rExcerpt = isEn && item.excerptEn ? item.excerptEn : item.excerpt;
+                    return (
+                      <Link key={item.id} href={`/blog/${item.id}`}>
+                        <div className="bg-white rounded-[2rem] overflow-hidden shadow-lg group">
+                          <div className="relative h-48">
+                            <Image src={item.image} alt={rTitle} fill className="object-cover group-hover:scale-105 transition-transform" />
+                          </div>
+                          <div className="p-6">
+                            <h5 className="font-bold text-lg mb-2 line-clamp-1">{rTitle}</h5>
+                            <p className="text-sm text-muted-foreground line-clamp-2">{rExcerpt}</p>
+                          </div>
                         </div>
-                        <div className="p-6">
-                          <h5 className="font-bold text-lg mb-2 line-clamp-1">{item.title}</h5>
-                          <p className="text-sm text-muted-foreground line-clamp-2">{item.excerpt}</p>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -101,25 +126,33 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
             {/* Right Sidebar - Ad or newsletter */}
             <div className="lg:col-span-3 space-y-8 pt-24">
               <div className="bg-foreground text-white p-8 rounded-[2rem] space-y-6 shadow-2xl">
-                <h4 className="text-2xl font-black italic">Pretplati se</h4>
-                <p className="text-white/60 font-body">Najbolje priče o Hrvatskoj direktno u tvoj inbox svaku nedjelju.</p>
-                <input className="w-full h-12 bg-white/10 rounded-xl px-4 text-white border border-white/20 focus:outline-none focus:border-primary" placeholder="Email adresa" />
-                <Button className="w-full bg-primary font-black h-12 rounded-xl">PRIDRUŽI SE</Button>
+                <h4 className="text-2xl font-black italic">
+                  {isEn ? 'Subscribe' : 'Pretplati se'}
+                </h4>
+                <p className="text-white/60 font-body">
+                  {isEn 
+                    ? 'The best stories about Croatia straight to your inbox every Sunday.'
+                    : 'Najbolje priče o Hrvatskoj direktno u tvoj inbox svaku nedjelju.'}
+                </p>
+                <input className="w-full h-12 bg-white/10 rounded-xl px-4 text-white border border-white/20 focus:outline-none focus:border-primary" placeholder={isEn ? 'Email address' : 'Email adresa'} />
+                <Button className="w-full bg-primary font-black h-12 rounded-xl">
+                  {isEn ? 'JOIN US' : 'PRIDRUŽI SE'}
+                </Button>
               </div>
-
-              <div className="p-8 border-2 border-dashed rounded-[2rem] text-center space-y-4">
-                <p className="text-xs font-black text-muted-foreground tracking-widest uppercase">Oglasni prostor</p>
-                <div className="h-48 flex items-center justify-center text-muted-foreground/30 italic">Pronađi svoj put na CroatiaBest</div>
-              </div>
+              <AdBanner format="vertical" className="w-full h-[600px] shadow-sm rounded-3xl" />
             </div>
 
           </div>
         </article>
+
+        {/* DYNAMIC FAQ SECTION */}
+        <FAQSection type="blog" name={title} />
       </main>
       <div className="container mx-auto px-4 py-12 flex justify-center">
         <Link href="/blog">
           <Button variant="ghost" className="text-foreground hover:bg-foreground/5 flex items-center gap-2">
-            <ArrowLeft className="size-4" /> NATRAG NA MAGAZIN
+            <ArrowLeft className="size-4" /> 
+            {isEn ? 'BACK TO MAGAZINE' : 'NATRAG NA MAGAZIN'}
           </Button>
         </Link>
       </div>
