@@ -24,8 +24,26 @@ export function Navbar() {
   // Stroga provjera administratora
   const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
 
+  const [isScrolled, setIsScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className={`fixed top-0 left-0 right-0 z-50 w-full border-b transition-all duration-300 ${
+      isScrolled 
+        ? 'bg-white/95 backdrop-blur-md text-foreground border-black/5 shadow-sm' 
+        : 'bg-transparent text-white border-transparent'
+    }`}>
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <div className="flex items-center gap-6 md:gap-10">
           <Link href="/" className="hover:opacity-90 transition-opacity">
@@ -86,14 +104,14 @@ export function Navbar() {
           <div className="flex items-center space-x-2 font-black text-sm">
             <button 
               onClick={() => setLanguage('hr')} 
-              className={`transition-colors ${language === 'hr' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`transition-colors ${language === 'hr' ? 'text-primary' : (isScrolled ? 'text-muted-foreground hover:text-foreground' : 'text-white/60 hover:text-white')}`}
             >
               HR
             </button>
             <span className="text-muted-foreground/30">|</span>
             <button 
               onClick={() => setLanguage('en')} 
-              className={`transition-colors ${language === 'en' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`transition-colors ${language === 'en' ? 'text-primary' : (isScrolled ? 'text-muted-foreground hover:text-foreground' : 'text-white/60 hover:text-white')}`}
             >
               EN
             </button>
