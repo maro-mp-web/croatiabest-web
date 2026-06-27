@@ -24,5 +24,32 @@ export default async function CityPage({ params }: { params: Promise<{ slug: str
     // ignore
   }
 
-  return <CityClient city={city} cityListings={cityListings} />;
+  let globalSpecialListings = [];
+  try {
+    globalSpecialListings = await pb.collection('listings').getFullList({
+      filter: `(locationCategoryId="homeland_war" || locationCategoryId="national_parks") && status="active"`,
+      requestKey: null
+    });
+  } catch (e) {
+    // ignore
+  }
+
+  let allBlogs = [];
+  try {
+    allBlogs = await pb.collection('blogs').getFullList({
+      sort: '-created',
+      requestKey: null
+    });
+  } catch (e) {
+    // ignore
+  }
+
+  return (
+    <CityClient 
+      city={city} 
+      cityListings={cityListings} 
+      globalSpecialListings={globalSpecialListings}
+      allBlogs={allBlogs}
+    />
+  );
 }
