@@ -14,6 +14,7 @@ import {
   Clock,
   Sparkles,
   ShieldAlert,
+  Shield,
   Loader2,
   CreditCard,
   DollarSign,
@@ -422,47 +423,92 @@ export default function AdminDashboard() {
               <PlusCircle className="size-5 mr-2" /> Novi Otok
             </Button>
           </div>
-        </div>
+           {/* Stats Grid */}
+        <div className="space-y-8 mb-12">
+          <div>
+            <h2 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-3">Statistika Objekata</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="border-none shadow-xl rounded-3xl bg-orange-50/50">
+                <CardContent className="p-6">
+                  <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-3">U obradi</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-5xl font-black text-orange-700">{listings?.filter(l => l.status === 'pending').length || 0}</p>
+                    <Clock className="size-10 text-orange-600 opacity-20" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-none shadow-xl rounded-3xl bg-blue-50/50">
+                <CardContent className="p-6">
+                  <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Aktivno</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-5xl font-black text-blue-700">{listings?.filter(l => (l.status === 'active' || l.status === 'approved') && (l.locationCategoryId || l.categoryId) !== 'national_parks').length || 0}</p>
+                    <MapPin className="size-10 text-blue-600 opacity-20" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-none shadow-xl rounded-3xl bg-green-50/50">
+                <CardContent className="p-6">
+                  <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-3">Prihod (bruto)</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-5xl font-black text-green-700">{totalRevenue}€</p>
+                    <DollarSign className="size-10 text-green-600 opacity-20" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-none shadow-xl rounded-3xl bg-primary/5">
+                <CardContent className="p-6">
+                  <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-3">Premium</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-5xl font-black text-primary">{listings?.filter(l => l.locationCategoryType === 'Paid' || l.locationCategoryType === 'paid').length || 0}</p>
+                    <CreditCard className="size-10 text-primary opacity-20" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          <Card className="border-none shadow-xl rounded-3xl bg-orange-50/50">
-            <CardContent className="p-6">
-              <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-3">U obradi (Objekti)</p>
-              <div className="flex items-center justify-between">
-                <p className="text-5xl font-black text-orange-700">{listings?.filter(l => l.status === 'pending').length || 0}</p>
-                <Clock className="size-10 text-orange-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-xl rounded-3xl bg-blue-50/50">
-            <CardContent className="p-6">
-              <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Aktivni Gradovi</p>
-              <div className="flex items-center justify-between">
-                <p className="text-5xl font-black text-blue-700">{cities?.length || 0}</p>
-                <Building2 className="size-10 text-blue-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-xl rounded-3xl bg-emerald-50/50">
-            <CardContent className="p-6">
-              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3">Aktivni Otoci</p>
-              <div className="flex items-center justify-between">
-                <p className="text-5xl font-black text-emerald-700">{islands?.length || 0}</p>
-                <Anchor className="size-10 text-emerald-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-xl rounded-3xl bg-red-50/50">
-            <CardContent className="p-6">
-              <p className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-3">Nacionalni Parkovi</p>
-              <div className="flex items-center justify-between">
-                <p className="text-5xl font-black text-red-700">{nationalParks.length || 0}</p>
-                <Trees className="size-10 text-red-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          <div>
+            <h2 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-3">Statistika Lokacija i Atrakcija</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="border-none shadow-xl rounded-3xl bg-blue-50/30">
+                <CardContent className="p-6">
+                  <p className="text-[10px] font-black text-blue-700 uppercase tracking-widest mb-3">Gradovi</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-5xl font-black text-blue-800">{cities?.length || 0}</p>
+                    <Building2 className="size-10 text-blue-700 opacity-20" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-none shadow-xl rounded-3xl bg-emerald-50/30">
+                <CardContent className="p-6">
+                  <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-3">Otoci</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-5xl font-black text-emerald-800">{islands?.length || 0}</p>
+                    <Anchor className="size-10 text-emerald-700 opacity-20" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-none shadow-xl rounded-3xl bg-red-50/30">
+                <CardContent className="p-6">
+                  <p className="text-[10px] font-black text-red-700 uppercase tracking-widest mb-3">Nacionalni Parkovi</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-5xl font-black text-red-800">{nationalParks.length || 0}</p>
+                    <Trees className="size-10 text-red-700 opacity-20" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-none shadow-xl rounded-3xl bg-indigo-50/30">
+                <CardContent className="p-6">
+                  <p className="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-3">Spomenici</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-5xl font-black text-indigo-800">{listings?.filter(l => (l.locationCategoryId || l.categoryId) === 'homeland_war').length || 0}</p>
+                    <Shield className="size-10 text-indigo-700 opacity-20" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>       </div>
 
         {/* INTERACTIVE EDIT MODAL FORM */}
         {isEditing && (
