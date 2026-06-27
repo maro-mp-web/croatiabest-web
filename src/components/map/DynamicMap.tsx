@@ -109,7 +109,7 @@ const MapController = ({ center, zoom, selectedListingId, listings }: any) => {
 
 export default function DynamicMap({ center, zoom, listings, selectedListingId, onSelectListing, getDirectionsUrl, showCenterMarker, centerMarkerName }: MapProps) {
   return (
-    <>
+    <div className="relative w-full h-full min-h-[300px]">
       <style>{`
         .leaflet-container {
           font-family: inherit;
@@ -246,6 +246,27 @@ export default function DynamicMap({ center, zoom, listings, selectedListingId, 
           })}
         </MarkerClusterGroup>
       </MapContainer>
-    </>
+
+      {/* Floating Legend */}
+      <div className="absolute bottom-4 left-4 z-[500] bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-2xl border border-black/5 max-w-[190px] pointer-events-auto space-y-2 text-left">
+        <p className="text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1">Legenda / Legend</p>
+        <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+          {CATEGORIES.map(cat => {
+            const IconComponent = (LucideIcons as any)[cat.icon] || LucideIcons.MapPin;
+            return (
+              <div key={cat.id} className="flex items-center gap-2 text-[10px] font-bold text-slate-700">
+                <div 
+                  className="size-5 rounded-full flex items-center justify-center text-white flex-shrink-0"
+                  style={{ backgroundColor: cat.color }}
+                >
+                  <IconComponent className="size-3" />
+                </div>
+                <span className="truncate">{cat.name}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }
