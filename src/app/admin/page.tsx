@@ -371,7 +371,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
         <ShieldAlert className="size-24 text-destructive mb-6" />
         <h1 className="text-5xl font-black mb-4 uppercase tracking-tighter">Pristup Odbijen</h1>
-        <p className="text-muted-foreground text-lg max-w-md mb-10">Ova stranica rezervirana je isključivo za administratora maro.webdeveloper@gmail.com.</p>
+        <p className="text-muted-foreground text-lg max-w-md mb-10">Ova stranica rezervirana je isključivo za ovlaštene administratore sustava.</p>
         <Link href="/">
           <Button className="rounded-2xl h-16 px-12 font-black bg-primary shadow-xl shadow-primary/20 text-lg">POVRATAK NA PORTAL</Button>
         </Link>
