@@ -15,8 +15,8 @@ export function Logo({ className }: LogoProps) {
       <Image 
         src="/criatia-best.png" 
         alt="CroatiaBest Logo" 
-        width={240} 
-        height={80} 
+        width={140} 
+        height={48} 
         className="h-12 w-auto object-contain"
         priority
       />

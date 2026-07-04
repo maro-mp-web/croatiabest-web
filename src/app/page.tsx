@@ -271,6 +271,8 @@ export default function Home() {
               alt="CroatiaBest Hero"
               fill
               priority
+              fetchPriority="high"
+              sizes="100vw"
               className="object-cover opacity-85 scale-100 animate-zoom-in"
             />
             {/* Custom dark gradient overlay */}
@@ -339,7 +341,7 @@ export default function Home() {
                       return (
                         <Link key={l.id} href={path} className="flex items-center gap-4 p-3 hover:bg-white/5 rounded-2xl transition-all border border-transparent hover:border-white/5">
                           <div className="relative size-16 rounded-xl overflow-hidden flex-shrink-0 bg-white/5 border border-white/10">
-                            <Image src={image} alt={lName} fill className="object-cover" />
+                            <Image src={image} alt={lName} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
                           </div>
                           <div className="text-left flex-1">
                             <p className="font-black text-white text-lg line-clamp-1">{lName}</p>
@@ -383,7 +385,7 @@ export default function Home() {
                       </div>
 
                       <div className="relative w-full h-full">
-                        <Image src={city.image} alt={city.name} fill className="object-cover transition-all duration-1000 group-hover:scale-105" />
+                        <Image src={city.image} alt={city.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover transition-all duration-1000 group-hover:scale-105" />
                       </div>
                       
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent z-10" />
@@ -448,7 +450,7 @@ export default function Home() {
                         <div className="p-[1px] bg-gradient-to-br from-transparent to-transparent hover:from-primary hover:to-secondary rounded-[2rem] shadow-md hover:shadow-xl transition-all duration-500 h-full">
                           <Card className="rounded-[2rem] border-none overflow-hidden h-full flex flex-col bg-white">
                             <div className="relative aspect-[4/5] overflow-hidden">
-                              <Image src={image} alt={name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                              <Image src={image} alt={name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                               <div className="absolute top-3 left-3">
                                 <Badge className="bg-white/95 text-primary border-none shadow-sm font-black uppercase text-[8px] tracking-wider px-2 py-0.5">
                                   {language === 'en' ? 'Popular' : 'Popularno'}
@@ -498,7 +500,7 @@ export default function Home() {
                       <Link key={article.id} href={`/blog/${article.id}`} className="group">
                         <div className="flex items-center gap-4 p-3 bg-white hover:bg-secondary/5 border border-black/5 rounded-2xl transition-all hover:shadow-md">
                           <div className="relative size-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 border">
-                            <Image src={article.image} alt={bTitle} fill className="object-cover" />
+                            <Image src={article.image} alt={bTitle} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
                           </div>
                           <div className="flex-1 space-y-1">
                             <span className="text-[8px] font-black text-secondary uppercase tracking-widest">{article.category}</span>
@@ -586,7 +588,7 @@ export default function Home() {
                         <div className="p-[1px] bg-gradient-to-br from-transparent to-transparent hover:from-primary hover:to-secondary rounded-[2rem] shadow-md hover:shadow-xl transition-all duration-500 h-full">
                           <Card className="rounded-[2rem] border-none overflow-hidden h-full flex flex-col bg-white">
                             <div className="relative aspect-[4/5] overflow-hidden">
-                              <Image src={image} alt={name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                              <Image src={image} alt={name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                               <div className="absolute top-3 left-3">
                                 <Badge className="bg-foreground text-white border-none shadow-sm font-black uppercase text-[8px] tracking-wider px-2 py-0.5">
                                   {catName}
@@ -645,7 +647,7 @@ export default function Home() {
                       <Link key={article.id} href={`/blog/${article.id}`} className="group h-full">
                         <div className="group rounded-[2rem] overflow-hidden shadow-md border border-black/5 bg-white hover:shadow-xl transition-all duration-500 hover:-translate-y-1 h-full flex flex-col">
                           <div className="relative h-40 overflow-hidden">
-                            <Image src={article.image} alt={bTitle} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                            <Image src={article.image} alt={bTitle} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                             <Badge className="absolute top-4 left-4 bg-secondary text-white border-none shadow-md font-black text-[8px] uppercase tracking-wider">{article.category}</Badge>
                           </div>
                           <div className="p-5 flex-1 flex flex-col justify-between">
@@ -801,7 +803,7 @@ export default function Home() {
                     </div>
 
                     <div className="relative w-full h-full">
-                      <Image src={island.image} alt={island.name} fill className="object-cover transition-all duration-1000 group-hover:scale-105" />
+                      <Image src={island.image} alt={island.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover transition-all duration-1000 group-hover:scale-105" />
                     </div>
                     
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent z-10" />
@@ -856,7 +858,7 @@ export default function Home() {
                     <div className="p-[1px] bg-gradient-to-br from-transparent to-transparent hover:from-emerald-500 hover:to-teal-500 rounded-[2.5rem] shadow-lg hover:shadow-2xl transition-all duration-500 h-full">
                       <Card className="rounded-[2.5rem] border-none overflow-hidden h-full flex flex-col bg-white">
                         <div className="relative aspect-[16/10] overflow-hidden">
-                          <Image src={image} alt={name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                          <Image src={image} alt={name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                           <div className="absolute top-4 left-4">
                             <Badge className="bg-emerald-600 text-white border-none shadow-md font-black uppercase text-[8px] tracking-wider px-3 py-1">
                               {language === 'en' ? 'National Park' : 'Nacionalni park'}
