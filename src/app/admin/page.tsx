@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { 
   MapPin, 
   CheckCircle2, 
@@ -585,12 +586,18 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-slate-500 uppercase">Slika URL / Image Path</label>
-                      <Input 
-                        value={formData.image} 
-                        onChange={e => setFormData({...formData, image: e.target.value})} 
-                        placeholder="npr. /cities/split.webp ili Unsplash URL" 
-                        required 
-                      />
+                      <div className="flex flex-col gap-3">
+                        <Input 
+                          value={formData.image} 
+                          onChange={e => setFormData({...formData, image: e.target.value})} 
+                          placeholder="npr. /cities/split.webp ili Unsplash URL" 
+                          required 
+                        />
+                        <ImageUpload 
+                          onUploadComplete={(url) => setFormData({...formData, image: url})} 
+                          folder={editType === 'island' ? 'islands' : (editType === 'park' ? 'parks' : 'cities')}
+                        />
+                      </div>
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-slate-500 uppercase">Regija / Region</label>
