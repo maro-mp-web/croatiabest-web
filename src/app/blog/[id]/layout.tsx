@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import PocketBase from 'pocketbase';
 import { generateArticleSchema } from '@/app/lib/seo-helpers';
 
-const pb = new PocketBase('http://127.0.0.1:8090');
+const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
 
 export default async function BlogLayout({
   children,

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 
 export default async function ArticlePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
-  const pb = new PocketBase('http://127.0.0.1:8090');
+  const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
   
   let article;
   try {

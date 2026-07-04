@@ -7,7 +7,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }> 
 }): Promise<Metadata> {
   const resolvedParams = await params;
-  const pb = new PocketBase('http://127.0.0.1:8090');
+  const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
   let island;
   
   try {

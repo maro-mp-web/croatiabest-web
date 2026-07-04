@@ -6,7 +6,7 @@ import { generateListingUrl } from '@/app/lib/utils/slug';
 const BASE_URL = 'https://croatiabest.com.hr';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const pb = new PocketBase('http://127.0.0.1:8090');
+  const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
   
   // Base static routes
   const routes: MetadataRoute.Sitemap = [
