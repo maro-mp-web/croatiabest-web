@@ -51,8 +51,8 @@ export default function AdminDashboard() {
     return '';
   };
   
-  // Stroga provjera administratora - isključivo admin@croatiabest.com.hr
-  const isAdmin = user?.email === 'admin@croatiabest.com.hr';
+  // Stroga provjera administratora - isključivo maro.webdeveloper@gmail.com
+  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
 
   const { data: listings, isLoading: listingsLoading } = useCollection('listings', {
     sort: '-created',

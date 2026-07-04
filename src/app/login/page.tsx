@@ -22,7 +22,7 @@ export default function LoginPage() {
 
   React.useEffect(() => {
     if (user) {
-      const isAdmin = user.email === 'admin@croatiabest.com.hr';
+      const isAdmin = user.email === 'maro.webdeveloper@gmail.com';
       router.push(isAdmin ? '/admin' : '/');
     }
   }, [user, router]);
