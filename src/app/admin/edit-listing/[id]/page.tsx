@@ -29,7 +29,8 @@ import {
   Loader2,
   Sparkles,
   Compass,
-  ShoppingBag
+  ShoppingBag,
+  X
 } from 'lucide-react';
 import { useUser, usePB, useCollection } from '@/pocketbase';
 import { useRouter, useParams } from 'next/navigation';
@@ -76,6 +77,14 @@ export default function AdminEditListingPage() {
     metadata: {} as Record<string, any>
   });
 
+  const parseJsonArray = (val: any) => {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string' && val.trim().startsWith('[')) {
+      try { return JSON.parse(val); } catch (e) {}
+    }
+    return val ? [val] : [];
+  };
+
   useEffect(() => {
     if (!id || !pb) return;
     pb.collection('listings').getOne(id).then(record => {
@@ -91,9 +100,9 @@ export default function AdminEditListingPage() {
         contactPhone: record.contactPhone || '',
         contactEmail: record.contactEmail || '',
         webAddress: record.webAddress || '',
-        photoUrls: record.photoUrls || [],
-        products: record.products || [],
-        faq: record.faq || [],
+        photoUrls: parseJsonArray(record.photoUrls),
+        products: parseJsonArray(record.products),
+        faq: parseJsonArray(record.faq),
         status: record.status || 'pending',
         metadata: record.metadata || {}
       });
