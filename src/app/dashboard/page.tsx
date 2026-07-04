@@ -23,6 +23,7 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { CATEGORIES } from '@/app/lib/constants';
+import { generateListingUrl } from '@/app/lib/utils/slug';
 
 export default function UserDashboard() {
   const { user, isUserLoading } = useUser();

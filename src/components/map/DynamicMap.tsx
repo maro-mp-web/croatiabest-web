@@ -209,6 +209,7 @@ export default function DynamicMap({ center, zoom, listings, selectedListingId, 
               >
                 <Popup 
                   autoPan={false}
+                  // @ts-ignore
                   onClose={() => onSelectListing(null)}
                   className="custom-popup"
                 >

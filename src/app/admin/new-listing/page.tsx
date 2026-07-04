@@ -404,7 +404,7 @@ export default function AdminNewListingPage() {
                   <LocationPicker 
                     lat={formData.latitude ? parseFloat(formData.latitude) : null}
                     lng={formData.longitude ? parseFloat(formData.longitude) : null}
-                    cityCenter={formData.city ? allLocations.find(l => l.name === formData.city) : null}
+                    cityCenter={formData.city ? (allLocations.find(l => l.name === formData.city) as any) : null}
                     onChange={(lat, lng) => setFormData({...formData, latitude: lat.toString(), longitude: lng.toString()})}
                   />
                   <p className="text-xs text-slate-500 mt-2 font-medium">Kliknite na kartu ili povucite marker za točan odabir lokacije.</p>
