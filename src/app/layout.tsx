@@ -36,6 +36,9 @@ export const metadata: Metadata = {
     description: 'Stručni vodiči i interaktivna karta za savršeno ljetovanje.',
     images: [DEFAULT_LISTING_IMAGE],
   },
+  verification: {
+    google: 'X7N4-HcZlH3zbfNOD1ZtwpvUIkbUr7ZcEKmtGfJ0SaM',
+  },
 };
 
 export const viewport = {
