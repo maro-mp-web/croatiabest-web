@@ -1,11 +1,23 @@
 
 import type {Metadata} from 'next';
+import { Alegreya, Belleza } from 'next/font/google';
 import './globals.css';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Toaster } from '@/components/ui/toaster';
 import { PocketBaseProvider } from '@/pocketbase';
 import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 import Footer from '@/components/layout/Footer';
+
+const alegreya = Alegreya({
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-body',
+});
+
+const belleza = Belleza({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-headline',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://croatiabest.com.hr'),
@@ -53,12 +65,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="hr">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Belleza&display=swap" rel="stylesheet" />
-      </head>
-      <body suppressHydrationWarning className="font-body antialiased selection:bg-primary selection:text-white">
+      <body suppressHydrationWarning className={`${alegreya.variable} ${belleza.variable} font-body antialiased selection:bg-primary selection:text-white`}>
         <PocketBaseProvider>
           <LanguageProvider>
             <div className="flex flex-col min-h-screen">

@@ -119,7 +119,7 @@ export function Navbar() {
           
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden">
+              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Otvori izbornik">
                 <Menu className="size-6" />
               </Button>
             </SheetTrigger>

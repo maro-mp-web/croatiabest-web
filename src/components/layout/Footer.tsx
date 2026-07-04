@@ -48,13 +48,13 @@ export default function Footer() {
               <p className="flex items-center gap-2"><Mail className="size-4 text-primary" /> info@croatiabest.com.hr</p>
             </div>
             <div className="flex gap-4 pt-4">
-              <a href="#" className="bg-background/10 p-3 rounded-xl hover:bg-primary hover:text-white transition-all text-background/80">
+              <a href="#" aria-label="Posjetite našu Facebook stranicu" className="bg-background/10 p-3 rounded-xl hover:bg-primary hover:text-white transition-all text-background/80">
                 <Facebook className="size-5" />
               </a>
-              <a href="#" className="bg-background/10 p-3 rounded-xl hover:bg-primary hover:text-white transition-all text-background/80">
+              <a href="#" aria-label="Posjetite našu Instagram stranicu" className="bg-background/10 p-3 rounded-xl hover:bg-primary hover:text-white transition-all text-background/80">
                 <Instagram className="size-5" />
               </a>
-              <a href="#" className="bg-background/10 p-3 rounded-xl hover:bg-primary hover:text-white transition-all text-background/80">
+              <a href="#" aria-label="Posjetite našu TikTok stranicu" className="bg-background/10 p-3 rounded-xl hover:bg-primary hover:text-white transition-all text-background/80">
                 <Music className="size-5" /> {/* TikTok icon */}
               </a>
             </div>

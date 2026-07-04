@@ -392,7 +392,7 @@ export default function Home() {
                       
                       <div className="absolute inset-0 p-6 flex flex-col justify-end z-20">
                         <p className="text-[9px] font-black uppercase text-primary mb-1 tracking-[0.2em]">{city.region}</p>
-                        <h4 className="text-2xl md:text-3xl font-black italic mb-3 text-white group-hover:text-primary transition-colors leading-tight">{city.name}</h4>
+                        <h3 className="text-2xl md:text-3xl font-black italic mb-3 text-white group-hover:text-primary transition-colors leading-tight">{city.name}</h3>
                         
                         <div className="overflow-hidden h-0 group-hover:h-10 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out flex items-center">
                           <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
@@ -541,7 +541,7 @@ export default function Home() {
                             {React.cloneElement(cat.icon as any, { className: 'size-6' })}
                           </div>
                           <div className="space-y-2">
-                            <h4 className="font-black text-lg uppercase tracking-wider text-foreground">{cat.name}</h4>
+                            <h3 className="font-black text-lg uppercase tracking-wider text-foreground">{cat.name}</h3>
                             <p className="text-xs text-muted-foreground font-body leading-relaxed">{cat.desc}</p>
                           </div>
                           <div className="flex justify-between items-center pt-4 border-t mt-auto text-xs font-bold text-primary">
@@ -810,7 +810,7 @@ export default function Home() {
                     
                     <div className="absolute inset-0 p-6 flex flex-col justify-end z-20">
                       <p className="text-[9px] font-black uppercase text-primary mb-1 tracking-[0.2em]">{island.region}</p>
-                      <h4 className="text-2xl md:text-3xl font-black italic mb-3 text-white group-hover:text-primary transition-colors leading-tight">{island.name}</h4>
+                      <h3 className="text-2xl md:text-3xl font-black italic mb-3 text-white group-hover:text-primary transition-colors leading-tight">{island.name}</h3>
                       
                       <div className="overflow-hidden h-0 group-hover:h-10 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out flex items-center">
                         <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
@@ -867,7 +867,7 @@ export default function Home() {
                         </div>
                         <CardContent className="p-6 flex-1 flex flex-col justify-between">
                           <div className="space-y-3">
-                            <h4 className="font-black text-xl text-foreground line-clamp-1 group-hover:text-emerald-600 transition-colors leading-tight">{name}</h4>
+                            <h3 className="font-black text-xl text-foreground line-clamp-1 group-hover:text-emerald-600 transition-colors leading-tight">{name}</h3>
                             <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest flex items-center gap-1"><MapPin className="size-3" /> {park.city}</p>
                             <p className="text-muted-foreground font-body leading-relaxed text-xs line-clamp-3">{desc}</p>
                           </div>
