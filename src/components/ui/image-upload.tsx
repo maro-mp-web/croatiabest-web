@@ -28,13 +28,20 @@ export function ImageUpload({ onUploadComplete, folder = 'media', defaultImage }
       return;
     }
 
+    // Show instant local preview before upload finishes
+    const localPreview = URL.createObjectURL(file);
+    setPreviewUrl(localPreview);
+
     try {
       const downloadUrl = await uploadFile(folder, undefined, file);
+      URL.revokeObjectURL(localPreview);
       setPreviewUrl(downloadUrl);
       onUploadComplete(downloadUrl);
       toast({ title: "Uspjeh", description: "Slika je uspješno učitana." });
     } catch (error) {
       console.error("Upload error:", error);
+      URL.revokeObjectURL(localPreview);
+      setPreviewUrl(null);
       toast({ title: "Greška", description: "Učitavanje slike nije uspjelo.", variant: "destructive" });
     }
   };
@@ -43,7 +50,8 @@ export function ImageUpload({ onUploadComplete, folder = 'media', defaultImage }
     <div className="space-y-4 w-full">
       {previewUrl ? (
         <div className="relative group aspect-video rounded-2xl overflow-hidden border-2 border-primary/20 shadow-xl">
-          <Image src={previewUrl} alt="Preview" fill className="object-cover" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
           <button 
             onClick={() => setPreviewUrl(null)}
             className="absolute top-2 right-2 size-8 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
