@@ -43,9 +43,13 @@ export async function generateMetadata({
     return {
       title,
       description: seoDescription,
+      alternates: {
+        canonical: `https://croatiabest.com.hr/listing/${resolvedParams.category}/${resolvedParams.slugAndId}`,
+      },
       openGraph: {
         title,
         description: seoDescription,
+        url: `https://croatiabest.com.hr/listing/${resolvedParams.category}/${resolvedParams.slugAndId}`,
         images: [
           {
             url: imageUrl,

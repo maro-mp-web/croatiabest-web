@@ -30,9 +30,13 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: {
+      canonical: `https://croatiabest.com.hr/cities/${city.slug}`,
+    },
     openGraph: {
       title,
       description,
+      url: `https://croatiabest.com.hr/cities/${city.slug}`,
       images: city.image ? [
         {
           url: city.image,

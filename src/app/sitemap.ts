@@ -22,6 +22,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 0.9,
     },
+    {
+      url: `${BASE_URL}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/about`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/submit`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/terms`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+    {
+      url: `${BASE_URL}/privacy`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
   ];
 
   try {
@@ -29,7 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     cities.forEach((city) => {
       routes.push({
         url: `${BASE_URL}/cities/${city.slug}`,
-        lastModified: new Date(),
+        lastModified: new Date(city.updated || new Date()),
         changeFrequency: 'weekly',
         priority: 0.8,
       });
@@ -39,11 +69,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     islands.forEach((island) => {
       routes.push({
         url: `${BASE_URL}/islands/${island.slug}`,
-        lastModified: new Date(),
+        lastModified: new Date(island.updated || new Date()),
         changeFrequency: 'weekly',
         priority: 0.8,
       });
     });
+
+    // Blog posts
+    const blogs = await pb.collection('blogs').getFullList({
+      requestKey: null,
+      fields: 'id,slug,updated',
+    });
+    blogs.forEach((blog) => {
+      const path = blog.slug || blog.id;
+      routes.push({
+        url: `${BASE_URL}/blog/${path}`,
+        lastModified: new Date(blog.updated || new Date()),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      });
+    });
+
     // Using getFullList to get all items (over 2000+)
     const listings = await pb.collection('listings').getFullList({
       requestKey: null,

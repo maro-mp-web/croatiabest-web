@@ -27,6 +27,9 @@ export const metadata: Metadata = {
   keywords: ['Hrvatska', 'Putovanja', 'Plaže', 'Restorani', 'Hoteli', 'Jadran', 'Turizam', 'Iznajmljivanje'],
   authors: [{ name: 'CroatiaBest Team' }],
   robots: 'index, follow',
+  alternates: {
+    canonical: 'https://croatiabest.com.hr',
+  },
   openGraph: {
     title: 'CroatiaBest - Vaš ultimativni jadranski vodič',
     description: 'Pronađite najbolje od Hrvatske na našoj interaktivnoj karti uživo.',
