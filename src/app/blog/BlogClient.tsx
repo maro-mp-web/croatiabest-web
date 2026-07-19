@@ -51,8 +51,8 @@ export default function BlogClient({ articles }: { articles: any[] }) {
                   {featuredArticle.title}
                 </h2>
                 <div className="flex items-center gap-6 text-white/70 font-bold text-sm">
-                  <span className="flex items-center gap-2"><User className="size-4" /> {featuredArticle.author}</span>
-                  <span className="flex items-center gap-2"><Calendar className="size-4" /> {featuredArticle.date}</span>
+                  <span className="flex items-center gap-2"><User className="size-4" /> {featuredArticle.author || 'CroatiaBest'}</span>
+                  <span className="flex items-center gap-2"><Calendar className="size-4" /> {featuredArticle.created ? new Date(featuredArticle.created).toLocaleDateString('hr-HR') : ''}</span>
                   <span className="flex items-center gap-2"><Clock className="size-4" /> {featuredArticle.readTime}</span>
                 </div>
               </div>
@@ -93,7 +93,7 @@ export default function BlogClient({ articles }: { articles: any[] }) {
                 </div>
                 <CardContent className="p-8 flex-1 flex flex-col">
                   <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4 font-bold uppercase tracking-widest">
-                    <span className="flex items-center gap-1"><Calendar className="size-3" /> {article.date}</span>
+                    <span className="flex items-center gap-1"><Calendar className="size-3" /> {article.created ? new Date(article.created).toLocaleDateString('hr-HR') : ''}</span>
                     <span className="flex items-center gap-1"><Clock className="size-3" /> {article.readTime}</span>
                   </div>
                   <h3 className="text-2xl font-bold mb-4 leading-tight group-hover:text-primary transition-colors flex-1">{article.title}</h3>
