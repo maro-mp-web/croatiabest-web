@@ -310,14 +310,38 @@ export default function AdminDashboard() {
 
     try {
       if (editType === 'city') {
-        const data = { ...formData };
+        const data = {
+          name: formData.name,
+          slug: formData.slug,
+          description: formData.description,
+          descriptionEn: formData.descriptionEn,
+          population: formData.population,
+          mayor: formData.mayor,
+          officialWeb: formData.officialWeb,
+          areaCode: formData.areaCode,
+          zipCode: formData.zipCode,
+          region: formData.region,
+          image: formData.image,
+          lat: formData.lat,
+          lng: formData.lng,
+        };
         if (editId) {
           await pb.collection('cities').update(editId, data);
         } else {
           await pb.collection('cities').create(data);
         }
       } else if (editType === 'island') {
-        const data = { ...formData };
+        const data = {
+          name: formData.name,
+          slug: formData.slug,
+          description: formData.description,
+          descriptionEn: formData.descriptionEn,
+          population: formData.population,
+          region: formData.region,
+          image: formData.image,
+          lat: formData.lat,
+          lng: formData.lng,
+        };
         if (editId) {
           await pb.collection('islands').update(editId, data);
         } else {
@@ -331,13 +355,13 @@ export default function AdminDashboard() {
           seoDescription: formData.seoDescription,
           seoKeywords: formData.seoKeywords
         };
-        const recordData = {
+        const recordData: any = {
           name: formData.name,
           city: formData.city,
           address: formData.address || formData.city,
           description: formData.description,
-          latitude: parseFloat(formData.lat),
-          longitude: parseFloat(formData.lng),
+          latitude: parseFloat(formData.lat as any) || 0,
+          longitude: parseFloat(formData.lng as any) || 0,
           region: formData.region,
           photoUrls: formData.image ? JSON.stringify([formData.image]) : JSON.stringify([]),
           locationCategoryId: 'national_parks',
@@ -345,6 +369,11 @@ export default function AdminDashboard() {
           status: 'active',
           metadata: metadata
         };
+        
+        if (!editId) {
+          recordData.ownerId = user?.id || '';
+        }
+
         if (editId) {
           await pb.collection('listings').update(editId, recordData);
         } else {
@@ -594,8 +623,8 @@ export default function AdminDashboard() {
                           required 
                         />
                         <ImageUpload 
+                          defaultImage={formData.image}
                           onUploadComplete={(url) => setFormData({...formData, image: url})} 
-                          folder={editType === 'island' ? 'islands' : (editType === 'park' ? 'parks' : 'cities')}
                         />
                       </div>
                     </div>

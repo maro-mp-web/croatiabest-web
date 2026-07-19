@@ -11,11 +11,12 @@ import Image from 'next/image';
 interface ImageUploadProps {
   onUploadComplete: (url: string) => void;
   folder?: string;
+  defaultImage?: string;
 }
 
-export function ImageUpload({ onUploadComplete, folder = 'media' }: ImageUploadProps) {
+export function ImageUpload({ onUploadComplete, folder = 'media', defaultImage }: ImageUploadProps) {
   const { uploadFile, isUploading, progress } = useStorage();
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(defaultImage || null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -73,7 +74,7 @@ export function ImageUpload({ onUploadComplete, folder = 'media' }: ImageUploadP
               <>
                 <UploadCloud className="size-8 text-primary/40" />
                 <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Kliknite ili povucite sliku</p>
-                <p className="text-[10px] text-muted-foreground opacity-60">JPG, PNG (max 2MB)</p>
+                <p className="text-[10px] text-muted-foreground opacity-60">JPG, PNG, WEBP (max 2MB)</p>
               </>
             )}
           </div>
