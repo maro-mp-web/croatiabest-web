@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { PocketBaseProvider } from '@/pocketbase';
 import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 import Footer from '@/components/layout/Footer';
+import Script from 'next/script';
 
 const alegreya = Alegreya({
   subsets: ['latin', 'latin-ext'],
@@ -65,6 +66,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="hr">
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-S2JR7QWYN4"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-S2JR7QWYN4');
+          `}
+        </Script>
+      </head>
       <body suppressHydrationWarning className={`${alegreya.variable} ${belleza.variable} font-body antialiased selection:bg-primary selection:text-white`}>
         <PocketBaseProvider>
           <LanguageProvider>
