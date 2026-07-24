@@ -919,6 +919,11 @@ export default function AdminDashboard() {
                               <Sparkles className="size-4" />
                             </Button>
                           </Link>
+                          <Link href={`/admin/new-blog?edit=${blog.id}`}>
+                            <Button variant="outline" size="icon" className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
+                              <Edit2 className="size-4" />
+                            </Button>
+                          </Link>
                           <Button variant="outline" size="icon" onClick={() => handleDeleteBlog(blog.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
                             <Trash2 className="size-4" />
                           </Button>

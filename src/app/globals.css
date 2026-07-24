@@ -98,3 +98,57 @@
 ::selection {
   @apply bg-primary text-white;
 }
+
+/* ===== TipTap Rich Text Editor Styles ===== */
+.tiptap-editor {
+  min-height: 300px;
+}
+
+.tiptap-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #94a3b8;
+  pointer-events: none;
+  height: 0;
+  font-style: italic;
+}
+
+.tiptap-editor h2 {
+  @apply text-2xl font-headline font-bold mt-8 mb-4;
+}
+
+.tiptap-editor h3 {
+  @apply text-xl font-headline font-bold mt-6 mb-3;
+}
+
+.tiptap-editor p {
+  @apply mb-4 leading-relaxed;
+}
+
+.tiptap-editor ul {
+  @apply list-disc pl-6 mb-4 space-y-1;
+}
+
+.tiptap-editor ol {
+  @apply list-decimal pl-6 mb-4 space-y-1;
+}
+
+.tiptap-editor blockquote {
+  @apply border-l-4 border-primary/30 pl-6 py-2 my-6 italic text-slate-600 bg-slate-50/50 rounded-r-xl;
+}
+
+.tiptap-editor a {
+  @apply text-primary underline underline-offset-4 hover:text-primary/80 transition-colors;
+}
+
+.tiptap-editor img {
+  @apply rounded-xl max-w-full mx-auto shadow-lg my-6;
+}
+
+.tiptap-editor hr {
+  @apply my-8 border-slate-200;
+}
+
+.tiptap-editor:focus {
+  outline: none;
+}
