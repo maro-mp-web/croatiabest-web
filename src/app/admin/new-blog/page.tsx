@@ -143,15 +143,22 @@ function AdminNewBlogPage() {
       console.error('Error saving blog:', error);
       // Extract detailed PocketBase validation errors
       let errorMsg = error?.message || "Došlo je do greške prilikom spremanja.";
+      
+      // Add HTTP status if available to see if it's 403 (Auth) or 400 (Validation)
+      if (error?.status) {
+        errorMsg += ` (Status: ${error.status})`;
+      }
+
       if (error?.response?.data) {
         const fieldErrors = Object.entries(error.response.data)
           .map(([field, err]: [string, any]) => `${field}: ${err?.message || JSON.stringify(err)}`)
           .join(', ');
         if (fieldErrors) {
-          errorMsg = `${errorMsg} — ${fieldErrors}`;
+          errorMsg = `${errorMsg} — Detalji: ${fieldErrors}`;
         }
       }
-      toast({ title: "Greška", description: errorMsg, variant: "destructive" });
+      
+      toast({ title: "Greška spremanja", description: errorMsg, variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
