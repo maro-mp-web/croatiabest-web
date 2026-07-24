@@ -59,9 +59,7 @@ export default function AdminDashboard() {
     sort: '-created',
   });
 
-  const { data: blogs, isLoading: blogsLoading } = useCollection('blogs', {
-    sort: '-created',
-  });
+  const { data: blogs, isLoading: blogsLoading } = useCollection('blogs');
 
   const { data: cities, isLoading: citiesLoading } = useCollection('cities', {
     sort: 'name',
