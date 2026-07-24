@@ -53,7 +53,7 @@ export function useCollection<T = RecordModel>(
         // Use getFullList to ensure all records (e.g. 400+) are fetched for maps and lists
         const items = await pb.collection(collectionName).getFullList<T>({
           filter: options?.filter,
-          sort: options?.sort || '-created',
+          sort: options?.sort !== undefined ? options.sort : '-created',
           expand: options?.expand,
           requestKey: options?.requestKey,
         });
