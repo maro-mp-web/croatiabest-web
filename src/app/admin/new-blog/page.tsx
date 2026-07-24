@@ -141,7 +141,17 @@ function AdminNewBlogPage() {
       router.push('/admin');
     } catch (error: any) {
       console.error('Error saving blog:', error);
-      toast({ title: "Greška", description: error?.message || "Došlo je do greške prilikom spremanja.", variant: "destructive" });
+      // Extract detailed PocketBase validation errors
+      let errorMsg = error?.message || "Došlo je do greške prilikom spremanja.";
+      if (error?.response?.data) {
+        const fieldErrors = Object.entries(error.response.data)
+          .map(([field, err]: [string, any]) => `${field}: ${err?.message || JSON.stringify(err)}`)
+          .join(', ');
+        if (fieldErrors) {
+          errorMsg = `${errorMsg} — ${fieldErrors}`;
+        }
+      }
+      toast({ title: "Greška", description: errorMsg, variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
