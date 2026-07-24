@@ -28,8 +28,8 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
       
       <main className="flex-1 pb-24">
         {/* Article Header */}
-        <section className="relative h-[70vh] w-full">
-          <Image src={article.image} alt={title} fill className="object-cover brightness-[0.7]" priority />
+        <section className="relative h-[70vh] w-full bg-slate-900">
+          {article.image && <Image src={article.image} alt={title} fill className="object-cover brightness-[0.7]" priority />}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
           
           <div className="absolute inset-0 flex items-center justify-center">
@@ -108,8 +108,12 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
                     return (
                       <Link key={item.id} href={`/blog/${item.id}`}>
                         <div className="bg-white rounded-[2rem] overflow-hidden shadow-lg group">
-                          <div className="relative h-48">
-                            <Image src={item.image} alt={rTitle} fill className="object-cover group-hover:scale-105 transition-transform" />
+                          <div className="relative h-48 bg-slate-100 flex items-center justify-center">
+                            {item.image ? (
+                              <Image src={item.image} alt={rTitle} fill className="object-cover group-hover:scale-105 transition-transform" />
+                            ) : (
+                              <span className="text-slate-300 font-bold uppercase tracking-widest">{item.category || 'BLOG'}</span>
+                            )}
                           </div>
                           <div className="p-6">
                             <h5 className="font-bold text-lg mb-2 line-clamp-1">{rTitle}</h5>

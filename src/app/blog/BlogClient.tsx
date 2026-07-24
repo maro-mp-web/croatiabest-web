@@ -43,8 +43,8 @@ export default function BlogClient({ articles }: { articles: any[] }) {
         {/* Hero Article */}
         {featuredArticle && category === 'all' && !searchQuery && (
           <Link href={`/blog/${featuredArticle.id}`}>
-            <section className="relative h-[60vh] rounded-[3rem] overflow-hidden mb-20 group cursor-pointer shadow-2xl">
-              <Image src={featuredArticle.image} alt={featuredArticle.title} fill className="object-cover transition-transform duration-1000 group-hover:scale-105" />
+            <section className="relative h-[60vh] rounded-[3rem] overflow-hidden mb-20 group cursor-pointer shadow-2xl bg-slate-900 flex items-center justify-center">
+              {featuredArticle.image && <Image src={featuredArticle.image} alt={featuredArticle.title} fill className="object-cover transition-transform duration-1000 group-hover:scale-105" />}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-8 md:p-16 text-white">
                 <Badge className="w-fit mb-4 bg-primary border-none font-black">{featuredArticle.category}</Badge>
                 <h2 className="text-4xl md:text-6xl font-headline font-bold mb-6 max-w-3xl leading-tight">
@@ -87,8 +87,12 @@ export default function BlogClient({ articles }: { articles: any[] }) {
           {filteredArticles.map((article) => (
             <Link key={article.id} href={`/blog/${article.id}`}>
               <Card className="group overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] bg-white/60 backdrop-blur-md h-full flex flex-col">
-                <div className="relative h-64 overflow-hidden">
-                  <Image src={article.image} alt={article.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                <div className="relative h-64 overflow-hidden bg-slate-100 flex items-center justify-center">
+                  {article.image ? (
+                    <Image src={article.image} alt={article.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                  ) : (
+                    <span className="text-slate-300 font-bold uppercase tracking-widest">{article.category || 'BLOG'}</span>
+                  )}
                   <Badge className="absolute top-6 left-6 bg-white/95 text-primary border-none shadow-lg font-black">{article.category}</Badge>
                 </div>
                 <CardContent className="p-8 flex-1 flex flex-col">

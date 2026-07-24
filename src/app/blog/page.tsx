@@ -9,7 +9,6 @@ export default async function BlogPage() {
   let articles: any[] = [];
   try {
     articles = await pb.collection('blogs').getFullList({
-      sort: '-created',
       requestKey: null
     });
   } catch (e) {
