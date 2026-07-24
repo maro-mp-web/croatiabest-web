@@ -256,7 +256,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden selection:bg-primary selection:text-white">
-      <Navbar />
+      <Navbar transparent />
       
       <main className="flex-1 relative">
         {/* Glow ambient backgrounds */}

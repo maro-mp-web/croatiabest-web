@@ -3,10 +3,17 @@ import PocketBase from 'pocketbase';
 
 import { generateListingUrl } from '@/app/lib/utils/slug';
 
+// CRITICAL: This must be dynamic so it generates at request time, not at build time.
+// Without this, Next.js tries to generate the sitemap during `next build` when PocketBase
+// is not running, resulting in an empty sitemap with only static routes.
+export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Re-generate every hour (cache for performance)
+
 const BASE_URL = 'https://croatiabest.com.hr';
+const PB_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
+  const pb = new PocketBase(PB_URL);
   
   // Base static routes
   const routes: MetadataRoute.Sitemap = [
@@ -55,6 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
+    // Fetch cities
     const cities = await pb.collection('cities').getFullList({ requestKey: null });
     cities.forEach((city) => {
       routes.push({
@@ -65,6 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     });
 
+    // Fetch islands
     const islands = await pb.collection('islands').getFullList({ requestKey: null });
     islands.forEach((island) => {
       routes.push({
@@ -90,15 +99,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     });
 
-    // Using getFullList to get all items (over 2000+)
+    // Listings (2000+ items) - fetch all with pagination handled by getFullList
     const listings = await pb.collection('listings').getFullList({
       requestKey: null,
-      fields: 'id,locationCategoryId,categoryId,name,updated', // only fetch needed fields for optimization
+      fields: 'id,locationCategoryId,categoryId,name,updated',
       filter: 'status != "deleted"',
     });
 
     listings.forEach((listing) => {
-      // Use the utility to generate SEO friendly URLs
       const path = generateListingUrl(
         listing.locationCategoryId || listing.categoryId, 
         listing.name, 
@@ -113,7 +121,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     });
   } catch (error) {
-    console.error("Sitemap generation error: could not fetch listings from PocketBase", error);
+    console.error("Sitemap generation error: could not fetch data from PocketBase", error);
+    // Return at least static routes if PocketBase is unreachable
   }
 
   return routes;

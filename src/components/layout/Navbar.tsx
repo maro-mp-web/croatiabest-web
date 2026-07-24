@@ -11,7 +11,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Logo } from '@/components/brand/Logo';
 import { useUser, useCollection } from '@/pocketbase';
 
-export function Navbar() {
+interface NavbarProps {
+  transparent?: boolean;
+}
+
+export function Navbar({ transparent = false }: NavbarProps) {
   const { language, setLanguage, t } = useLanguage();
   const { user } = useUser();
 
@@ -40,7 +44,7 @@ export function Navbar() {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 w-full border-b transition-all duration-300 ${
-      isScrolled 
+      isScrolled || !transparent
         ? 'bg-white/95 backdrop-blur-md text-foreground border-black/5 shadow-sm' 
         : 'bg-transparent text-white border-transparent'
     }`}>
@@ -104,14 +108,14 @@ export function Navbar() {
           <div className="flex items-center space-x-2 font-black text-sm">
             <button 
               onClick={() => setLanguage('hr')} 
-              className={`transition-colors ${language === 'hr' ? 'text-primary' : (isScrolled ? 'text-muted-foreground hover:text-foreground' : 'text-white/60 hover:text-white')}`}
+              className={`transition-colors ${language === 'hr' ? 'text-primary' : (isScrolled || !transparent ? 'text-muted-foreground hover:text-foreground' : 'text-white/60 hover:text-white')}`}
             >
               HR
             </button>
             <span className="text-muted-foreground/30">|</span>
             <button 
               onClick={() => setLanguage('en')} 
-              className={`transition-colors ${language === 'en' ? 'text-primary' : (isScrolled ? 'text-muted-foreground hover:text-foreground' : 'text-white/60 hover:text-white')}`}
+              className={`transition-colors ${language === 'en' ? 'text-primary' : (isScrolled || !transparent ? 'text-muted-foreground hover:text-foreground' : 'text-white/60 hover:text-white')}`}
             >
               EN
             </button>
