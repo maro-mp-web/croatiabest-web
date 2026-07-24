@@ -1,7 +1,8 @@
 
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { CATEGORIES } from '@/app/lib/constants';
 import { Button } from '@/components/ui/button';
@@ -21,11 +22,16 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 const MAP_CENTER = { lat: 44.5, lng: 16.5 };
 
-export default function ExplorePage() {
+function ExploreContent() {
   const { t } = useLanguage();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
+  const initialCategory = searchParams.get('category') || null;
+  const initialViewMode = searchParams.get('q') ? 'list' : 'map';
+
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory);
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [viewMode, setViewMode] = useState<'map' | 'list'>(initialViewMode);
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
 
   const { data: listings, isLoading } = useCollection('listings', {
@@ -180,5 +186,17 @@ export default function ExplorePage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function ExplorePage() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen flex items-center justify-center bg-background">
+        <Loader2 className="size-12 animate-spin text-primary opacity-20" />
+      </div>
+    }>
+      <ExploreContent />
+    </Suspense>
   );
 }

@@ -264,8 +264,8 @@ export default function Home() {
         <div className="absolute top-[65%] right-[-10%] w-[600px] h-[600px] bg-secondary/10 rounded-full blur-[180px] pointer-events-none" />
 
         {/* HERO SECTION */}
-        <section className="relative min-h-[95vh] w-full overflow-hidden flex items-center pt-32 pb-24 bg-slate-950">
-          <div className="absolute inset-0 z-0">
+        <section className="relative z-40 min-h-[95vh] w-full flex items-center pt-32 pb-24 bg-slate-950">
+          <div className="absolute inset-0 z-0 overflow-hidden">
             <Image 
               src="/hero-dubrovnik.jpg"
               alt="CroatiaBest Hero"
