@@ -18,8 +18,10 @@ const MiniMap = dynamic(() => import('@/components/map/MiniMap'), { ssr: false }
 import { CATEGORIES, DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 import { CATEGORY_FIELDS } from '@/app/lib/category-fields';
 import { MapPin, Phone, Mail, Globe, Calendar, Users, List, Info, Loader2, Send, Tag, ShoppingBag, Check, X, Sparkles } from 'lucide-react';
-import { useParams } from 'next/navigation';
-import { useDoc, useUser, usePB, useCollection } from '@/pocketbase';
+import { notFound, useParams } from 'next/navigation';
+import { getFirstPhoto } from '@/app/lib/image-helpers';
+import { generateSlug } from '@/app/lib/utils/slug';
+import { useUser, usePB, useCollection } from '@/pocketbase';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from '@/hooks/use-toast';
 import AdBanner from '@/components/ads/AdBanner';
@@ -28,9 +30,7 @@ import FAQSection from '@/components/ui/FAQSection';
 
 export default function ListingDetailPage() {
   const params = useParams();
-  const slugAndId = (params.slugAndId as string) || '';
-  const idParts = slugAndId.split('-');
-  const id = idParts[idParts.length - 1] || '';
+  const slug = (params.slugAndId as string) || '';
 
   const { t, language } = useLanguage();
   const { user } = useUser();
@@ -38,13 +38,13 @@ export default function ListingDetailPage() {
   const [inquiryText, setInquiryText] = useState('');
   const [inquiryEmail, setInquiryEmail] = useState('');
   const [isInquiring, setIsInquiring] = useState(false);
-
-  const { data: listing, isLoading } = useDoc('listings', id);
   
-  const { data: allActiveListings } = useCollection('listings', {
+  const { data: allActiveListings, isLoading } = useCollection('listings', {
     filter: 'status = "active"',
     sort: '-created',
   });
+
+  const listing = allActiveListings?.find(l => generateSlug(l.name) === slug);
   
   const handleSendInquiry = async () => {
     if (!listing || !pb) return;
@@ -79,28 +79,9 @@ export default function ListingDetailPage() {
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
   if (!listing) return null;
 
-  const getFirstPhoto = (urls: any) => {
-    try {
-      if (Array.isArray(urls)) return urls[0] || DEFAULT_LISTING_IMAGE;
-      if (typeof urls === 'string') {
-        if (urls.trim().startsWith('[')) {
-          const parsed = JSON.parse(urls);
-          return parsed[0] || DEFAULT_LISTING_IMAGE;
-        }
-        return urls || DEFAULT_LISTING_IMAGE;
-      }
-    } catch (e) {}
-    return DEFAULT_LISTING_IMAGE;
-  };
+  const photos = listing.photoUrls || [];
 
   const category = CATEGORIES.find(c => c.id === listing.locationCategoryId);
-  let photos = listing.photoUrls || [];
-  if (typeof photos === 'string') {
-    try { photos = JSON.parse(photos); } catch (e) { photos = [photos]; }
-  }
-  if (!Array.isArray(photos) || photos.length === 0) {
-    photos = [DEFAULT_LISTING_IMAGE];
-  }
 
   const relatedListings = allActiveListings
     ?.filter(l => l.id !== listing.id && (l.locationCategoryId === listing.locationCategoryId || l.city === listing.city))
@@ -116,11 +97,11 @@ export default function ListingDetailPage() {
       <main className="flex-1 pb-24">
         <section className="h-[50vh] min-h-[400px] relative flex gap-2 p-2">
           <div className="flex-1 relative rounded-[2rem] overflow-hidden">
-            <Image src={photos[0]} alt="Hero" fill className="object-cover" priority />
+            <Image src={getFirstPhoto(listing)} alt="Hero" fill className="object-cover" priority />
           </div>
-          {photos.length > 1 && (
+          {Array.isArray(listing.photoUrls) && listing.photoUrls.length > 1 && (
             <div className="w-1/4 hidden md:flex flex-col gap-2">
-              {photos.slice(1, 3).map((p: any, i: number) => (
+              {listing.photoUrls.slice(1, 3).map((p: any, i: number) => (
                 <div key={i} className="flex-1 relative rounded-[2rem] overflow-hidden">
                   <Image src={p} alt={`Photo ${i}`} fill className="object-cover" />
                 </div>
@@ -279,8 +260,8 @@ export default function ListingDetailPage() {
                 {promotedListings.map(l => (
                   <Link key={l.id} href={generateListingUrl(l.locationCategoryId, l.name, l.id)}>
                     <Card className="group border-none shadow-md hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col bg-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image src={getFirstPhoto(l.photoUrls)} alt={l.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-4 group-hover:shadow-lg transition-all duration-300 bg-secondary/5">
+                        <Image src={getFirstPhoto(l) || '/placeholder.jpg'} alt={l.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
                         <Badge className="absolute top-4 right-4 bg-primary text-white font-black uppercase text-[10px] tracking-widest shadow-lg">Premium</Badge>
                       </div>
                       <CardContent className="p-5 flex-1 flex flex-col justify-center">

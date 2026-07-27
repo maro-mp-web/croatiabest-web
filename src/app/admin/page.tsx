@@ -30,27 +30,16 @@ import {
   Settings,
   X
 } from 'lucide-react';
+import { WikiSectionsEditor } from '@/components/ui/WikiSectionsEditor';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { CATEGORIES } from '@/app/lib/constants';
 import Link from 'next/link';
 import { useUser, useCollection, usePB } from '@/pocketbase';
+import { getFirstPhoto } from '@/app/lib/image-helpers';
 
 export default function AdminDashboard() {
   const { user, isUserLoading } = useUser();
   const pb = usePB();
-
-  const getFirstPhoto = (urls: any) => {
-    try {
-      if (Array.isArray(urls)) return urls[0] || '';
-      if (typeof urls === 'string') {
-        if (urls.trim().startsWith('[')) {
-          const parsed = JSON.parse(urls);
-          return parsed[0] || '';
-        }
-        return urls || '';
-      }
-    } catch (e) {}
-    return '';
-  };
   
   // Stroga provjera administratora - isključivo maro.webdeveloper@gmail.com
   const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
@@ -93,6 +82,7 @@ export default function AdminDashboard() {
     seoTitle: '',
     seoDescription: '',
     seoKeywords: '',
+    wikiSections: [],
   });
 
   const handleApprove = async (id: string) => {
@@ -195,6 +185,7 @@ export default function AdminDashboard() {
         seoTitle: cityItem.seoTitle || '',
         seoDescription: cityItem.seoDescription || '',
         seoKeywords: cityItem.seoKeywords || '',
+        wikiSections: cityItem.wikiSections || [],
       });
     } else {
       setEditId(null);
@@ -240,6 +231,7 @@ export default function AdminDashboard() {
         seoTitle: islandItem.seoTitle || '',
         seoDescription: islandItem.seoDescription || '',
         seoKeywords: islandItem.seoKeywords || '',
+        wikiSections: islandItem.wikiSections || [],
       });
     } else {
       setEditId(null);
@@ -274,7 +266,7 @@ export default function AdminDashboard() {
         address: parkItem.address || '',
         description: parkItem.description || '',
         descriptionEn: parkItem.metadata?.descriptionEn || '',
-        image: getFirstPhoto(parkItem.photoUrls),
+        image: getFirstPhoto(parkItem),
         lat: parkItem.latitude || 44.8,
         lng: parkItem.longitude || 15.6,
         region: parkItem.region || '',
@@ -322,6 +314,10 @@ export default function AdminDashboard() {
           image: formData.image,
           lat: formData.lat,
           lng: formData.lng,
+          seoTitle: formData.seoTitle,
+          seoDescription: formData.seoDescription,
+          seoKeywords: formData.seoKeywords,
+          wikiSections: formData.wikiSections,
         };
         if (editId) {
           await pb.collection('cities').update(editId, data);
@@ -335,10 +331,17 @@ export default function AdminDashboard() {
           description: formData.description,
           descriptionEn: formData.descriptionEn,
           population: formData.population,
+          mayor: formData.mayor,
+          officialWeb: formData.officialWeb,
+          areaCode: formData.areaCode,
           region: formData.region,
           image: formData.image,
           lat: formData.lat,
           lng: formData.lng,
+          seoTitle: formData.seoTitle,
+          seoDescription: formData.seoDescription,
+          seoKeywords: formData.seoKeywords,
+          wikiSections: formData.wikiSections,
         };
         if (editId) {
           await pb.collection('islands').update(editId, data);
@@ -591,21 +594,18 @@ export default function AdminDashboard() {
 
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-500 uppercase">Opis (Hrvatski)</label>
-                    <Textarea 
-                      rows={4} 
+                    <RichTextEditor 
                       value={formData.description} 
-                      onChange={e => setFormData({...formData, description: e.target.value})} 
+                      onChange={(html) => setFormData({...formData, description: html})} 
                       placeholder="Opis na hrvatskom..." 
-                      required 
                     />
                   </div>
 
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-500 uppercase">Opis (Engleski / English Description)</label>
-                    <Textarea 
-                      rows={4} 
+                    <RichTextEditor 
                       value={formData.descriptionEn} 
-                      onChange={e => setFormData({...formData, descriptionEn: e.target.value})} 
+                      onChange={(html) => setFormData({...formData, descriptionEn: html})} 
                       placeholder="English description..." 
                     />
                   </div>
@@ -744,6 +744,14 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
+                  {/* WIKI SECTIONS EDITOR (Only for City and Island) */}
+                  {(editType === 'city' || editType === 'island') && (
+                    <WikiSectionsEditor 
+                      sections={formData.wikiSections}
+                      onChange={(sections) => setFormData({...formData, wikiSections: sections})}
+                    />
+                  )}
+
                   <div className="flex gap-4 pt-4">
                     <Button type="submit" className="bg-primary hover:bg-primary/90 text-white rounded-xl font-bold h-12 px-8 flex-1">Spremi promjene</Button>
                     <Button type="button" variant="outline" onClick={() => setIsEditing(false)} className="rounded-xl h-12 px-8">Odustani</Button>
@@ -800,9 +808,9 @@ export default function AdminDashboard() {
                         return (
                           <div key={listing.id} className="flex flex-col md:flex-row items-center justify-between p-8 hover:bg-secondary/5 transition-colors gap-6">
                             <div className="flex items-center gap-6 w-full md:w-auto">
-                              {getFirstPhoto(listing.photoUrls) ? (
+                              {getFirstPhoto(listing) ? (
                                 <div className="relative size-16 rounded-2xl overflow-hidden shadow-inner border border-black/5 flex-shrink-0">
-                                  <img src={getFirstPhoto(listing.photoUrls)} alt={name} className="absolute inset-0 w-full h-full object-cover" />
+                                  <img src={getFirstPhoto(listing)} alt={name} className="absolute inset-0 w-full h-full object-cover" />
                                 </div>
                               ) : (
                                 <div className={`size-16 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner flex-shrink-0 ${listing.locationCategoryType === 'Paid' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
@@ -1058,7 +1066,7 @@ export default function AdminDashboard() {
                     <div className="p-24 text-center text-muted-foreground italic">Nema upisanih nacionalnih parkova.</div>
                   ) : (
                     nationalParks.map((park) => {
-                      const image = getFirstPhoto(park.photoUrls);
+                      const image = getFirstPhoto(park);
                       return (
                         <div key={park.id} className="flex flex-col md:flex-row items-center justify-between p-8 hover:bg-secondary/5 transition-colors gap-6">
                           <div className="flex items-center gap-6 w-full md:w-auto">

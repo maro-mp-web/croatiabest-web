@@ -26,6 +26,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useCollection } from '@/pocketbase';
 import Map from '@/components/map/Map';
+import WikiView from '@/components/ui/WikiView';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function IslandClient({ island, listings }: { island: any, listings: any[] }) {
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
@@ -176,6 +178,12 @@ export default function IslandClient({ island, listings }: { island: any, listin
               </Card>
             </aside>
           </div>
+          
+          {/* WIKIPEDIA SECTIONS */}
+          {island?.wikiSections?.length > 0 && (
+            <WikiView sections={island.wikiSections} />
+          )}
+
         </div>
       </main>
     </div>

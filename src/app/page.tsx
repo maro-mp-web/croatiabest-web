@@ -7,6 +7,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { getFirstPhoto } from '@/app/lib/image-helpers';
 import { 
   MapPin, 
   ArrowRight, 
@@ -59,14 +60,6 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
-
-  const getFirstPhoto = (urls: any) => {
-    try {
-      if (Array.isArray(urls)) return urls[0];
-      if (typeof urls === 'string') return JSON.parse(urls)[0];
-    } catch (e) {}
-    return null;
-  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -335,7 +328,7 @@ export default function Home() {
                 {showResults && searchResults.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-4 bg-slate-900/95 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden z-50 p-6 space-y-3 max-h-[380px] overflow-y-auto ring-1 ring-black/50">
                     {searchResults.map((l) => {
-                      const image = getFirstPhoto(l.photoUrls) || DEFAULT_LISTING_IMAGE;
+                      const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
                       const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id);
                       const lName = language === 'en' && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
                       return (
@@ -443,7 +436,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   {popularListings.map((l) => {
                     const name = language === 'en' && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
-                    const image = getFirstPhoto(l.photoUrls) || DEFAULT_LISTING_IMAGE;
+                    const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
                     const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id);
                     return (
                       <Link key={l.id} href={path} className="group">
@@ -580,7 +573,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                   {publicListings.map((l) => {
                     const name = language === 'en' && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
-                    const image = getFirstPhoto(l.photoUrls) || DEFAULT_LISTING_IMAGE;
+                    const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
                     const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id);
                     const catName = publicCategories.find(c => c.id === (l.locationCategoryId || l.categoryId))?.name || 'Znamenitost';
                     return (
@@ -851,7 +844,7 @@ export default function Home() {
               {nationalParks.map((park) => {
                 const name = isEn && park.metadata?.nameEn ? park.metadata.nameEn : park.name;
                 const desc = isEn && park.metadata?.descriptionEn ? park.metadata.descriptionEn : park.description;
-                const image = getFirstPhoto(park.photoUrls) || DEFAULT_LISTING_IMAGE;
+                const image = getFirstPhoto(park) || DEFAULT_LISTING_IMAGE;
                 const path = generateListingUrl('national_parks', park.name, park.id);
                 return (
                   <Link key={park.id} href={path} className="group">

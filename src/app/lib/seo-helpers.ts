@@ -1,3 +1,5 @@
+import { generateListingUrl } from '@/app/lib/utils/slug';
+
 export const getCategorySchemaType = (categoryId: string): string => {
   const schemaMap: Record<string, string> = {
     restaurants: 'Restaurant',
@@ -47,7 +49,7 @@ export const generateListingSchema = (listing: any) => {
     '@type': schemaType,
     name: listing.name,
     description: listing.description ? listing.description.split('\n\n')[0] : '',
-    url: typeof window !== 'undefined' ? window.location.href : `https://croatiabest.com.hr/listing/${listing.locationCategoryId}/${listing.slug || listing.id}-${listing.id}`,
+    url: typeof window !== 'undefined' ? window.location.href : `https://croatiabest.com.hr${generateListingUrl(listing.locationCategoryId || listing.categoryId, listing.name)}`,
   };
 
   if (photos && photos.length > 0) {

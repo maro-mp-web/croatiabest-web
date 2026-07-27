@@ -3,6 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Map, Menu, BookOpen, ChevronDown, Building2, LayoutDashboard, Anchor, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -18,6 +19,7 @@ interface NavbarProps {
 export function Navbar({ transparent = false }: NavbarProps) {
   const { language, setLanguage, t } = useLanguage();
   const { user } = useUser();
+  const router = useRouter();
 
   const { data: citiesData } = useCollection('cities', { sort: 'name', requestKey: null });
   const { data: islandsData } = useCollection('islands', { sort: 'name', requestKey: null });
@@ -66,10 +68,12 @@ export function Navbar({ transparent = false }: NavbarProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56 rounded-xl p-2 grid grid-cols-1 gap-1">
                 {cities.map((city) => (
-                  <DropdownMenuItem key={city.slug} asChild>
-                    <Link href={`/cities/${city.slug}`} className="w-full cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors">
-                      {city.name}
-                    </Link>
+                  <DropdownMenuItem 
+                    key={city.slug} 
+                    onSelect={() => router.push(`/cities/${city.slug}`)}
+                    className="w-full cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                  >
+                    {city.name}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -83,10 +87,12 @@ export function Navbar({ transparent = false }: NavbarProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56 rounded-xl p-2 grid grid-cols-1 gap-1">
                 {islands.map((island) => (
-                  <DropdownMenuItem key={island.slug} asChild>
-                    <Link href={`/islands/${island.slug}`} className="w-full cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors">
-                      {island.name}
-                    </Link>
+                  <DropdownMenuItem 
+                    key={island.slug} 
+                    onSelect={() => router.push(`/islands/${island.slug}`)}
+                    className="w-full cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                  >
+                    {island.name}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>

@@ -23,10 +23,16 @@ import {
   ArrowRight, 
   ArrowLeft,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  Mail
 } from 'lucide-react';
 import { useUser, usePB } from '@/pocketbase';
 import { useRouter } from 'next/navigation';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
 export default function SubmitListingPage() {
   const { user } = useUser();
@@ -38,6 +44,8 @@ export default function SubmitListingPage() {
     lastName: '',
     contactEmail: '',
     contactPhone: '',
+    password: '',
+    passwordConfirm: '',
     objectName: '',
     categoryId: '',
     address: '',
@@ -47,18 +55,39 @@ export default function SubmitListingPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState('');
 
   const selectedCategory = CATEGORIES.find(c => c.id === formData.categoryId);
   const isPaid = selectedCategory?.type === 'paid';
+  const isGuest = !user;
 
   const handleImageUploaded = (url: string) => {
     setFormData(prev => ({ ...prev, photoUrls: [...prev.photoUrls, url] }));
   };
 
   const handleNextStep = () => {
-    if (step === 1 && (!formData.firstName || !formData.lastName || !formData.contactEmail)) {
-      toast({ title: "Nedostaju podaci", description: "Ispunite osnovna polja za kontakt.", variant: "destructive" });
-      return;
+    if (step === 1) {
+      if (!formData.firstName || !formData.lastName || !formData.contactEmail) {
+        toast({ title: "Nedostaju podaci", description: "Ispunite osnovna polja za kontakt.", variant: "destructive" });
+        return;
+      }
+      // Validate guest registration fields
+      if (isGuest) {
+        if (!formData.password || !formData.passwordConfirm) {
+          toast({ title: "Lozinka je obavezna", description: "Unesite i potvrdite lozinku za registraciju.", variant: "destructive" });
+          return;
+        }
+        if (formData.password.length < 8) {
+          toast({ title: "Prekratka lozinka", description: "Lozinka mora imati najmanje 8 znakova.", variant: "destructive" });
+          return;
+        }
+        if (formData.password !== formData.passwordConfirm) {
+          toast({ title: "Lozinke se ne podudaraju", description: "Unesite istu lozinku u oba polja.", variant: "destructive" });
+          return;
+        }
+      }
+      setAuthError('');
     }
     if (step === 2 && (!formData.objectName || !formData.categoryId || !formData.city)) {
       toast({ title: "Nedostaju podaci", description: "Naziv, kategorija i grad su obavezni.", variant: "destructive" });
@@ -67,13 +96,55 @@ export default function SubmitListingPage() {
     setStep(step + 1);
   };
 
-  const saveListing = async (paymentStatus: string) => {
-    if (!user || !pb) {
-      toast({ title: "Prijava potrebna", description: "Prijavite se kako biste poslali prijavu.", variant: "destructive" });
-      return;
+  // Register the guest user (or use existing user) and return the userId
+  const ensureUser = async (): Promise<string | null> => {
+    if (!pb) return null;
+
+    // Already logged in
+    if (user) return user.id;
+
+    // Register new user
+    try {
+      setAuthError('');
+      const newUser = await pb.collection('users').create({
+        email: formData.contactEmail,
+        password: formData.password,
+        passwordConfirm: formData.passwordConfirm,
+        name: `${formData.firstName} ${formData.lastName}`,
+      });
+      
+      // Log them in
+      await pb.collection('users').authWithPassword(formData.contactEmail, formData.password);
+      
+      return newUser.id;
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      const message = error?.response?.data?.email?.message || error?.message || 'Registracija nije uspjela.';
+      
+      if (message.includes('already') || message.includes('unique')) {
+        setAuthError('Ovaj email je već registriran. Prijavite se na stranici za prijavu.');
+        toast({ 
+          title: "Email već postoji", 
+          description: "Korisnik s ovim emailom već postoji. Prijavite se.", 
+          variant: "destructive" 
+        });
+      } else {
+        setAuthError(message);
+        toast({ title: "Greška pri registraciji", description: message, variant: "destructive" });
+      }
+      return null;
     }
+  };
+
+  const saveListing = async (paymentStatus: string) => {
     setIsSubmitting(true);
     
+    const userId = await ensureUser();
+    if (!userId || !pb) {
+      setIsSubmitting(false);
+      return;
+    }
+
     const listingData = {
       name: formData.objectName,
       locationCategoryId: formData.categoryId,
@@ -84,19 +155,58 @@ export default function SubmitListingPage() {
       contactPhone: formData.contactPhone,
       photoUrls: formData.photoUrls,
       status: 'pending',
-      ownerId: user.id,
+      ownerId: userId,
       locationCategoryType: isPaid ? 'Paid' : 'Free',
       paymentStatus: paymentStatus,
     };
 
     try {
-      await pb.collection('listings').create(listingData);
+      const listing = await pb.collection('listings').create(listingData);
+      
+      if (isPaid && paymentStatus !== 'paid') {
+        // Redirect to Stripe Checkout
+        try {
+          const response = await fetch('/api/stripe/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              categoryId: formData.categoryId,
+              categoryName: selectedCategory?.name,
+              priceAmount: selectedCategory?.price,
+              listingId: listing.id,
+              userEmail: formData.contactEmail,
+            }),
+          });
+          
+          const data = await response.json();
+          
+          if (data.url) {
+            // Redirect to Stripe hosted checkout page
+            window.location.href = data.url;
+            return;
+          } else {
+            throw new Error(data.error || 'Stripe sesija nije kreirana.');
+          }
+        } catch (stripeError: any) {
+          console.error('Stripe redirect error:', stripeError);
+          toast({ 
+            title: "Greška pri plaćanju", 
+            description: stripeError.message || "Nije moguće pokrenuti Stripe plaćanje. Pokušajte ponovno.", 
+            variant: "destructive" 
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Free listing — show success
       setIsSubmitting(false);
       setIsSuccess(true);
       toast({ title: "Prijava poslana!", description: "Naš tim će pregledati vaš objekt u najkraćem roku." });
-    } catch (error) {
+    } catch (error: any) {
       setIsSubmitting(false);
-      toast({ title: "Greška", description: "Slanje nije uspjelo.", variant: "destructive" });
+      console.error('Listing creation error:', error);
+      toast({ title: "Greška", description: "Slanje nije uspjelo. Pokušajte ponovno.", variant: "destructive" });
     }
   };
 
@@ -174,13 +284,94 @@ export default function SubmitListingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="font-bold text-xs uppercase tracking-widest">Email</Label>
-                    <Input placeholder="ivan.horvat@email.com" type="email" value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} className="h-14 rounded-2xl border-none bg-secondary/10" />
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
+                      <Input placeholder="ivan.horvat@email.com" type="email" value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} className="pl-12 h-14 rounded-2xl border-none bg-secondary/10" />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="font-bold text-xs uppercase tracking-widest">Telefon</Label>
                     <Input placeholder="+385 9x xxx xxxx" value={formData.contactPhone} onChange={e => setFormData({...formData, contactPhone: e.target.value})} className="h-14 rounded-2xl border-none bg-secondary/10" />
                   </div>
                 </div>
+
+                {/* Inline Registration Fields (only shown when not logged in) */}
+                {isGuest && (
+                  <div className="bg-primary/5 p-8 rounded-[2rem] border border-primary/10 space-y-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <ShieldCheck className="size-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-black text-sm">Kreirajte račun</p>
+                        <p className="text-xs text-muted-foreground">Vaši podaci su zaštićeni. Račun vam omogućuje upravljanje objektima.</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label className="font-bold text-xs uppercase tracking-widest">Lozinka</Label>
+                        <div className="relative">
+                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
+                          <Input 
+                            type={showPassword ? 'text' : 'password'} 
+                            placeholder="Minimalno 8 znakova" 
+                            value={formData.password} 
+                            onChange={e => setFormData({...formData, password: e.target.value})} 
+                            className="pl-12 pr-12 h-14 rounded-2xl border-none bg-white"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="font-bold text-xs uppercase tracking-widest">Potvrda lozinke</Label>
+                        <div className="relative">
+                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
+                          <Input 
+                            type={showPassword ? 'text' : 'password'} 
+                            placeholder="Ponovite lozinku" 
+                            value={formData.passwordConfirm} 
+                            onChange={e => setFormData({...formData, passwordConfirm: e.target.value})} 
+                            className="pl-12 h-14 rounded-2xl border-none bg-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {authError && (
+                      <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 flex items-start gap-3">
+                        <span className="font-bold shrink-0">⚠️</span>
+                        <div>
+                          <p>{authError}</p>
+                          {authError.includes('Prijavite se') && (
+                            <a href="/login" className="text-primary underline font-bold mt-1 block">Idi na stranicu za prijavu →</a>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <p className="text-[10px] text-muted-foreground/60 text-center uppercase tracking-widest font-black">
+                      Već imate račun? <a href="/login" className="text-primary hover:underline">Prijavite se ovdje</a>
+                    </p>
+                  </div>
+                )}
+
+                {/* Show badge if already logged in */}
+                {!isGuest && (
+                  <div className="bg-green-50 p-6 rounded-[2rem] border border-green-200 flex items-center gap-4">
+                    <CheckCircle2 className="size-8 text-green-600 shrink-0" />
+                    <div>
+                      <p className="font-black text-sm text-green-800">Prijavljeni ste kao {user?.email}</p>
+                      <p className="text-xs text-green-600">Vaš objekt će biti povezan s vašim računom.</p>
+                    </div>
+                  </div>
+                )}
+
                 <Button onClick={handleNextStep} className="w-full h-16 rounded-[1.5rem] font-black bg-primary shadow-xl shadow-primary/20 text-lg uppercase tracking-widest group">
                   Nastavi na detalje <ArrowRight className="ml-2 group-hover:translate-x-2 transition-transform" />
                 </Button>
@@ -213,7 +404,7 @@ export default function SubmitListingPage() {
                       <SelectContent>
                         {CATEGORIES.map(c => (
                           <SelectItem key={c.id} value={c.id} className="flex justify-between items-center">
-                            {c.name} {c.type === 'paid' && '⭐'}
+                            {c.name} {c.type === 'paid' && `⭐ ${c.price}`}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -223,6 +414,11 @@ export default function SubmitListingPage() {
                     <Label className="font-bold text-xs uppercase tracking-widest">Grad</Label>
                     <Input placeholder="npr. Split" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="h-14 rounded-2xl border-none bg-secondary/10" />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="font-bold text-xs uppercase tracking-widest">Adresa</Label>
+                  <Input placeholder="npr. Riva 10" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="h-14 rounded-2xl border-none bg-secondary/10" />
                 </div>
 
                 <div className="space-y-2">
@@ -252,12 +448,28 @@ export default function SubmitListingPage() {
                   </div>
                 </div>
 
+                {/* Category info banner for paid */}
+                {isPaid && selectedCategory && (
+                  <div className="bg-gradient-to-r from-primary/5 to-secondary/5 p-6 rounded-[2rem] border border-primary/10 flex items-center gap-6">
+                    <CreditCard className="size-10 text-primary shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-black text-sm">Kategorija "{selectedCategory.name}" zahtijeva godišnju članarinu</p>
+                      <p className="text-xs text-muted-foreground">U sljedećem koraku bit ćete preusmjereni na sigurno Stripe plaćanje.</p>
+                    </div>
+                    <Badge className="bg-primary text-white font-black text-xl px-4 py-2 rounded-xl shrink-0">{selectedCategory.price}</Badge>
+                  </div>
+                )}
+
                 <div className="flex gap-4 pt-4">
                   <Button variant="ghost" onClick={() => setStep(1)} className="h-16 px-8 rounded-2xl font-bold flex items-center gap-2">
                     <ArrowLeft className="size-4" /> NATRAG
                   </Button>
-                  <Button onClick={isPaid ? handleNextStep : () => saveListing('not_applicable')} className="flex-1 h-16 rounded-[1.5rem] font-black bg-primary shadow-xl shadow-primary/20 text-lg uppercase tracking-widest">
-                    {isPaid ? 'NASTAVI NA PLAĆANJE' : 'POŠALJI BESPLATNU PRIJAVU'}
+                  <Button 
+                    onClick={isPaid ? handleNextStep : () => saveListing('not_applicable')} 
+                    disabled={isSubmitting}
+                    className="flex-1 h-16 rounded-[1.5rem] font-black bg-primary shadow-xl shadow-primary/20 text-lg uppercase tracking-widest"
+                  >
+                    {isSubmitting ? <Loader2 className="size-6 animate-spin" /> : (isPaid ? 'NASTAVI NA PLAĆANJE' : 'POŠALJI BESPLATNU PRIJAVU')}
                   </Button>
                 </div>
               </CardContent>
@@ -291,34 +503,35 @@ export default function SubmitListingPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="font-bold text-xs uppercase tracking-widest">Broj kartice</Label>
-                      <div className="relative">
-                        <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
-                        <Input placeholder="4242 4242 4242 4242" disabled className="pl-12 h-14 rounded-2xl border bg-secondary/5 font-mono" />
-                      </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-[2rem] p-8 text-center space-y-4">
+                    <div className="flex justify-center gap-4 items-center opacity-70">
+                      <svg viewBox="0 0 60 25" className="h-8" fill="none"><text x="0" y="20" fontFamily="sans-serif" fontWeight="900" fontSize="20" fill="#635BFF">stripe</text></svg>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="font-bold text-xs uppercase tracking-widest">MM/YY</Label>
-                        <Input placeholder="12/26" disabled className="h-14 rounded-2xl border bg-secondary/5 text-center font-mono" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="font-bold text-xs uppercase tracking-widest">CVC</Label>
-                        <div className="relative">
-                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                          <Input placeholder="***" disabled className="pl-10 h-14 rounded-2xl border bg-secondary/5 text-center font-mono" />
-                        </div>
-                      </div>
-                    </div>
+                    <p className="text-sm text-blue-700 font-bold">
+                      Klikom na gumb ispod bit ćete preusmjereni na sigurnu Stripe stranicu za plaćanje.
+                    </p>
+                    <p className="text-xs text-blue-500">
+                      Vaši podaci o kartici nikada ne prolaze kroz naš server — sve obrađuje Stripe.
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex gap-4 pt-4">
                   <Button variant="outline" onClick={() => setStep(2)} className="h-16 px-8 rounded-2xl font-bold">NATRAG</Button>
-                  <Button onClick={() => saveListing('paid')} disabled={isSubmitting} className="flex-1 h-16 rounded-[1.5rem] font-black bg-primary shadow-2xl shadow-primary/30 text-xl uppercase tracking-widest">
-                    {isSubmitting ? <Loader2 className="size-6 animate-spin" /> : `PLATI ${selectedCategory?.price}`}
+                  <Button 
+                    onClick={() => saveListing('pending_payment')} 
+                    disabled={isSubmitting} 
+                    className="flex-1 h-16 rounded-[1.5rem] font-black bg-primary shadow-2xl shadow-primary/30 text-xl uppercase tracking-widest group"
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center gap-3">
+                        <Loader2 className="size-6 animate-spin" /> PREUSMJERAVAM NA STRIPE...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        PLATI {selectedCategory?.price} <ArrowRight className="group-hover:translate-x-2 transition-transform" />
+                      </span>
+                    )}
                   </Button>
                 </div>
                 <p className="text-center text-[10px] text-muted-foreground uppercase tracking-widest font-black opacity-40">

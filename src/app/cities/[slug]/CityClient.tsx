@@ -26,12 +26,14 @@ import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { generateListingUrl } from '@/app/lib/utils/slug';
 import { Card, CardContent } from '@/components/ui/card';
+import { getFirstPhoto } from '@/app/lib/image-helpers';
 import { Badge } from '@/components/ui/badge';
 import { useCollection } from '@/pocketbase';
 import Map from '@/components/map/Map';
 import { useLanguage } from '@/contexts/LanguageContext';
 import FAQSection from '@/components/ui/FAQSection';
 import AdBanner from '@/components/ads/AdBanner';
+import WikiView from '@/components/ui/WikiView';
 import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 
 interface CityClientProps {
@@ -45,17 +47,6 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
   const { language } = useLanguage();
   const isEn = language === 'en';
 
-  const getFirstPhoto = (urls: any) => {
-    try {
-      if (Array.isArray(urls)) return urls[0] || DEFAULT_LISTING_IMAGE;
-      if (typeof urls === 'string') {
-        if (urls.trim().startsWith('[')) {
-          const parsed = JSON.parse(urls);
-          return parsed[0] || DEFAULT_LISTING_IMAGE;
-        }
-        return urls || DEFAULT_LISTING_IMAGE;
-      }
-    } catch (e) {}
     return DEFAULT_LISTING_IMAGE;
   };
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
@@ -264,7 +255,7 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {nearbyWarMemorials.map((l) => {
                       const name = isEn && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
-                      const image = getFirstPhoto(l.photoUrls) || DEFAULT_LISTING_IMAGE;
+                      const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
                       const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id);
                       return (
                         <Link key={l.id} href={path} className="group">
@@ -378,6 +369,11 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
               <AdBanner format="vertical" className="w-full h-[600px] shadow-sm rounded-3xl" />
             </aside>
           </div>
+
+          {/* WIKIPEDIA SECTIONS */}
+          {city?.wikiSections?.length > 0 && (
+            <WikiView sections={city.wikiSections} />
+          )}
 
           {/* DYNAMIC FAQ SECTION */}
           <FAQSection 
