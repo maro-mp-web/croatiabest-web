@@ -5,7 +5,7 @@ export const getFirstPhoto = (record: any, fieldName: string = 'photoUrls') => {
   
   let val = record[fieldName];
   if (!val || (Array.isArray(val) && val.length === 0)) {
-    val = record['photoUrls'] || record['photos'] || record['image'] || record['gallery'];
+    val = record['photoUrls'] || record['photos'] || record['image'] || record['gallery'] || record['media'];
   }
   
   let filename = '';
@@ -37,3 +37,36 @@ export const getFirstPhoto = (record: any, fieldName: string = 'photoUrls') => {
 
   return filename;
 };
+
+export const getAllPhotos = (record: any): string[] => {
+  if (!record) return [];
+  
+  let val = record['photoUrls'] || record['photos'] || record['image'] || record['gallery'] || record['media'];
+  if (!val) return [];
+
+  let filenames: string[] = [];
+  try {
+    if (Array.isArray(val)) {
+      filenames = val;
+    } else if (typeof val === 'string') {
+      if (val.trim().startsWith('[')) {
+        filenames = JSON.parse(val);
+      } else {
+        filenames = [val];
+      }
+    }
+  } catch (e) {}
+
+  const cid = record.collectionId || record.collectionName;
+  
+  return filenames.map(filename => {
+    if (filename.startsWith('http') || filename.startsWith('data:') || filename.startsWith('/')) {
+      return filename;
+    }
+    if (cid && record.id) {
+      return `${POCKETBASE_URL}/api/files/${cid}/${record.id}/${filename}`;
+    }
+    return filename;
+  }).filter(Boolean);
+};
+

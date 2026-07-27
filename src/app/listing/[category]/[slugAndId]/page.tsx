@@ -19,7 +19,7 @@ import { CATEGORIES, DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 import { CATEGORY_FIELDS } from '@/app/lib/category-fields';
 import { MapPin, Phone, Mail, Globe, Calendar, Users, List, Info, Loader2, Send, Tag, ShoppingBag, Check, X, Sparkles } from 'lucide-react';
 import { notFound, useParams } from 'next/navigation';
-import { getFirstPhoto } from '@/app/lib/image-helpers';
+import { getFirstPhoto, getAllPhotos } from '@/app/lib/image-helpers';
 import { generateSlug } from '@/app/lib/utils/slug';
 import { useUser, usePB, useCollection } from '@/pocketbase';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -79,7 +79,7 @@ export default function ListingDetailPage() {
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
   if (!listing) return null;
 
-  const photos = listing.photoUrls || [];
+  const photos = getAllPhotos(listing);
 
   const category = CATEGORIES.find(c => c.id === listing.locationCategoryId);
 
@@ -99,9 +99,9 @@ export default function ListingDetailPage() {
           <div className="flex-1 relative rounded-[2rem] overflow-hidden">
             <Image src={getFirstPhoto(listing) || DEFAULT_LISTING_IMAGE} alt="Hero" fill className="object-cover" priority />
           </div>
-          {Array.isArray(listing.photoUrls) && listing.photoUrls.length > 1 && (
+          {photos.length > 1 && (
             <div className="w-1/4 hidden md:flex flex-col gap-2">
-              {listing.photoUrls.slice(1, 3).map((p: any, i: number) => (
+              {photos.slice(1, 3).map((p: string, i: number) => (
                 <div key={i} className="flex-1 relative rounded-[2rem] overflow-hidden">
                   <Image src={p} alt={`Photo ${i}`} fill className="object-cover" />
                 </div>
