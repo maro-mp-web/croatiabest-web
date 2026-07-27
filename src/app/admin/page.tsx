@@ -82,6 +82,9 @@ export default function AdminDashboard() {
     seoTitle: '',
     seoDescription: '',
     seoKeywords: '',
+    seoTitleEn: '',
+    seoDescriptionEn: '',
+    seoKeywordsEn: '',
     wikiSections: [],
   });
 
@@ -185,6 +188,9 @@ export default function AdminDashboard() {
         seoTitle: cityItem.seoTitle || '',
         seoDescription: cityItem.seoDescription || '',
         seoKeywords: cityItem.seoKeywords || '',
+        seoTitleEn: cityItem.seoTitleEn || '',
+        seoDescriptionEn: cityItem.seoDescriptionEn || '',
+        seoKeywordsEn: cityItem.seoKeywordsEn || '',
         wikiSections: cityItem.wikiSections || [],
       });
     } else {
@@ -206,6 +212,9 @@ export default function AdminDashboard() {
         seoTitle: '',
         seoDescription: '',
         seoKeywords: '',
+        seoTitleEn: '',
+        seoDescriptionEn: '',
+        seoKeywordsEn: '',
       });
     }
     setIsEditing(true);
@@ -231,6 +240,9 @@ export default function AdminDashboard() {
         seoTitle: islandItem.seoTitle || '',
         seoDescription: islandItem.seoDescription || '',
         seoKeywords: islandItem.seoKeywords || '',
+        seoTitleEn: islandItem.seoTitleEn || '',
+        seoDescriptionEn: islandItem.seoDescriptionEn || '',
+        seoKeywordsEn: islandItem.seoKeywordsEn || '',
         wikiSections: islandItem.wikiSections || [],
       });
     } else {
@@ -251,6 +263,9 @@ export default function AdminDashboard() {
         seoTitle: '',
         seoDescription: '',
         seoKeywords: '',
+        seoTitleEn: '',
+        seoDescriptionEn: '',
+        seoKeywordsEn: '',
       });
     }
     setIsEditing(true);
@@ -317,6 +332,9 @@ export default function AdminDashboard() {
           seoTitle: formData.seoTitle,
           seoDescription: formData.seoDescription,
           seoKeywords: formData.seoKeywords,
+          seoTitleEn: formData.seoTitleEn,
+          seoDescriptionEn: formData.seoDescriptionEn,
+          seoKeywordsEn: formData.seoKeywordsEn,
           wikiSections: formData.wikiSections,
         };
         if (editId) {
@@ -341,6 +359,9 @@ export default function AdminDashboard() {
           seoTitle: formData.seoTitle,
           seoDescription: formData.seoDescription,
           seoKeywords: formData.seoKeywords,
+          seoTitleEn: formData.seoTitleEn,
+          seoDescriptionEn: formData.seoDescriptionEn,
+          seoKeywordsEn: formData.seoKeywordsEn,
           wikiSections: formData.wikiSections,
         };
         if (editId) {
@@ -712,20 +733,20 @@ export default function AdminDashboard() {
                     </div>
                   )}
 
-                  {/* SEO METADATA SECTION */}
+                  {/* SEO METADATA SECTION — HR */}
                   <div className="bg-slate-50 p-6 rounded-2xl border border-black/5 space-y-4">
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">SEO Optimizacija / Meta Tags</p>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">🇭🇷 SEO — Hrvatski</p>
                     <div className="space-y-3">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase">SEO Naslov (SEO Title)</label>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase">SEO Naslov (HR)</label>
                         <Input 
                           value={formData.seoTitle} 
                           onChange={e => setFormData({...formData, seoTitle: e.target.value})} 
-                          placeholder="Zadano se generira automatski" 
+                          placeholder="npr. Split - Turistički vodič | CroatiaBest" 
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase">SEO Opis (SEO Description)</label>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase">SEO Opis (HR)</label>
                         <Textarea 
                           rows={2} 
                           value={formData.seoDescription} 
@@ -734,11 +755,43 @@ export default function AdminDashboard() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase">Ključne riječi (SEO Keywords)</label>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase">Ključne riječi (HR)</label>
                         <Input 
                           value={formData.seoKeywords} 
                           onChange={e => setFormData({...formData, seoKeywords: e.target.value})} 
-                          placeholder="npr. dubrovnik guide, star grad, atrakcije" 
+                          placeholder="npr. split, dalmacija, plaže, restorani" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SEO METADATA SECTION — EN */}
+                  <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 space-y-4">
+                    <p className="text-xs font-black text-blue-400 uppercase tracking-widest">🇬🇧 SEO — English</p>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-blue-500 uppercase">SEO Title (EN)</label>
+                        <Input 
+                          value={formData.seoTitleEn} 
+                          onChange={e => setFormData({...formData, seoTitleEn: e.target.value})} 
+                          placeholder="e.g. Split - Tourist Guide | CroatiaBest" 
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-blue-500 uppercase">SEO Description (EN)</label>
+                        <Textarea 
+                          rows={2} 
+                          value={formData.seoDescriptionEn} 
+                          onChange={e => setFormData({...formData, seoDescriptionEn: e.target.value})} 
+                          placeholder="Max 160 characters" 
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-blue-500 uppercase">Keywords (EN)</label>
+                        <Input 
+                          value={formData.seoKeywordsEn} 
+                          onChange={e => setFormData({...formData, seoKeywordsEn: e.target.value})} 
+                          placeholder="e.g. split, dalmatia, beaches, restaurants" 
                         />
                       </div>
                     </div>

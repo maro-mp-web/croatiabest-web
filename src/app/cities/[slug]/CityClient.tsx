@@ -52,10 +52,6 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
 
   useEffect(() => {
     if (city) {
-      document.title = isEn 
-        ? `${city.name} - Official Tourist Guide | CroatiaBest`
-        : `${city.name} - Službeni turistički vodič | CroatiaBest`;
-        
       const encodedCity = encodeURIComponent(city.name);
       fetch(`https://hr.wikipedia.org/api/rest_v1/page/summary/${encodedCity}`)
         .then(res => res.json())
@@ -66,7 +62,7 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
         })
         .catch(err => console.error('Wiki error', err));
     }
-  }, [city, isEn]);
+  }, [city]);
 
   if (!city) return null;
 

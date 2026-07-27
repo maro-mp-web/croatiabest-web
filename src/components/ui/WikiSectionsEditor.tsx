@@ -10,6 +10,8 @@ export interface WikiSection {
   id: string;
   title: string;
   content: string;
+  titleEn?: string;
+  contentEn?: string;
 }
 
 interface WikiSectionsEditorProps {
@@ -19,12 +21,15 @@ interface WikiSectionsEditorProps {
 
 export function WikiSectionsEditor({ sections, onChange }: WikiSectionsEditorProps) {
   const [activeSectionId, setActiveSectionId] = useState<string | null>(sections?.length > 0 ? sections[0].id : null);
+  const [langTab, setLangTab] = useState<'hr' | 'en'>('hr');
 
   const handleAddSection = () => {
     const newSection: WikiSection = {
       id: Math.random().toString(36).substr(2, 9),
       title: 'Nova Sekcija',
-      content: ''
+      content: '',
+      titleEn: '',
+      contentEn: '',
     };
     const newSections = sections ? [...sections, newSection] : [newSection];
     onChange(newSections);
@@ -76,7 +81,7 @@ export function WikiSectionsEditor({ sections, onChange }: WikiSectionsEditorPro
             <Book className="size-4 text-primary" /> Wikipedia Sekcije
           </h3>
           <p className="text-xs text-muted-foreground mt-1">
-            Dodajte tematske cjeline (npr. Povijest, Kultura) koje će se prikazivati kao wiki-članci.
+            Dodajte tematske cjeline (npr. Povijest, Kultura) na hrvatskom i engleskom.
           </p>
         </div>
         <Button 
@@ -130,23 +135,65 @@ export function WikiSectionsEditor({ sections, onChange }: WikiSectionsEditorPro
           <div className="w-full lg:w-2/3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             {activeSection && (
               <>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Naziv sekcije (Taba)</label>
-                  <Input 
-                    value={activeSection.title}
-                    onChange={(e) => updateSection(activeSection.id, { title: e.target.value })}
-                    placeholder="npr. Povijest"
-                    className="font-bold text-lg"
-                  />
+                {/* Language Tabs */}
+                <div className="flex gap-2 border-b pb-3">
+                  <button
+                    type="button"
+                    onClick={() => setLangTab('hr')}
+                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${langTab === 'hr' ? 'bg-primary text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                  >
+                    🇭🇷 Hrvatski
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLangTab('en')}
+                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${langTab === 'en' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                  >
+                    🇬🇧 English
+                  </button>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sadržaj sekcije</label>
-                  <RichTextEditor 
-                    value={activeSection.content}
-                    onChange={(html) => updateSection(activeSection.id, { content: html })}
-                    placeholder={`Unesite sadržaj za ${activeSection.title || 'ovu sekciju'}...`}
-                  />
-                </div>
+
+                {langTab === 'hr' ? (
+                  <>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Naziv sekcije (HR)</label>
+                      <Input 
+                        value={activeSection.title}
+                        onChange={(e) => updateSection(activeSection.id, { title: e.target.value })}
+                        placeholder="npr. Povijest"
+                        className="font-bold text-lg"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sadržaj (HR)</label>
+                      <RichTextEditor 
+                        value={activeSection.content}
+                        onChange={(html) => updateSection(activeSection.id, { content: html })}
+                        placeholder={`Unesite sadržaj za ${activeSection.title || 'ovu sekciju'}...`}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Section Title (EN)</label>
+                      <Input 
+                        value={activeSection.titleEn || ''}
+                        onChange={(e) => updateSection(activeSection.id, { titleEn: e.target.value })}
+                        placeholder="e.g. History"
+                        className="font-bold text-lg"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Content (EN)</label>
+                      <RichTextEditor 
+                        value={activeSection.contentEn || ''}
+                        onChange={(html) => updateSection(activeSection.id, { contentEn: html })}
+                        placeholder={`Enter content for ${activeSection.titleEn || activeSection.title || 'this section'}...`}
+                      />
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>

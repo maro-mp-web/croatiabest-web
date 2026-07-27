@@ -109,8 +109,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     listings.forEach((listing) => {
       const path = generateListingUrl(
         listing.locationCategoryId || listing.categoryId, 
-        listing.name, 
-        listing.id
+        listing.name
       );
       
       routes.push({

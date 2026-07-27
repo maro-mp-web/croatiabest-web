@@ -35,7 +35,6 @@ export default function IslandClient({ island, listings }: { island: any, listin
 
   useEffect(() => {
     if (island) {
-      document.title = `Otok ${island.name} - Vodič | CroatiaBest`;
       const encodedIsland = encodeURIComponent(island.name);
       fetch(`https://hr.wikipedia.org/api/rest_v1/page/summary/${encodedIsland}`)
         .then(res => res.json())
