@@ -100,7 +100,7 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
   const getDirectionsUrl = (lat: number, lng: number) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pt-20">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       <main className="flex-1 pb-24">
         {/* HERO HEADER */}
@@ -124,9 +124,10 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
                 <div className="flex flex-col md:flex-row gap-12">
                   <div className="flex-1 space-y-8">
                     <h2 className="text-4xl font-headline font-black leading-tight">{isEn ? `About ${city.name}` : `O gradu ${city.name}`}</h2>
-                    <div className="prose prose-xl max-w-none text-muted-foreground font-body italic leading-relaxed whitespace-pre-wrap">
-                      {language === 'en' && city.descriptionEn ? city.descriptionEn : city.description}
-                    </div>
+                    <div 
+                      className="prose prose-xl max-w-none text-muted-foreground font-body italic leading-relaxed whitespace-pre-wrap"
+                      dangerouslySetInnerHTML={{ __html: language === 'en' && city.descriptionEn ? city.descriptionEn : city.description }}
+                    />
                   </div>
                   
                   {/* SIDE INFO */}

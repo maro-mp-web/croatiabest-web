@@ -30,6 +30,9 @@ import WikiView from '@/components/ui/WikiView';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function IslandClient({ island, listings }: { island: any, listings: any[] }) {
+  const { language } = useLanguage();
+  const isEn = language === 'en';
+  
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [wikiData, setWikiData] = useState<{extract: string, thumbnail?: string}>({ extract: '' });
 
@@ -80,9 +83,10 @@ export default function IslandClient({ island, listings }: { island: any, listin
                 <div className="flex flex-col md:flex-row gap-12">
                   <div className="flex-1">
                     <h2 className="text-4xl font-headline font-black mb-8 leading-none">Upoznajte {island.name}</h2>
-                    <div className="prose prose-xl max-w-none text-muted-foreground font-body italic leading-relaxed mb-12 whitespace-pre-wrap">
-                      {island.description || wikiData.extract}
-                    </div>
+                    <div 
+                      className="prose prose-xl max-w-none text-muted-foreground font-body italic leading-relaxed mb-12 whitespace-pre-wrap"
+                      dangerouslySetInnerHTML={{ __html: isEn && island.descriptionEn ? island.descriptionEn : (island.description || wikiData.extract) }}
+                    />
                   </div>
                   
                   <div className="w-full md:w-80 space-y-8 bg-foreground/5 rounded-[2.5rem] p-8 border border-black/5 h-fit">
