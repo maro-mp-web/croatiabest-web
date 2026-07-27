@@ -4,8 +4,8 @@ export const getFirstPhoto = (record: any, fieldName: string = 'photoUrls') => {
   if (!record) return '';
   
   let val = record[fieldName];
-  if (!val && fieldName === 'photoUrls') {
-      val = record['image']; // Fallback for cities/islands which use 'image'
+  if (!val || (Array.isArray(val) && val.length === 0)) {
+    val = record['photoUrls'] || record['photos'] || record['image'] || record['gallery'];
   }
   
   let filename = '';

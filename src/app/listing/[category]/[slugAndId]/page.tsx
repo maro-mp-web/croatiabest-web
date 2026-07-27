@@ -97,7 +97,7 @@ export default function ListingDetailPage() {
       <main className="flex-1 pb-24">
         <section className="h-[50vh] min-h-[400px] relative flex gap-2 p-2">
           <div className="flex-1 relative rounded-[2rem] overflow-hidden">
-            <Image src={getFirstPhoto(listing)} alt="Hero" fill className="object-cover" priority />
+            <Image src={getFirstPhoto(listing) || DEFAULT_LISTING_IMAGE} alt="Hero" fill className="object-cover" priority />
           </div>
           {Array.isArray(listing.photoUrls) && listing.photoUrls.length > 1 && (
             <div className="w-1/4 hidden md:flex flex-col gap-2">
