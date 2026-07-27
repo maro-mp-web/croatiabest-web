@@ -622,7 +622,7 @@ export default function AdminDashboard() {
                         />
                         <ImageUpload 
                           defaultImage={formData.image}
-                          onUploadComplete={(url) => setFormData(prev => ({...prev, image: url}))} 
+                          onUploadComplete={(url) => setFormData((prev: any) => ({...prev, image: url}))} 
                         />
                       </div>
                     </div>

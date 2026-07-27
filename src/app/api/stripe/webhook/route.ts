@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import PocketBase from 'pocketbase';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-05-28.basil',
+  apiVersion: '2025-02-24.acacia' as any,
 });
 
 const POCKETBASE_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';

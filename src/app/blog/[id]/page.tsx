@@ -21,7 +21,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ id: st
     }
   }
 
-  let relatedArticles = [];
+  let relatedArticles: any[] = [];
   try {
     const allBlogs = await pb.collection('blogs').getFullList({ requestKey: null });
     relatedArticles = allBlogs.filter((a: any) => a.id !== article.id);
