@@ -47,8 +47,6 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
   const { language } = useLanguage();
   const isEn = language === 'en';
 
-    return DEFAULT_LISTING_IMAGE;
-  };
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [wikiData, setWikiData] = useState<{extract: string, thumbnail?: string}>({ extract: '' });
 
