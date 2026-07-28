@@ -156,9 +156,10 @@ export default function ListingDetailPage() {
                     })}
                   </div>
                 )}
-                <div className="prose prose-lg max-w-none font-body italic text-foreground/80 leading-relaxed whitespace-pre-wrap">
-                  {language === 'en' && listing.metadata?.descriptionEn ? listing.metadata.descriptionEn : listing.description}
-                </div>
+                <div 
+                  className="prose prose-lg max-w-none font-body italic text-foreground/80 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: language === 'en' && listing.metadata?.descriptionEn ? listing.metadata.descriptionEn : listing.description }}
+                />
               </TabsContent>
 
               <TabsContent value="offer" className="pt-10 space-y-10">
