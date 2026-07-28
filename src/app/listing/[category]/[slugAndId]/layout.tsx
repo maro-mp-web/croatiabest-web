@@ -30,8 +30,8 @@ export async function generateMetadata({
       ? photos[0] 
       : DEFAULT_LISTING_IMAGE;
 
-    // Description is bilingual (hr \n\n en), we take only the first part for SEO
-    const rawDescription = listing.description || '';
+    // Description may contain HTML from rich editor, strip it for SEO
+    const rawDescription = (listing.description || '').replace(/<[^>]*>/g, '');
     const hrDescription = rawDescription.split('\n\n')[0] || '';
     // Trim to ~155 characters for SEO
     const seoDescription = hrDescription.length > 155 

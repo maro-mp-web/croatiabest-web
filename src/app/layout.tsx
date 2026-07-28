@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     siteName: 'CroatiaBest',
     images: [
       {
-        url: DEFAULT_LISTING_IMAGE,
+        url: '/hero-dubrovnik.jpg',
         width: 1200,
         height: 630,
         alt: 'CroatiaBest Travel Guide',
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'CroatiaBest - Otkrijte dušu Hrvatske',
     description: 'Stručni vodiči i interaktivna karta za savršeno ljetovanje.',
-    images: [DEFAULT_LISTING_IMAGE],
+    images: ['/hero-dubrovnik.jpg'],
   },
   verification: {
     google: 'X7N4-HcZlH3zbfNOD1ZtwpvUIkbUr7ZcEKmtGfJ0SaM',
@@ -69,7 +69,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="hr">
-      <head>
+      <body suppressHydrationWarning className={`${alegreya.variable} ${belleza.variable} font-body antialiased selection:bg-primary selection:text-white`}>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-S2JR7QWYN4"
           strategy="afterInteractive"
@@ -82,8 +82,6 @@ export default function RootLayout({
             gtag('config', 'G-S2JR7QWYN4');
           `}
         </Script>
-      </head>
-      <body suppressHydrationWarning className={`${alegreya.variable} ${belleza.variable} font-body antialiased selection:bg-primary selection:text-white`}>
         <PocketBaseProvider>
           <LanguageProvider>
             <div className="flex flex-col min-h-screen">

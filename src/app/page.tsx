@@ -134,83 +134,7 @@ export default function Home() {
 
   // National Parks Setup (from listings DB)
   const nationalParks = (allListings || []).filter(l => (l.locationCategoryId || l.categoryId) === 'national_parks').slice(0, 3);
-
-  const defaultArticles = [
-    {
-      id: 'mock-1',
-      title: '10 Skrivenih Plaža Koje Morate Posjetiti',
-      titleEn: '10 Hidden Beaches You Must Visit',
-      excerpt: 'Hrvatska obala skriva predivne uvale daleko od gužvi. Otkrijte skrivene dragulje Jadrana.',
-      excerptEn: 'The Croatian coast hides beautiful bays far from the crowds. Discover the hidden gems of the Adriatic.',
-      category: 'Putovanja',
-      image: 'https://picsum.photos/seed/beach1/800/600',
-      author: 'Maro Pincević',
-      readTime: '5 min',
-      created: new Date().toISOString()
-    },
-    {
-      id: 'mock-2',
-      title: 'Gastro Vodič: Najbolji Istarski Tartufi',
-      titleEn: 'Gastro Guide: The Best Truffles',
-      excerpt: 'Saznajte gdje kušati autentične specijalitete s crnim i bijelim tartufima u unutrašnjosti Istre.',
-      excerptEn: 'Find out where to taste authentic specialties with black and white truffles in the heart of Istria.',
-      category: 'Gastronomija',
-      image: 'https://picsum.photos/seed/truffles/800/600',
-      author: 'CroatiaBest Team',
-      readTime: '4 min',
-      created: new Date().toISOString()
-    },
-    {
-      id: 'mock-3',
-      title: 'Kulturni Vodič Kroz Veličanstvenu Arenu u Puli',
-      titleEn: 'Cultural Guide Through Pula Arena',
-      excerpt: 'Povijest jednog od najbolje očuvanih rimskih amfiteatara na svijetu i priče o gladijatorima.',
-      excerptEn: 'The history of one of the best preserved Roman amphitheatres in the world and stories about gladiators.',
-      category: 'Kultura',
-      image: 'https://picsum.photos/seed/pula/800/600',
-      author: 'Lokalni Vodič',
-      readTime: '6 min',
-      created: new Date().toISOString()
-    },
-    {
-      id: 'mock-hist-1',
-      title: 'Kravata - Hrvatski izum koji je osvojio cijeli svijet',
-      titleEn: 'The Necktie - A Croatian Invention That Conquered the World',
-      excerpt: 'Saznajte kako su hrvatski vojnici u 17. stoljeću proširili modu koja je postala simbol elegancije.',
-      excerptEn: 'Learn how Croatian soldiers in the 17th century spread the fashion that became a symbol of elegance.',
-      category: 'Izumi',
-      image: 'https://picsum.photos/seed/cravat/800/600',
-      author: 'Urednik Povijesti',
-      readTime: '5 min',
-      created: new Date().toISOString()
-    },
-    {
-      id: 'mock-hist-2',
-      title: 'Nikola Tesla: Genij iz Smiljana',
-      titleEn: 'Nikola Tesla: The Genius from Smiljan',
-      excerpt: 'Biografija i priče o vizionaru koji je svojim izumima izmjenične struje rasvijetlio planetu.',
-      excerptEn: 'Biography and stories about the visionary who lit up the planet with his alternating current inventions.',
-      category: 'Poznati Hrvati',
-      image: 'https://picsum.photos/seed/tesla/800/600',
-      author: 'Urednik Znanosti',
-      readTime: '8 min',
-      created: new Date().toISOString()
-    },
-    {
-      id: 'mock-war-1',
-      title: 'Spomen obilježja Domovinskog rata diljem Hrvatske',
-      titleEn: 'Homeland War Memorials Across Croatia',
-      excerpt: 'Pregled najznačajnijih spomenika, muzeja i mjesta sjećanja posvećenih herojima i povijesti obrane.',
-      excerptEn: 'Review of the most significant monuments, museums, and memorial sites dedicated to heroes and the history of defense.',
-      category: 'Domovinski rat',
-      image: 'https://picsum.photos/seed/memorial/800/600',
-      author: 'Urednik Domovinski rat',
-      readTime: '7 min',
-      created: new Date().toISOString()
-    }
-  ];
-
-  const articlesList = blogArticles && blogArticles.length > 0 ? blogArticles : defaultArticles;
+  const articlesList = blogArticles || [];
 
   // Paid Premium categories
   const premiumCategories = [
@@ -632,32 +556,38 @@ export default function Home() {
                 </div>
 
                 {/* Grid of magazine themes */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {articlesList.slice(0, 2).map((article) => {
-                    const bTitle = language === 'en' && article.titleEn ? article.titleEn : article.title;
-                    const bExcerpt = language === 'en' && article.excerptEn ? article.excerptEn : article.excerpt;
-                    return (
-                      <Link key={article.id} href={`/blog/${article.id}`} className="group h-full">
-                        <div className="group rounded-[2rem] overflow-hidden shadow-md border border-black/5 bg-white hover:shadow-xl transition-all duration-500 hover:-translate-y-1 h-full flex flex-col">
-                          <div className="relative h-40 overflow-hidden">
-                            <Image src={article.image} alt={bTitle} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                            <Badge className="absolute top-4 left-4 bg-secondary text-white border-none shadow-md font-black text-[8px] uppercase tracking-wider">{article.category}</Badge>
-                          </div>
-                          <div className="p-5 flex-1 flex flex-col justify-between">
-                            <div className="space-y-2">
-                              <h4 className="text-base font-bold font-headline leading-snug line-clamp-2 group-hover:text-primary transition-colors">{bTitle}</h4>
-                              <p className="text-muted-foreground line-clamp-2 font-body text-[11px] leading-relaxed">{bExcerpt}</p>
+                {articlesList.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {articlesList.slice(0, 2).map((article) => {
+                      const bTitle = language === 'en' && article.titleEn ? article.titleEn : article.title;
+                      const bExcerpt = language === 'en' && article.excerptEn ? article.excerptEn : article.excerpt;
+                      return (
+                        <Link key={article.id} href={`/blog/${article.id}`} className="group h-full">
+                          <div className="group rounded-[2rem] overflow-hidden shadow-md border border-black/5 bg-white hover:shadow-xl transition-all duration-500 hover:-translate-y-1 h-full flex flex-col">
+                            <div className="relative h-40 overflow-hidden">
+                              <Image src={article.image || '/placeholder.jpg'} alt={bTitle} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                              <Badge className="absolute top-4 left-4 bg-secondary text-white border-none shadow-md font-black text-[8px] uppercase tracking-wider">{article.category}</Badge>
                             </div>
-                            <div className="flex items-center justify-between pt-4 border-t mt-4 text-[9px] text-muted-foreground font-bold">
-                              <span>{article.author || 'CroatiaBest'}</span>
-                              <span>{article.readTime || '5 min'}</span>
+                            <div className="p-5 flex-1 flex flex-col justify-between">
+                              <div className="space-y-2">
+                                <h4 className="text-base font-bold font-headline leading-snug line-clamp-2 group-hover:text-primary transition-colors">{bTitle}</h4>
+                                <p className="text-muted-foreground line-clamp-2 font-body text-[11px] leading-relaxed">{bExcerpt}</p>
+                              </div>
+                              <div className="flex items-center justify-between pt-4 border-t mt-4 text-[9px] text-muted-foreground font-bold">
+                                <span>{article.author || 'CroatiaBest'}</span>
+                                <span>{article.readTime || '5 min'}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-8 bg-white border border-dashed border-black/10 rounded-[2rem] text-center min-h-[200px]">
+                    <p className="text-muted-foreground font-medium italic">{language === 'en' ? 'New stories coming soon!' : 'Uskoro dolaze nove priče!'}</p>
+                  </div>
+                )}
 
                 {/* Subcategories/tags for blogs */}
                 <div className="flex flex-wrap gap-2 pt-2">

@@ -77,7 +77,7 @@ export default function ListingDetailPage() {
   };
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
-  if (!listing) return null;
+  if (!listing) return notFound();
 
   const photos = getAllPhotos(listing);
 
@@ -97,13 +97,13 @@ export default function ListingDetailPage() {
       <main className="flex-1 pb-24">
         <section className="h-[50vh] min-h-[400px] relative flex gap-2 p-2">
           <div className="flex-1 relative rounded-[2rem] overflow-hidden">
-            <Image src={getFirstPhoto(listing) || DEFAULT_LISTING_IMAGE} alt="Hero" fill className="object-cover" priority />
+            <Image src={getFirstPhoto(listing) || DEFAULT_LISTING_IMAGE} alt="Hero" fill sizes="100vw" className="object-cover" priority />
           </div>
           {photos.length > 1 && (
             <div className="w-1/4 hidden md:flex flex-col gap-2">
               {photos.slice(1, 3).map((p: string, i: number) => (
                 <div key={i} className="flex-1 relative rounded-[2rem] overflow-hidden">
-                  <Image src={p} alt={`Photo ${i}`} fill className="object-cover" />
+                  <Image src={p} alt={`Photo ${i}`} fill sizes="25vw" className="object-cover" />
                 </div>
               ))}
             </div>
@@ -233,7 +233,7 @@ export default function ListingDetailPage() {
                 <h4 className="text-xl font-black">Detalji</h4>
                 <div className="space-y-3">
                   {listing.contactPhone && <div className="flex items-center gap-3 font-bold text-sm"><Phone className="size-4 text-primary" /> {listing.contactPhone}</div>}
-                  {listing.webAddress && <a href={listing.webAddress} target="_blank" rel="dofollow noopener" className="flex items-center gap-3 font-bold text-sm text-secondary hover:underline"><Globe className="size-4" /> Web stranica</a>}
+                  {listing.webAddress && <a href={listing.webAddress} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 font-bold text-sm text-secondary hover:underline"><Globe className="size-4" /> Web stranica</a>}
                 </div>
               </Card>
             )}
@@ -262,7 +262,7 @@ export default function ListingDetailPage() {
                   <Link key={l.id} href={generateListingUrl(l.locationCategoryId, l.name, l.id)}>
                     <Card className="group border-none shadow-md hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col bg-white">
                       <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-4 group-hover:shadow-lg transition-all duration-300 bg-secondary/5">
-                        <Image src={getFirstPhoto(l) || '/placeholder.jpg'} alt={l.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                        <Image src={getFirstPhoto(l) || DEFAULT_LISTING_IMAGE} alt={l.name} fill sizes="25vw" className="object-cover group-hover:scale-110 transition-transform duration-700" />
                         <Badge className="absolute top-4 right-4 bg-primary text-white font-black uppercase text-[10px] tracking-widest shadow-lg">Premium</Badge>
                       </div>
                       <CardContent className="p-5 flex-1 flex flex-col justify-center">
@@ -285,7 +285,7 @@ export default function ListingDetailPage() {
                 <Link key={l.id} href={generateListingUrl(l.locationCategoryId, l.name, l.id)}>
                   <Card className="group border-none shadow-md hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col bg-secondary/5">
                     <div className="relative aspect-square overflow-hidden">
-                      <Image src={getFirstPhoto(l.photoUrls)} alt={l.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <Image src={getFirstPhoto(l) || DEFAULT_LISTING_IMAGE} alt={l.name} fill sizes="25vw" className="object-cover group-hover:scale-110 transition-transform duration-700" />
                     </div>
                     <CardContent className="p-5 flex-1 flex flex-col justify-center">
                       <h4 className="font-black text-sm leading-tight line-clamp-2">{l.name}</h4>
