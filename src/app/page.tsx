@@ -110,7 +110,7 @@ export default function Home() {
       name: dbCity?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
       slug,
       region: dbCity?.region || regions[idx],
-      image: getFirstPhoto(dbCity, 'image') || `/cities/${slug}.webp`,
+      image: (dbCity && typeof dbCity.image === 'string' && dbCity.image.trim() !== '') ? dbCity.image : (getFirstPhoto(dbCity, 'image') || `/cities/${slug}.webp`),
       colSpan: colSpans[idx],
       indexStr: `0${idx + 1}`
     };
@@ -126,7 +126,7 @@ export default function Home() {
       name: dbIsland?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
       slug,
       region: dbIsland?.region || regions[idx],
-      image: getFirstPhoto(dbIsland, 'image') || `/islands/${slug}.webp`,
+      image: (dbIsland && typeof dbIsland.image === 'string' && dbIsland.image.trim() !== '') ? dbIsland.image : (getFirstPhoto(dbIsland, 'image') || `/islands/${slug}.webp`),
       colSpan: colSpans[idx],
       indexStr: `0${idx + 1}`
     };
