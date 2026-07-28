@@ -14,6 +14,7 @@ import {
   XCircle,
   Clock,
   Sparkles,
+  LayoutTemplate,
   ShieldAlert,
   Shield,
   Loader2,
@@ -947,7 +948,7 @@ export default function AdminDashboard() {
             { id: 'cities', name: 'Gradovi', icon: <Building2 className="size-4" /> },
             { id: 'islands', name: 'Otoci', icon: <Anchor className="size-4" /> },
             { id: 'parks', name: 'Nacionalni parkovi', icon: <Trees className="size-4" /> },
-            { id: 'sections', name: 'Naslovnica', icon: <Sparkles className="size-4" /> }
+            { id: 'sections', name: 'Naslovnica', icon: <LayoutTemplate className="size-4" /> }
           ].map(tab => (
             <button
               key={tab.id}
@@ -1270,6 +1271,61 @@ export default function AdminDashboard() {
                         </div>
                       );
                     })
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* TAB: SECTIONS */}
+        {activeTab === 'sections' && (
+          <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
+            <CardHeader className="flex flex-row items-center justify-between border-b p-8 bg-secondary/5">
+              <div>
+                <CardTitle className="text-2xl font-black uppercase tracking-tight">Sekcije Naslovnice</CardTitle>
+                <CardDescription>Upravljanje dinamičkim blokovima na početnoj stranici.</CardDescription>
+              </div>
+              <Button onClick={() => startEditSection()} className="bg-primary hover:bg-primary/90 text-white rounded-full font-bold px-6 h-12 shadow-lg hover:shadow-xl transition-all">
+                <PlusCircle className="mr-2 size-5" /> Nova Sekcija
+              </Button>
+            </CardHeader>
+            <CardContent className="p-0">
+              {sectionsLoading ? (
+                <div className="p-24 flex justify-center"><Loader2 className="animate-spin size-8 text-primary" /></div>
+              ) : (
+                <div className="divide-y divide-black/5 text-left">
+                  {!homepageSections || homepageSections.length === 0 ? (
+                    <div className="p-16 text-center text-slate-400 font-medium">
+                      Nema dodanih sekcija.
+                    </div>
+                  ) : (
+                    homepageSections.map((sec) => (
+                      <div key={sec.id} className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className="size-12 rounded-xl bg-slate-100 flex items-center justify-center font-black text-xl text-slate-400">
+                            {sec.order}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                              {sec.title}
+                              {!sec.isActive && <Badge variant="outline" className="text-xs">Neaktivno</Badge>}
+                            </h3>
+                            <div className="text-sm text-slate-500 mt-1 flex items-center gap-3">
+                              <span>Tip: <strong className="uppercase text-[10px] bg-slate-100 px-2 py-0.5 rounded-full">{sec.type}</strong></span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 w-full md:w-auto">
+                          <Button variant="outline" size="sm" onClick={() => startEditSection(sec)} className="flex-1 md:flex-none">
+                            <Edit2 className="size-4 mr-2" /> Uredi
+                          </Button>
+                          <Button variant="destructive" size="sm" onClick={() => handleDeleteSection(sec.id)} className="flex-1 md:flex-none">
+                            <Trash2 className="size-4 mr-2" /> Obriši
+                          </Button>
+                        </div>
+                      </div>
+                    ))
                   )}
                 </div>
               )}
