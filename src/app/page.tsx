@@ -110,7 +110,7 @@ export default function Home() {
       name: dbCity?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
       slug,
       region: dbCity?.region || regions[idx],
-      image: dbCity?.image || `/cities/${slug}.webp`,
+      image: getFirstPhoto(dbCity, 'image') || `/cities/${slug}.webp`,
       colSpan: colSpans[idx],
       indexStr: `0${idx + 1}`
     };
@@ -126,7 +126,7 @@ export default function Home() {
       name: dbIsland?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
       slug,
       region: dbIsland?.region || regions[idx],
-      image: dbIsland?.image || `/islands/${slug}.webp`,
+      image: getFirstPhoto(dbIsland, 'image') || `/islands/${slug}.webp`,
       colSpan: colSpans[idx],
       indexStr: `0${idx + 1}`
     };
@@ -260,7 +260,7 @@ export default function Home() {
         <section className="relative z-40 min-h-[95vh] w-full flex items-center pt-32 pb-24 bg-slate-950">
           <div className="absolute inset-0 z-0 overflow-hidden">
             <Image 
-              src="/hero-dubrovnik.jpg"
+              src={featuredCities.find(c => c.slug === 'dubrovnik')?.image || "/hero-dubrovnik.jpg"}
               alt="CroatiaBest Hero"
               fill
               priority
