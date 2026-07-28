@@ -24,8 +24,17 @@ export const getFirstPhoto = (record: any, fieldName: string = 'photoUrls') => {
 
   if (!filename) return '';
 
-  // If it's already an absolute URL, relative path starting with /, or data URI, return it
-  if (filename.startsWith('http') || filename.startsWith('data:') || filename.startsWith('/')) {
+  // If it's already an absolute URL or data URI, return it
+  if (filename.startsWith('http') || filename.startsWith('data:')) {
+    return filename;
+  }
+
+  // If it's a relative PocketBase URL (from our migration scripts)
+  if (filename.startsWith('/api/files/')) {
+    return `${POCKETBASE_URL}${filename}`;
+  }
+
+  if (filename.startsWith('/')) {
     return filename;
   }
 
@@ -60,9 +69,18 @@ export const getAllPhotos = (record: any): string[] => {
   const cid = record.collectionId || record.collectionName;
   
   return filenames.map(filename => {
-    if (filename.startsWith('http') || filename.startsWith('data:') || filename.startsWith('/')) {
+    if (filename.startsWith('http') || filename.startsWith('data:')) {
       return filename;
     }
+    
+    if (filename.startsWith('/api/files/')) {
+      return `${POCKETBASE_URL}${filename}`;
+    }
+
+    if (filename.startsWith('/')) {
+      return filename;
+    }
+    
     if (cid && record.id) {
       return `${POCKETBASE_URL}/api/files/${cid}/${record.id}/${filename}`;
     }
