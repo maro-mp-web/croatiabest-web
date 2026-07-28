@@ -18,9 +18,11 @@ export function getPocketBase(): PocketBase {
   if (!pbInstance) {
     pbInstance = new PocketBase(POCKETBASE_URL);
     
-    // Auto-obnova auth tokena
-    pbInstance.authStore.onChange(() => {
-      // Možeš dodati custom logiku ako treba
+    // Auto-obnova auth tokena i sinkronizacija s cookie-jem za middleware
+    pbInstance.authStore.onChange((token, model) => {
+      if (typeof document !== 'undefined') {
+        document.cookie = pbInstance!.authStore.exportToCookie({ httpOnly: false, secure: false });
+      }
     });
   }
   
