@@ -22,7 +22,10 @@ export const getFirstPhoto = (record: any, fieldName: string = 'photoUrls') => {
     }
   } catch (e) {}
 
-  if (!filename) return '';
+  // If it's a blocked Google Maps Street View URL, ignore it so the fallback image shows
+  if (filename.includes('maps.googleapis.com')) {
+    return '';
+  }
 
   // If it's already an absolute URL or data URI, return it
   if (filename.startsWith('http') || filename.startsWith('data:')) {
