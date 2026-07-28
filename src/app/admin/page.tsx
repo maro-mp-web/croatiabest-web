@@ -68,6 +68,7 @@ export default function AdminDashboard() {
 
   // Edit Panel State
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingSection, setIsEditingSection] = useState(false);
   const [editType, setEditType] = useState<'city' | 'island' | 'park' | 'section' | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({
@@ -300,7 +301,7 @@ export default function AdminDashboard() {
         isActive: true,
       });
     }
-    setIsEditing(true);
+    setIsEditingSection(true);
   };
 
   const handleDeleteSection = async (id: string) => {
@@ -351,6 +352,31 @@ export default function AdminDashboard() {
       });
     }
     setIsEditing(true);
+  };
+
+    const handleSaveSection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pb) return;
+    try {
+      const data = {
+        title: formData.title,
+        type: formData.type,
+        content: formData.content,
+        image: formData.image,
+        order: parseInt(formData.order),
+        isActive: formData.isActive
+      };
+      if (editId) {
+        await pb.collection('homepage_sections').update(editId, data);
+      } else {
+        await pb.collection('homepage_sections').create(data);
+      }
+      setIsEditingSection(false);
+      window.location.reload();
+    } catch(err) {
+      console.error(err);
+      alert('Greška pri spremanju sekcije!');
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -605,6 +631,106 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>       </div>
+
+                {/* SECTIONS EDIT MODAL */}
+        {isEditingSection && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[1000] flex items-center justify-center p-4 overflow-y-auto">
+            <Card className="w-full max-w-3xl rounded-[2.5rem] shadow-2xl overflow-hidden bg-white max-h-[90vh] flex flex-col">
+              <CardHeader className="flex flex-row items-center justify-between p-8 border-b bg-secondary/5">
+                <div>
+                  <CardTitle className="text-2xl uppercase font-black">
+                    {editId ? 'Uredi' : 'Dodaj novu'} Sekciju Naslovnice
+                  </CardTitle>
+                  <CardDescription>Uredite sadržaj i raspored sekcije na početnoj stranici.</CardDescription>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setIsEditingSection(false)} className="rounded-full size-12 hover:bg-black/5">
+                  <X className="size-6" />
+                </Button>
+              </CardHeader>
+              <CardContent className="p-8 overflow-y-auto flex-1 text-left">
+                <form onSubmit={handleSaveSection} className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Naslov Sekcije</label>
+                      <Input 
+                        value={formData.title} 
+                        onChange={e => setFormData({...formData, title: e.target.value})} 
+                        placeholder="npr. Istražite gradove" 
+                        required 
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Tip Sadržaja</label>
+                      <select 
+                        className="w-full h-10 px-3 rounded-lg border bg-white font-medium text-sm"
+                        value={formData.type}
+                        onChange={e => setFormData({...formData, type: e.target.value})}
+                      >
+                        <option value="custom">Samo običan tekst i slike</option>
+                        <option value="cities">Automatski Grid Gradova</option>
+                        <option value="islands">Automatski Grid Otoka</option>
+                        <option value="public_listings">Automatski Grid Znamenitosti</option>
+                        <option value="premium">Automatski Grid Premium Ponuda</option>
+                        <option value="popular_listings">Automatski Grid Popularnog</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Tekst / Sadržaj (Rich Text)</label>
+                    <RichTextEditor 
+                      value={formData.content} 
+                      onChange={(html) => setFormData({...formData, content: html})} 
+                      placeholder="Upišite opis ovdje..." 
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-1 col-span-2">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Glavna Slika (Opcija)</label>
+                      <div className="flex flex-col gap-3">
+                        <Input 
+                          value={formData.image} 
+                          onChange={e => setFormData({...formData, image: e.target.value})} 
+                          placeholder="URL Slike" 
+                        />
+                        <ImageUpload 
+                          defaultImage={formData.image}
+                          onUploadComplete={(url) => setFormData((prev: any) => ({...prev, image: url}))} 
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Redoslijed</label>
+                      <Input 
+                        type="number"
+                        value={formData.order} 
+                        onChange={e => setFormData({...formData, order: e.target.value})} 
+                        required 
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 pt-4 border-t">
+                    <input 
+                      type="checkbox" 
+                      id="isActiveSection"
+                      checked={formData.isActive}
+                      onChange={e => setFormData({...formData, isActive: e.target.checked})}
+                      className="size-5"
+                    />
+                    <label htmlFor="isActiveSection" className="font-bold cursor-pointer">Ova sekcija je aktivna i javno vidljiva na naslovnici</label>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-6">
+                    <Button type="button" variant="ghost" onClick={() => setIsEditingSection(false)}>Odustani</Button>
+                    <Button type="submit" className="bg-primary text-white font-bold h-10 px-8 rounded-xl shadow-lg">Spremi Sekciju</Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* INTERACTIVE EDIT MODAL FORM */}
         {isEditing && (
