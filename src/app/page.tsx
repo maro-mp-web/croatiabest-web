@@ -101,35 +101,66 @@ export default function Home() {
     };
   }, []);
 
-  // Cities Setup
-  const featuredCitiesSlugs = ['zagreb', 'dubrovnik', 'split', 'rovinj', 'varazdin'];
+  // Cities Setup — read from homepage_sections items or fall back to defaults
+  const citiesSection = (homepageSections || []).find((s: any) => s.type === 'cities');
+  const citiesSectionItems: any[] = (() => {
+    try {
+      const raw = citiesSection?.items;
+      return typeof raw === 'string' ? JSON.parse(raw) : (raw || []);
+    } catch { return []; }
+  })();
+  const featuredCitiesSlugs = citiesSectionItems.length > 0 ? citiesSectionItems.map(i => i.slug) : ['zagreb', 'dubrovnik', 'split', 'rovinj', 'varazdin'];
+  const colSpansCities = ['md:col-span-5 md:row-span-2 h-[380px]', 'md:col-span-4 h-[180px]', 'md:col-span-4 h-[180px]', 'md:col-span-4 h-[200px]', 'md:col-span-5 h-[200px]'];
   const featuredCities = featuredCitiesSlugs.map((slug, idx) => {
     const dbCity = (cities || []).find(c => c.slug === slug);
-    const colSpans = ['md:col-span-5 md:row-span-2 h-[380px]', 'md:col-span-4 h-[180px]', 'md:col-span-4 h-[180px]', 'md:col-span-4 h-[200px]', 'md:col-span-5 h-[200px]'];
+    const sectionItem = citiesSectionItems.find(i => i.slug === slug);
     const regions = ['Središnja Hrvatska', 'Dalmacija', 'Dalmacija', 'Istra', 'Središnja Hrvatska'];
+    // Image priority: section item override > db city image > fallback
+    const image = (sectionItem?.image && sectionItem.image.trim() !== '') 
+      ? sectionItem.image 
+      : (dbCity && typeof dbCity.image === 'string' && dbCity.image.trim() !== '') 
+        ? dbCity.image 
+        : (getFirstPhoto(dbCity, 'image') || `/cities/${slug}.webp`);
     return {
       name: dbCity?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
       slug,
-      region: dbCity?.region || regions[idx],
-      image: (dbCity && typeof dbCity.image === 'string' && dbCity.image.trim() !== '') ? dbCity.image : (getFirstPhoto(dbCity, 'image') || `/cities/${slug}.webp`),
-      colSpan: colSpans[idx],
-      indexStr: `0${idx + 1}`
+      region: dbCity?.region || regions[idx % regions.length],
+      image,
+      colSpan: colSpansCities[idx % colSpansCities.length],
+      indexStr: `0${idx + 1}`,
+      description: sectionItem?.description || '',
+      descriptionEn: sectionItem?.descriptionEn || '',
     };
   });
 
-  // Islands Setup
-  const featuredIslandsSlugs = ['korcula', 'hvar', 'krk', 'cres', 'mljet'];
+  // Islands Setup — read from homepage_sections items or fall back to defaults
+  const islandsSection = (homepageSections || []).find((s: any) => s.type === 'islands');
+  const islandsSectionItems: any[] = (() => {
+    try {
+      const raw = islandsSection?.items;
+      return typeof raw === 'string' ? JSON.parse(raw) : (raw || []);
+    } catch { return []; }
+  })();
+  const featuredIslandsSlugs = islandsSectionItems.length > 0 ? islandsSectionItems.map(i => i.slug) : ['korcula', 'hvar', 'krk', 'cres', 'mljet'];
+  const colSpansIslands = ['md:col-span-4 md:row-span-2 h-[380px]', 'md:col-span-2 h-[180px]', 'md:col-span-2 h-[180px]', 'md:col-span-3 h-[200px]', 'md:col-span-3 h-[200px]'];
   const featuredIslands = featuredIslandsSlugs.map((slug, idx) => {
     const dbIsland = (islands || []).find(i => i.slug === slug);
-    const colSpans = ['md:col-span-4 md:row-span-2 h-[380px]', 'md:col-span-2 h-[180px]', 'md:col-span-2 h-[180px]', 'md:col-span-3 h-[200px]', 'md:col-span-3 h-[200px]'];
+    const sectionItem = islandsSectionItems.find(i => i.slug === slug);
     const regions = ['Dalmacija', 'Dalmacija', 'Kvarner', 'Kvarner', 'Dalmacija'];
+    const image = (sectionItem?.image && sectionItem.image.trim() !== '') 
+      ? sectionItem.image 
+      : (dbIsland && typeof dbIsland.image === 'string' && dbIsland.image.trim() !== '') 
+        ? dbIsland.image 
+        : (getFirstPhoto(dbIsland, 'image') || `/islands/${slug}.webp`);
     return {
       name: dbIsland?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
       slug,
-      region: dbIsland?.region || regions[idx],
-      image: (dbIsland && typeof dbIsland.image === 'string' && dbIsland.image.trim() !== '') ? dbIsland.image : (getFirstPhoto(dbIsland, 'image') || `/islands/${slug}.webp`),
-      colSpan: colSpans[idx],
-      indexStr: `0${idx + 1}`
+      region: dbIsland?.region || regions[idx % regions.length],
+      image,
+      colSpan: colSpansIslands[idx % colSpansIslands.length],
+      indexStr: `0${idx + 1}`,
+      description: sectionItem?.description || '',
+      descriptionEn: sectionItem?.descriptionEn || '',
     };
   });
 

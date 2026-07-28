@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,9 @@ import {
   Clock,
   Sparkles,
   LayoutTemplate,
+  ChevronUp,
+  ChevronDown,
+  Globe,
   ShieldAlert,
   Shield,
   Loader2,
@@ -62,6 +65,28 @@ export default function AdminDashboard() {
   const { data: homepageSections, isLoading: sectionsLoading } = useCollection('homepage_sections', {
     sort: 'order',
   });
+
+  const { data: homepageSeoData } = useCollection('homepage_seo');
+  const homepageSeo = homepageSeoData?.[0] || null;
+  const [seoForm, setSeoForm] = useState<any>({});
+  const [seoSaving, setSeoSaving] = useState(false);
+
+  // Sync seoForm when data loads
+  useEffect(() => {
+    if (homepageSeo && !seoForm.seoTitle) {
+      setSeoForm({
+        seoTitle: homepageSeo.seoTitle || '',
+        seoTitleEn: homepageSeo.seoTitleEn || '',
+        seoDescription: homepageSeo.seoDescription || '',
+        seoDescriptionEn: homepageSeo.seoDescriptionEn || '',
+        seoKeywords: homepageSeo.seoKeywords || '',
+        seoKeywordsEn: homepageSeo.seoKeywordsEn || '',
+      });
+    }
+  }, [homepageSeo]);
+
+  // Section items state
+  const [sectionItems, setSectionItems] = useState<any[]>([]);
 
   // Tab State: "listings" | "blogs" | "cities" | "islands" | "parks"
   const [activeTab, setActiveTab] = useState<'listings' | 'blogs' | 'cities' | 'islands' | 'parks' | 'sections'>('listings');
@@ -284,22 +309,33 @@ export default function AdminDashboard() {
       setEditId(sectionItem.id);
       setFormData({
         title: sectionItem.title || '',
+        titleEn: sectionItem.titleEn || '',
         type: sectionItem.type || 'custom',
         content: sectionItem.content || '',
+        contentEn: sectionItem.contentEn || '',
         image: sectionItem.image || '',
         order: sectionItem.order || 1,
         isActive: sectionItem.isActive !== false,
       });
+      // Parse items
+      let parsedItems = [];
+      try {
+        parsedItems = typeof sectionItem.items === 'string' ? JSON.parse(sectionItem.items) : (sectionItem.items || []);
+      } catch(e) { parsedItems = []; }
+      setSectionItems(parsedItems);
     } else {
       setEditId(null);
       setFormData({
         title: '',
+        titleEn: '',
         type: 'custom',
         content: '',
+        contentEn: '',
         image: '',
         order: (homepageSections?.length || 0) + 1,
         isActive: true,
       });
+      setSectionItems([]);
     }
     setIsEditingSection(true);
   };
@@ -354,17 +390,20 @@ export default function AdminDashboard() {
     setIsEditing(true);
   };
 
-    const handleSaveSection = async (e: React.FormEvent) => {
+  const handleSaveSection = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pb) return;
     try {
-      const data = {
+      const data: any = {
         title: formData.title,
+        titleEn: formData.titleEn,
         type: formData.type,
         content: formData.content,
+        contentEn: formData.contentEn,
         image: formData.image,
         order: parseInt(formData.order),
-        isActive: formData.isActive
+        isActive: formData.isActive,
+        items: JSON.stringify(sectionItems),
       };
       if (editId) {
         await pb.collection('homepage_sections').update(editId, data);
@@ -377,6 +416,46 @@ export default function AdminDashboard() {
       console.error(err);
       alert('Greška pri spremanju sekcije!');
     }
+  };
+
+  const handleSaveSeo = async () => {
+    if (!pb) return;
+    setSeoSaving(true);
+    try {
+      if (homepageSeo) {
+        await pb.collection('homepage_seo').update(homepageSeo.id, seoForm);
+      } else {
+        await pb.collection('homepage_seo').create(seoForm);
+      }
+      alert('SEO postavke spremljene!');
+    } catch(err) {
+      console.error(err);
+      alert('Greška pri spremanju SEO!');
+    }
+    setSeoSaving(false);
+  };
+
+  const addSectionItem = (slug: string) => {
+    if (sectionItems.find(i => i.slug === slug)) return;
+    setSectionItems([...sectionItems, { slug, image: '', description: '', descriptionEn: '' }]);
+  };
+
+  const removeSectionItem = (slug: string) => {
+    setSectionItems(sectionItems.filter(i => i.slug !== slug));
+  };
+
+  const moveSectionItem = (index: number, direction: 'up' | 'down') => {
+    const newItems = [...sectionItems];
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    if (swapIndex < 0 || swapIndex >= newItems.length) return;
+    [newItems[index], newItems[swapIndex]] = [newItems[swapIndex], newItems[index]];
+    setSectionItems(newItems);
+  };
+
+  const updateSectionItem = (index: number, field: string, value: string) => {
+    const newItems = [...sectionItems];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setSectionItems(newItems);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -635,13 +714,13 @@ export default function AdminDashboard() {
                 {/* SECTIONS EDIT MODAL */}
         {isEditingSection && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[1000] flex items-center justify-center p-4 overflow-y-auto">
-            <Card className="w-full max-w-3xl rounded-[2.5rem] shadow-2xl overflow-hidden bg-white max-h-[90vh] flex flex-col">
+            <Card className="w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden bg-white max-h-[90vh] flex flex-col">
               <CardHeader className="flex flex-row items-center justify-between p-8 border-b bg-secondary/5">
                 <div>
                   <CardTitle className="text-2xl uppercase font-black">
                     {editId ? 'Uredi' : 'Dodaj novu'} Sekciju Naslovnice
                   </CardTitle>
-                  <CardDescription>Uredite sadržaj i raspored sekcije na početnoj stranici.</CardDescription>
+                  <CardDescription>Uredite sadržaj, fotografije i raspored sekcije na početnoj stranici.</CardDescription>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => setIsEditingSection(false)} className="rounded-full size-12 hover:bg-black/5">
                   <X className="size-6" />
@@ -649,80 +728,149 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent className="p-8 overflow-y-auto flex-1 text-left">
                 <form onSubmit={handleSaveSection} className="space-y-6">
+                  {/* BILINGUAL TITLES */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Naslov Sekcije</label>
-                      <Input 
-                        value={formData.title} 
-                        onChange={e => setFormData({...formData, title: e.target.value})} 
-                        placeholder="npr. Istražite gradove" 
-                        required 
-                      />
+                      <label className="text-xs font-bold text-slate-500 uppercase">🇭🇷 Naslov Sekcije (HR)</label>
+                      <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="npr. Istražite gradove" required />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Tip Sadržaja</label>
-                      <select 
-                        className="w-full h-10 px-3 rounded-lg border bg-white font-medium text-sm"
-                        value={formData.type}
-                        onChange={e => setFormData({...formData, type: e.target.value})}
-                      >
-                        <option value="custom">Samo običan tekst i slike</option>
-                        <option value="cities">Automatski Grid Gradova</option>
-                        <option value="islands">Automatski Grid Otoka</option>
-                        <option value="public_listings">Automatski Grid Znamenitosti</option>
-                        <option value="premium">Automatski Grid Premium Ponuda</option>
-                        <option value="popular_listings">Automatski Grid Popularnog</option>
-                      </select>
+                      <label className="text-xs font-bold text-blue-500 uppercase">🇬🇧 Section Title (EN)</label>
+                      <Input value={formData.titleEn} onChange={e => setFormData({...formData, titleEn: e.target.value})} placeholder="e.g. Explore Cities" />
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase">Tekst / Sadržaj (Rich Text)</label>
-                    <RichTextEditor 
-                      value={formData.content} 
-                      onChange={(html) => setFormData({...formData, content: html})} 
-                      placeholder="Upišite opis ovdje..." 
-                    />
-                  </div>
-
+                  {/* TYPE + ORDER + ACTIVE */}
                   <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-1 col-span-2">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Glavna Slika (Opcija)</label>
-                      <div className="flex flex-col gap-3">
-                        <Input 
-                          value={formData.image} 
-                          onChange={e => setFormData({...formData, image: e.target.value})} 
-                          placeholder="URL Slike" 
-                        />
-                        <ImageUpload 
-                          defaultImage={formData.image}
-                          onUploadComplete={(url) => setFormData((prev: any) => ({...prev, image: url}))} 
-                        />
-                      </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Tip Sadržaja</label>
+                      <select className="w-full h-10 px-3 rounded-lg border bg-white font-medium text-sm" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
+                        <option value="custom">Tekst i Slike</option>
+                        <option value="cities">Grid Gradova</option>
+                        <option value="islands">Grid Otoka</option>
+                        <option value="premium">Premium Kategorije</option>
+                        <option value="popular_listings">Popularne Lokacije</option>
+                        <option value="public_listings">Znamenitosti</option>
+                      </select>
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-slate-500 uppercase">Redoslijed</label>
-                      <Input 
-                        type="number"
-                        value={formData.order} 
-                        onChange={e => setFormData({...formData, order: e.target.value})} 
-                        required 
-                      />
+                      <Input type="number" value={formData.order} onChange={e => setFormData({...formData, order: e.target.value})} required />
+                    </div>
+                    <div className="flex items-end pb-1">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={formData.isActive} onChange={e => setFormData({...formData, isActive: e.target.checked})} className="size-5" />
+                        <span className="font-bold text-sm">Aktivno</span>
+                      </label>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-3 pt-4 border-t">
-                    <input 
-                      type="checkbox" 
-                      id="isActiveSection"
-                      checked={formData.isActive}
-                      onChange={e => setFormData({...formData, isActive: e.target.checked})}
-                      className="size-5"
-                    />
-                    <label htmlFor="isActiveSection" className="font-bold cursor-pointer">Ova sekcija je aktivna i javno vidljiva na naslovnici</label>
+
+                  {/* BILINGUAL DESCRIPTION */}
+                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-4">
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">🇭🇷 Opis (Hrvatski)</p>
+                    <RichTextEditor value={formData.content} onChange={(html) => setFormData({...formData, content: html})} placeholder="Upišite opis sekcije..." />
+                  </div>
+                  <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 space-y-4">
+                    <p className="text-xs font-black text-blue-400 uppercase tracking-widest">🇬🇧 Description (English)</p>
+                    <RichTextEditor value={formData.contentEn} onChange={(html) => setFormData({...formData, contentEn: html})} placeholder="Enter section description..." />
                   </div>
 
-                  <div className="flex justify-end gap-3 pt-6">
+                  {/* SECTION IMAGE (for custom type) */}
+                  {formData.type === 'custom' && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Glavna Slika</label>
+                      <div className="flex flex-col gap-3">
+                        <Input value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} placeholder="URL Slike" />
+                        <ImageUpload defaultImage={formData.image} onUploadComplete={(url) => setFormData((prev: any) => ({...prev, image: url}))} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ITEMS PICKER — for cities / islands */}
+                  {(formData.type === 'cities' || formData.type === 'islands') && (
+                    <div className="bg-amber-50/50 p-6 rounded-2xl border border-amber-200/50 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-black text-amber-700 uppercase tracking-widest">
+                          {formData.type === 'cities' ? '🏙️ Gradovi na naslovnici' : '🏝️ Otoci na naslovnici'}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <select
+                            id="itemPicker"
+                            className="h-9 px-3 rounded-lg border bg-white text-sm font-medium"
+                            defaultValue=""
+                            onChange={e => { if (e.target.value) { addSectionItem(e.target.value); e.target.value = ''; } }}
+                          >
+                            <option value="" disabled>+ Dodaj...</option>
+                            {(formData.type === 'cities' ? (cities || []) : (islands || []))
+                              .filter(item => !sectionItems.find(si => si.slug === item.slug))
+                              .map(item => (
+                                <option key={item.slug} value={item.slug}>{item.name}</option>
+                              ))
+                            }
+                          </select>
+                        </div>
+                      </div>
+
+                      {sectionItems.length === 0 && (
+                        <p className="text-sm text-amber-600 italic">Nema odabranih stavki. Dodajte ih iz padajućeg izbornika iznad.</p>
+                      )}
+
+                      <div className="space-y-3">
+                        {sectionItems.map((item, idx) => {
+                          const sourceList = formData.type === 'cities' ? (cities || []) : (islands || []);
+                          const dbItem = sourceList.find(c => c.slug === item.slug);
+                          const displayName = dbItem?.name || item.slug;
+                          const defaultImage = dbItem?.image || getFirstPhoto(dbItem, 'image') || '';
+                          return (
+                            <div key={item.slug} className="bg-white rounded-xl border p-4 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-lg font-black text-slate-300">{idx + 1}</span>
+                                  {(item.image || defaultImage) && <img src={item.image || defaultImage} alt="" className="size-10 rounded-lg object-cover" />}
+                                  <div>
+                                    <p className="font-black text-base">{displayName}</p>
+                                    <p className="text-[10px] text-slate-400 uppercase">{dbItem?.region || ''}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Button type="button" variant="ghost" size="icon" className="size-8" onClick={() => moveSectionItem(idx, 'up')} disabled={idx === 0}>
+                                    <ChevronUp className="size-4" />
+                                  </Button>
+                                  <Button type="button" variant="ghost" size="icon" className="size-8" onClick={() => moveSectionItem(idx, 'down')} disabled={idx === sectionItems.length - 1}>
+                                    <ChevronDown className="size-4" />
+                                  </Button>
+                                  <Button type="button" variant="ghost" size="icon" className="size-8 text-red-500" onClick={() => removeSectionItem(item.slug)}>
+                                    <Trash2 className="size-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                              {/* Custom image override */}
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase">Posebna fotografija (prazno = koristi zadanu)</label>
+                                <div className="flex gap-2">
+                                  <Input className="flex-1 h-8 text-sm" value={item.image} onChange={e => updateSectionItem(idx, 'image', e.target.value)} placeholder={defaultImage ? 'Koristi zadanu fotografiju' : 'URL slike'} />
+                                  <ImageUpload defaultImage={item.image} onUploadComplete={(url) => updateSectionItem(idx, 'image', url)} />
+                                </div>
+                              </div>
+                              {/* Bilingual short description */}
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-bold text-slate-400 uppercase">🇭🇷 Kratki opis</label>
+                                  <Input className="h-8 text-sm" value={item.description} onChange={e => updateSectionItem(idx, 'description', e.target.value)} placeholder="Opis na naslovnici..." />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-bold text-blue-400 uppercase">🇬🇧 Short desc</label>
+                                  <Input className="h-8 text-sm" value={item.descriptionEn} onChange={e => updateSectionItem(idx, 'descriptionEn', e.target.value)} placeholder="Homepage description..." />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-3 pt-6 border-t">
                     <Button type="button" variant="ghost" onClick={() => setIsEditingSection(false)}>Odustani</Button>
                     <Button type="submit" className="bg-primary text-white font-bold h-10 px-8 rounded-xl shadow-lg">Spremi Sekciju</Button>
                   </div>
@@ -1406,57 +1554,106 @@ export default function AdminDashboard() {
 
         {/* TAB: SECTIONS */}
         {activeTab === 'sections' && (
-          <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
-            <CardHeader className="flex flex-row items-center justify-between border-b p-8 bg-secondary/5">
-              <div>
-                <CardTitle className="text-2xl font-black uppercase tracking-tight">Sekcije Naslovnice</CardTitle>
-                <CardDescription>Upravljanje dinamičkim blokovima na početnoj stranici.</CardDescription>
-              </div>
-              <Button onClick={() => startEditSection()} className="bg-primary hover:bg-primary/90 text-white rounded-full font-bold px-6 h-12 shadow-lg hover:shadow-xl transition-all">
-                <PlusCircle className="mr-2 size-5" /> Nova Sekcija
-              </Button>
-            </CardHeader>
-            <CardContent className="p-0">
-              {sectionsLoading ? (
-                <div className="p-24 flex justify-center"><Loader2 className="animate-spin size-8 text-primary" /></div>
-              ) : (
-                <div className="divide-y divide-black/5 text-left">
-                  {!homepageSections || homepageSections.length === 0 ? (
-                    <div className="p-16 text-center text-slate-400 font-medium">
-                      Nema dodanih sekcija.
-                    </div>
-                  ) : (
-                    homepageSections.map((sec) => (
-                      <div key={sec.id} className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
-                        <div className="flex items-center gap-4">
-                          <div className="size-12 rounded-xl bg-slate-100 flex items-center justify-center font-black text-xl text-slate-400">
-                            {sec.order}
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-                              {sec.title}
-                              {!sec.isActive && <Badge variant="outline" className="text-xs">Neaktivno</Badge>}
-                            </h3>
-                            <div className="text-sm text-slate-500 mt-1 flex items-center gap-3">
-                              <span>Tip: <strong className="uppercase text-[10px] bg-slate-100 px-2 py-0.5 rounded-full">{sec.type}</strong></span>
+          <div className="space-y-8">
+            {/* HOMEPAGE SEO */}
+            <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
+              <CardHeader className="flex flex-row items-center justify-between border-b p-8 bg-emerald-50/50">
+                <div>
+                  <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2"><Globe className="size-5" /> SEO Naslovnice</CardTitle>
+                  <CardDescription>Generalne meta oznake za početnu stranicu (dvojezično).</CardDescription>
+                </div>
+                <Button onClick={handleSaveSeo} disabled={seoSaving} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full font-bold px-6 h-10">
+                  {seoSaving ? <Loader2 className="animate-spin size-4 mr-2" /> : null} Spremi SEO
+                </Button>
+              </CardHeader>
+              <CardContent className="p-8 space-y-4 text-left">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase">🇭🇷 SEO Naslov</label>
+                    <Input value={seoForm.seoTitle || ''} onChange={e => setSeoForm({...seoForm, seoTitle: e.target.value})} placeholder="CroatiaBest - Vodič kroz Hrvatsku" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-blue-400 uppercase">🇬🇧 SEO Title</label>
+                    <Input value={seoForm.seoTitleEn || ''} onChange={e => setSeoForm({...seoForm, seoTitleEn: e.target.value})} placeholder="CroatiaBest - Guide to Croatia" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase">🇭🇷 Meta Opis</label>
+                    <Textarea rows={2} value={seoForm.seoDescription || ''} onChange={e => setSeoForm({...seoForm, seoDescription: e.target.value})} placeholder="Opis stranice do 160 znakova" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-blue-400 uppercase">🇬🇧 Meta Description</label>
+                    <Textarea rows={2} value={seoForm.seoDescriptionEn || ''} onChange={e => setSeoForm({...seoForm, seoDescriptionEn: e.target.value})} placeholder="Page description up to 160 chars" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase">🇭🇷 Ključne Riječi</label>
+                    <Input value={seoForm.seoKeywords || ''} onChange={e => setSeoForm({...seoForm, seoKeywords: e.target.value})} placeholder="Hrvatska, turizam, gradovi" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-blue-400 uppercase">🇬🇧 Keywords</label>
+                    <Input value={seoForm.seoKeywordsEn || ''} onChange={e => setSeoForm({...seoForm, seoKeywordsEn: e.target.value})} placeholder="Croatia, tourism, cities" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* SECTIONS LIST */}
+            <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
+              <CardHeader className="flex flex-row items-center justify-between border-b p-8 bg-secondary/5">
+                <div>
+                  <CardTitle className="text-2xl font-black uppercase tracking-tight">Sekcije Naslovnice</CardTitle>
+                  <CardDescription>Upravljanje dinamičkim blokovima na početnoj stranici.</CardDescription>
+                </div>
+                <Button onClick={() => startEditSection()} className="bg-primary hover:bg-primary/90 text-white rounded-full font-bold px-6 h-12 shadow-lg hover:shadow-xl transition-all">
+                  <PlusCircle className="mr-2 size-5" /> Nova Sekcija
+                </Button>
+              </CardHeader>
+              <CardContent className="p-0">
+                {sectionsLoading ? (
+                  <div className="p-24 flex justify-center"><Loader2 className="animate-spin size-8 text-primary" /></div>
+                ) : (
+                  <div className="divide-y divide-black/5 text-left">
+                    {!homepageSections || homepageSections.length === 0 ? (
+                      <div className="p-16 text-center text-slate-400 font-medium">Nema dodanih sekcija.</div>
+                    ) : (
+                      homepageSections.map((sec: any) => {
+                        const itemCount = (() => { try { const items = typeof sec.items === 'string' ? JSON.parse(sec.items) : (sec.items || []); return items.length; } catch { return 0; } })();
+                        return (
+                          <div key={sec.id} className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
+                            <div className="flex items-center gap-4">
+                              <div className="size-12 rounded-xl bg-slate-100 flex items-center justify-center font-black text-xl text-slate-400">{sec.order}</div>
+                              <div>
+                                <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                                  {sec.title}
+                                  {sec.titleEn && <span className="text-xs text-blue-400 font-medium">/ {sec.titleEn}</span>}
+                                  {!sec.isActive && <Badge variant="outline" className="text-xs">Neaktivno</Badge>}
+                                </h3>
+                                <div className="text-sm text-slate-500 mt-1 flex items-center gap-3">
+                                  <span>Tip: <strong className="uppercase text-[10px] bg-slate-100 px-2 py-0.5 rounded-full">{sec.type}</strong></span>
+                                  {itemCount > 0 && <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">{itemCount} stavki</span>}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-2 w-full md:w-auto">
+                              <Button variant="outline" size="sm" onClick={() => startEditSection(sec)} className="flex-1 md:flex-none">
+                                <Edit2 className="size-4 mr-2" /> Uredi
+                              </Button>
+                              <Button variant="destructive" size="sm" onClick={() => handleDeleteSection(sec.id)} className="flex-1 md:flex-none">
+                                <Trash2 className="size-4 mr-2" /> Obriši
+                              </Button>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex gap-2 w-full md:w-auto">
-                          <Button variant="outline" size="sm" onClick={() => startEditSection(sec)} className="flex-1 md:flex-none">
-                            <Edit2 className="size-4 mr-2" /> Uredi
-                          </Button>
-                          <Button variant="destructive" size="sm" onClick={() => handleDeleteSection(sec.id)} className="flex-1 md:flex-none">
-                            <Trash2 className="size-4 mr-2" /> Obriši
-                          </Button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         )}
 
       </main>
