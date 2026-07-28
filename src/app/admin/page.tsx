@@ -58,12 +58,16 @@ export default function AdminDashboard() {
     sort: 'name',
   });
 
+  const { data: homepageSections, isLoading: sectionsLoading } = useCollection('homepage_sections', {
+    sort: 'order',
+  });
+
   // Tab State: "listings" | "blogs" | "cities" | "islands" | "parks"
-  const [activeTab, setActiveTab] = useState<'listings' | 'blogs' | 'cities' | 'islands' | 'parks'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'blogs' | 'cities' | 'islands' | 'parks' | 'sections'>('listings');
 
   // Edit Panel State
   const [isEditing, setIsEditing] = useState(false);
-  const [editType, setEditType] = useState<'city' | 'island' | 'park' | null>(null);
+  const [editType, setEditType] = useState<'city' | 'island' | 'park' | 'section' | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({
     name: '',
@@ -269,6 +273,45 @@ export default function AdminDashboard() {
       });
     }
     setIsEditing(true);
+  };
+
+
+  const startEditSection = (sectionItem?: any) => {
+    setEditType('section');
+    if (sectionItem) {
+      setEditId(sectionItem.id);
+      setFormData({
+        title: sectionItem.title || '',
+        type: sectionItem.type || 'custom',
+        content: sectionItem.content || '',
+        image: sectionItem.image || '',
+        order: sectionItem.order || 1,
+        isActive: sectionItem.isActive !== false,
+      });
+    } else {
+      setEditId(null);
+      setFormData({
+        title: '',
+        type: 'custom',
+        content: '',
+        image: '',
+        order: (homepageSections?.length || 0) + 1,
+        isActive: true,
+      });
+    }
+    setIsEditing(true);
+  };
+
+  const handleDeleteSection = async (id: string) => {
+    if (!pb) return;
+    if (confirm('Jeste li sigurni da želite obrisati ovu sekciju?')) {
+      try {
+        await pb.collection('homepage_sections').delete(id);
+        window.location.reload();
+      } catch (error) {
+        console.error('Section delete error:', error);
+      }
+    }
   };
 
   const startEditPark = (parkItem?: any) => {
@@ -797,7 +840,88 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* WIKI SECTIONS EDITOR (Only for City and Island) */}
+                  
+                  {editType === 'section' && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-slate-500 uppercase">Naslov sekcije</label>
+                          <Input 
+                            value={formData.title} 
+                            onChange={e => setFormData({...formData, title: e.target.value})} 
+                            placeholder="npr. Istražite gradove" 
+                            required 
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-slate-500 uppercase">Vrsta (Template)</label>
+                          <select 
+                            className="w-full h-10 px-3 rounded-lg border bg-white font-medium text-sm"
+                            value={formData.type}
+                            onChange={e => setFormData({...formData, type: e.target.value})}
+                          >
+                            <option value="custom">Custom HTML / Slike i Tekst</option>
+                            <option value="cities">Gradovi (Grid)</option>
+                            <option value="islands">Otoci (Grid)</option>
+                            <option value="premium">Premium Lokacije</option>
+                            <option value="popular_listings">Popularne Lokacije</option>
+                            <option value="public_listings">Znamenitosti / Javne</option>
+                            <option value="monuments">Spomenici i Povijest</option>
+                            <option value="history_articles">Članci: Povijest</option>
+                            <option value="war_articles">Članci: Domovinski Rat</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-slate-500 uppercase">Redoslijed (Order)</label>
+                          <Input 
+                            type="number"
+                            value={formData.order} 
+                            onChange={e => setFormData({...formData, order: e.target.value})} 
+                            required 
+                          />
+                        </div>
+                        <div className="space-y-1 flex flex-col justify-end">
+                          <label className="flex items-center gap-2 cursor-pointer p-2 border rounded-lg bg-slate-50">
+                            <input 
+                              type="checkbox" 
+                              checked={formData.isActive} 
+                              onChange={e => setFormData({...formData, isActive: e.target.checked})}
+                              className="w-5 h-5 accent-primary"
+                            />
+                            <span className="font-bold text-sm">Prikaži na naslovnici (Aktivno)</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-500 uppercase">Fotografija (Opcionalno)</label>
+                        <div className="flex flex-col gap-3">
+                          <Input 
+                            value={formData.image} 
+                            onChange={e => setFormData({...formData, image: e.target.value})} 
+                            placeholder="URL slike..." 
+                          />
+                          <ImageUpload 
+                            defaultImage={formData.image}
+                            onUploadComplete={(url) => setFormData((prev: any) => ({...prev, image: url}))} 
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-500 uppercase">Opis / Sadržaj (Podržava poveznice, stilove)</label>
+                        <RichTextEditor 
+                          value={formData.content} 
+                          onChange={(html) => setFormData({...formData, content: html})} 
+                          placeholder="Upiši tekst sekcije..." 
+                        />
+                      </div>
+                    </div>
+                  )}
+{/* WIKI SECTIONS EDITOR (Only for City and Island) */}
                   {(editType === 'city' || editType === 'island') && (
                     <WikiSectionsEditor 
                       sections={formData.wikiSections}
@@ -822,7 +946,8 @@ export default function AdminDashboard() {
             { id: 'blogs', name: 'Magazin (Blog)', icon: <BookOpen className="size-4" /> },
             { id: 'cities', name: 'Gradovi', icon: <Building2 className="size-4" /> },
             { id: 'islands', name: 'Otoci', icon: <Anchor className="size-4" /> },
-            { id: 'parks', name: 'Nacionalni parkovi', icon: <Trees className="size-4" /> }
+            { id: 'parks', name: 'Nacionalni parkovi', icon: <Trees className="size-4" /> },
+            { id: 'sections', name: 'Naslovnica', icon: <Sparkles className="size-4" /> }
           ].map(tab => (
             <button
               key={tab.id}

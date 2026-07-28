@@ -52,6 +52,7 @@ export default function Home() {
 
   const { data: cities } = useCollection('cities');
   const { data: islands } = useCollection('islands');
+  const { data: homepageSections } = useCollection('homepage_sections', { sort: 'order' });
 
   const { data: blogArticles } = useCollection('blogs', {
     sort: '-created',
@@ -333,476 +334,205 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECTION 1: POPULAR LOCATIONS & LATEST ARTICLES & SPONSOR TILE */}
-        <section className="py-24 bg-slate-50 relative z-30 border-b border-black/5">
-          <div className="container mx-auto px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-              
-              {/* Left Column (8/12) - Popular locations + Sponsor Card */}
-              <div className="lg:col-span-8 space-y-8">
-                <div className="flex justify-between items-end border-b border-black/5 pb-6">
-                  <div>
-                    <Badge className="bg-primary/10 text-primary border-none font-black px-4 py-1.5 rounded-full text-[9px] uppercase tracking-wider mb-2">
-                      {language === 'en' ? 'Trending Places' : 'Istaknute Lokacije'}
-                    </Badge>
-                    <h3 className="text-3xl md:text-4xl font-headline font-black italic tracking-tighter text-foreground leading-none">
-                      {language === 'en' ? 'Most Popular Locations' : 'Najpopularnija mjesta'}
-                    </h3>
-                  </div>
-                  <Link href="/explore">
-                    <Button variant="link" className="text-primary font-black uppercase text-xs tracking-wider">
-                      {language === 'en' ? 'See all explore' : 'Istraži cijelu kartu'} <ArrowRight className="ml-1 size-4" />
-                    </Button>
-                  </Link>
-                </div>
-
-                {/* 4-Item Grid: 3 listings + 1 Google Ad card */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  {popularListings.map((l) => {
-                    const name = language === 'en' && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
-                    const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
-                    const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id);
-                    return (
-                      <Link key={l.id} href={path} className="group">
-                        <div className="p-[1px] bg-gradient-to-br from-transparent to-transparent hover:from-primary hover:to-secondary rounded-[2rem] shadow-md hover:shadow-xl transition-all duration-500 h-full">
-                          <Card className="rounded-[2rem] border-none overflow-hidden h-full flex flex-col bg-white">
-                            <div className="relative aspect-[4/5] overflow-hidden">
-                              <Image src={image} alt={name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                              <div className="absolute top-3 left-3">
-                                <Badge className="bg-white/95 text-primary border-none shadow-sm font-black uppercase text-[8px] tracking-wider px-2 py-0.5">
-                                  {language === 'en' ? 'Popular' : 'Popularno'}
-                                </Badge>
-                              </div>
-                            </div>
-                            <CardContent className="p-4 flex-1 flex flex-col justify-between bg-white">
-                              <div className="space-y-1">
-                                <h4 className="font-black text-sm line-clamp-1 group-hover:text-primary transition-colors leading-tight">{name}</h4>
-                                <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{l.city}</p>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                  {/* Google Ad Tile */}
-                  <div className="h-full flex">
-                    <AdBanner format="rectangle" className="w-full h-full min-h-[250px] shadow-md rounded-[2rem] border-2 border-dashed" />
+        
+        {/* DYNAMIC SECTIONS */}
+        {(homepageSections || []).filter((s: any) => s.isActive !== false).map((section: any, index: number) => {
+          
+          if (section.type === 'custom') {
+            return (
+              <section key={section.id} className="py-24 relative z-30" style={{ backgroundColor: index % 2 === 0 ? '#f8fafc' : '#ffffff' }}>
+                <div className="container mx-auto px-6">
+                  <div className="max-w-4xl mx-auto space-y-8">
+                    {section.title && (
+                      <h2 className="text-4xl md:text-5xl font-headline font-black italic tracking-tighter text-foreground leading-none text-center">
+                        {section.title}
+                      </h2>
+                    )}
+                    {section.image && (
+                      <div className="relative w-full aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl">
+                        <Image src={section.image} alt={section.title} fill className="object-cover" />
+                      </div>
+                    )}
+                    {section.content && (
+                      <div className="prose prose-lg prose-slate max-w-none prose-headings:font-headline prose-headings:italic prose-a:text-primary" dangerouslySetInnerHTML={{ __html: section.content }} />
+                    )}
                   </div>
                 </div>
-              </div>
+              </section>
+            );
+          }
 
-              {/* Right Column (4/12) - Blog articles title rename */}
-              <div className="lg:col-span-4 space-y-8">
-                <div className="flex justify-between items-end border-b border-black/5 pb-6">
-                  <div>
-                    <Badge className="bg-secondary/10 text-secondary border-none font-black px-4 py-1.5 rounded-full text-[9px] uppercase tracking-wider mb-2">
-                      {language === 'en' ? 'Discover Stories' : 'Magazin vijesti'}
-                    </Badge>
-                    <h3 className="text-3xl md:text-4xl font-headline font-black italic tracking-tighter text-foreground leading-none">
-                      {language === 'en' ? 'Blog Articles' : 'Blog članci'}
-                    </h3>
-                  </div>
-                  <Link href="/blog">
-                    <Button variant="link" className="text-secondary font-black uppercase text-xs tracking-wider">
-                      {language === 'en' ? 'All articles' : 'Cijeli magazin'} <ChevronRight className="size-4" />
-                    </Button>
-                  </Link>
-                </div>
-
-                <div className="flex flex-col gap-4">
-                  {articlesList.slice(0, 3).map((article) => {
-                    const bTitle = language === 'en' && article.titleEn ? article.titleEn : article.title;
-                    return (
-                      <Link key={article.id} href={`/blog/${article.id}`} className="group">
-                        <div className="flex items-center gap-4 p-3 bg-white hover:bg-secondary/5 border border-black/5 rounded-2xl transition-all hover:shadow-md">
-                          <div className="relative size-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 border">
-                            <Image src={article.image} alt={bTitle} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
-                          </div>
-                          <div className="flex-1 space-y-1">
-                            <span className="text-[8px] font-black text-secondary uppercase tracking-widest">{article.category}</span>
-                            <h4 className="font-bold text-sm text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors">{bTitle}</h4>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 2: PREMIUM PARTNERS */}
-        <section className="py-24 bg-white relative z-30">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-16 space-y-4">
-              <Badge className="bg-primary/10 text-primary border-none font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-widest">
-                {language === 'en' ? 'Premium Partners' : 'Premium Partneri'}
-              </Badge>
-              <h2 className="text-4xl md:text-5xl font-headline font-black italic tracking-tighter text-foreground leading-none">
-                {language === 'en' ? 'Featured Categories' : 'Istaknute kategorije'}
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              {premiumCategories.map((cat) => {
-                const count = (allListings || []).filter(l => (l.locationCategoryId || l.categoryId) === cat.id).length;
-                return (
-                  <Link key={cat.id} href={`/explore?category=${cat.id}`} className="group">
-                    <div className="p-[1px] rounded-[2.5rem] bg-gradient-to-br from-transparent to-transparent hover:from-primary hover:to-secondary transition-all duration-500 shadow-lg hover:shadow-2xl cursor-pointer">
-                      <Card className="rounded-[2.5rem] border-none overflow-hidden bg-white h-full">
-                        <CardContent className="p-8 flex flex-col gap-6">
-                          <div className={`size-14 rounded-2xl bg-gradient-to-br ${cat.color} text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-500`}>
-                            {React.cloneElement(cat.icon as any, { className: 'size-6' })}
-                          </div>
-                          <div className="space-y-2">
-                            <h3 className="font-black text-lg uppercase tracking-wider text-foreground">{cat.name}</h3>
-                            <p className="text-xs text-muted-foreground font-body leading-relaxed">{cat.desc}</p>
-                          </div>
-                          <div className="flex justify-between items-center pt-4 border-t mt-auto text-xs font-bold text-primary">
-                            <span>{count} {language === 'en' ? 'exclusive places' : 'ekskluzivnih mjesta'}</span>
-                            <ChevronRight className="size-4" />
-                          </div>
-                        </CardContent>
-                      </Card>
+          if (section.type === 'cities') {
+            return (
+              <section key={section.id} className="py-24 relative z-30 bg-slate-50 border-y border-black/5">
+                <div className="container mx-auto px-6">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+                    <div className="max-w-xl space-y-4">
+                      <Badge className="bg-primary/10 text-primary border-none font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-widest">{language === 'en' ? 'Urban Destinations' : 'Urbane Destinacije'}</Badge>
+                      <h2 className="text-4xl md:text-5xl font-headline font-black italic tracking-tighter text-foreground leading-none">
+                        {section.title}
+                      </h2>
+                      {section.content && <div className="text-muted-foreground text-lg leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: section.content }} />}
                     </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 3: OTHER OBJECTS & MAGAZINE ARTICLES CATEGORIES */}
-        <section className="py-24 bg-slate-50 relative z-30 border-t border-b border-black/5">
-          <div className="container mx-auto px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-              
-              {/* Left Column (6/12) - Other Public Object Categories & Places & Sponsor Tile */}
-              <div className="lg:col-span-6 space-y-8">
-                <div className="flex justify-between items-end border-b border-black/5 pb-6">
-                  <div>
-                    <Badge className="bg-primary/10 text-primary border-none font-black px-4 py-1.5 rounded-full text-[9px] uppercase tracking-wider mb-2">
-                      {language === 'en' ? 'Culture & Nature' : 'Kulturna Baština & Atrakcije'}
-                    </Badge>
-                    <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground leading-none">
-                      {language === 'en' ? 'Other Tourist Categories' : 'Ostale atrakcije i javne usluge'}
-                    </h3>
                   </div>
-                </div>
-
-                {/* 3-Item Grid: 2 listings + 1 Ad banner */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                  {publicListings.map((l) => {
-                    const name = language === 'en' && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
-                    const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
-                    const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id);
-                    const catName = publicCategories.find(c => c.id === (l.locationCategoryId || l.categoryId))?.name || 'Znamenitost';
-                    return (
-                      <Link key={l.id} href={path} className="group">
-                        <div className="p-[1px] bg-gradient-to-br from-transparent to-transparent hover:from-primary hover:to-secondary rounded-[2rem] shadow-md hover:shadow-xl transition-all duration-500 h-full">
-                          <Card className="rounded-[2rem] border-none overflow-hidden h-full flex flex-col bg-white">
-                            <div className="relative aspect-[4/5] overflow-hidden">
-                              <Image src={image} alt={name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                              <div className="absolute top-3 left-3">
-                                <Badge className="bg-foreground text-white border-none shadow-sm font-black uppercase text-[8px] tracking-wider px-2 py-0.5">
-                                  {catName}
-                                </Badge>
-                              </div>
-                            </div>
-                            <CardContent className="p-4 flex-1 flex flex-col justify-between bg-white">
-                              <div className="space-y-1">
-                                <h4 className="font-bold text-sm line-clamp-1 group-hover:text-primary transition-colors leading-tight">{name}</h4>
-                                <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{l.city}</p>
-                              </div>
-                            </CardContent>
-                          </Card>
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:auto-rows-min">
+                    {featuredCities.map((city) => (
+                      <div key={city.slug} className={`relative group overflow-hidden rounded-[2.5rem] shadow-xl hover:shadow-2xl transition-all duration-700 ${city.colSpan}`}>
+                        <div className="absolute inset-0 z-0">
+                          <Image src={city.image} alt={city.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover transition-all duration-1000 group-hover:scale-105" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-500" />
+                          <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 mix-blend-overlay" />
                         </div>
-                      </Link>
-                    );
-                  })}
-                  {/* Google Ad Tile */}
-                  <div className="h-full flex">
-                    <AdBanner format="rectangle" className="w-full h-full min-h-[180px] shadow-md rounded-[2rem] border-2 border-dashed" />
+                        <div className="absolute inset-0 p-6 flex flex-col justify-end z-20">
+                          <p className="text-[9px] font-black uppercase text-primary mb-1 tracking-[0.2em]">{city.region}</p>
+                          <h3 className="text-2xl md:text-3xl font-black italic mb-3 text-white group-hover:text-primary transition-colors leading-tight">{city.name}</h3>
+                          <div className="overflow-hidden h-0 group-hover:h-10 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out flex items-center">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">VODIČ KROZ GRAD <Compass className="size-4 animate-spin-slow text-primary" /></span>
+                          </div>
+                        </div>
+                        <Link href={`/cities/${city.slug}`} className="absolute inset-0 z-30"><span className="sr-only">{city.name}</span></Link>
+                      </div>
+                    ))}
                   </div>
                 </div>
+              </section>
+            );
+          }
 
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  {publicCategories.map((cat) => {
-                    const count = (allListings || []).filter(l => (l.locationCategoryId || l.categoryId) === cat.id).length;
-                    return (
-                      <Link key={cat.id} href={`/explore?category=${cat.id}`} className="flex items-center justify-between p-4 bg-white border border-black/5 rounded-2xl hover:border-primary/20 transition-all shadow-sm">
-                        <span className="text-xs font-black uppercase tracking-wider text-foreground/80">{cat.name}</span>
-                        <Badge className="bg-secondary/10 text-secondary border-none font-bold text-[10px]">{count}</Badge>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Right Column (6/12) - Magazine Articles & Categories */}
-              <div className="lg:col-span-6 space-y-8">
-                <div className="flex justify-between items-end border-b border-black/5 pb-6">
-                  <div>
-                    <Badge className="bg-secondary/10 text-secondary border-none font-black px-4 py-1.5 rounded-full text-[9px] uppercase tracking-wider mb-2">
-                      {language === 'en' ? 'Discover Magazine' : 'Istražite Teme'}
-                    </Badge>
-                    <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground leading-none">
-                      {language === 'en' ? 'Stories by Categories' : 'Kategorije članaka i priče'}
-                    </h3>
+          if (section.type === 'islands') {
+            return (
+              <section key={section.id} className="py-24 relative z-30 bg-white">
+                <div className="container mx-auto px-6">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+                    <div className="max-w-xl space-y-4">
+                      <Badge className="bg-secondary/10 text-secondary border-none font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-widest">{language === 'en' ? 'Island Hopping' : 'Otočne Destinacije'}</Badge>
+                      <h2 className="text-4xl md:text-5xl font-headline font-black italic tracking-tighter text-foreground leading-none">
+                        {section.title}
+                      </h2>
+                      {section.content && <div className="text-muted-foreground text-lg leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: section.content }} />}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:auto-rows-min">
+                    {featuredIslands.map((island) => (
+                      <div key={island.slug} className={`relative group overflow-hidden rounded-[2rem] shadow-md hover:shadow-xl transition-all duration-700 ${island.colSpan}`}>
+                        <div className="absolute inset-0 z-0">
+                          <Image src={island.image} alt={island.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover transition-all duration-1000 group-hover:scale-105" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+                        </div>
+                        <div className="absolute inset-0 p-6 flex flex-col justify-end z-20">
+                          <p className="text-[9px] font-black uppercase text-secondary mb-1 tracking-[0.2em]">{island.region}</p>
+                          <h3 className="text-2xl md:text-3xl font-black italic mb-2 text-white group-hover:text-secondary transition-colors leading-tight">{island.name}</h3>
+                        </div>
+                        <Link href={`/islands/${island.slug}`} className="absolute inset-0 z-30"><span className="sr-only">{island.name}</span></Link>
+                      </div>
+                    ))}
                   </div>
                 </div>
+              </section>
+            );
+          }
 
-                {/* Grid of magazine themes */}
-                {articlesList.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {articlesList.slice(0, 2).map((article) => {
-                      const bTitle = language === 'en' && article.titleEn ? article.titleEn : article.title;
-                      const bExcerpt = language === 'en' && article.excerptEn ? article.excerptEn : article.excerpt;
+          if (section.type === 'popular_listings') {
+            return (
+              <section key={section.id} className="py-24 bg-slate-50 relative z-30 border-b border-black/5">
+                <div className="container mx-auto px-6">
+                  <div className="flex justify-between items-end border-b border-black/5 pb-6 mb-8">
+                    <div className="max-w-2xl space-y-2">
+                      <Badge className="bg-primary/10 text-primary border-none font-black px-4 py-1.5 rounded-full text-[9px] uppercase tracking-wider mb-2">Istaknuto</Badge>
+                      <h3 className="text-3xl md:text-4xl font-headline font-black italic tracking-tighter text-foreground leading-none">{section.title}</h3>
+                      {section.content && <div className="text-muted-foreground font-medium" dangerouslySetInnerHTML={{ __html: section.content }} />}
+                    </div>
+                    <Link href="/explore">
+                      <Button variant="link" className="text-primary font-black uppercase text-xs tracking-wider">
+                        {language === 'en' ? 'See all' : 'Istraži sve'} <ArrowRight className="ml-1 size-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {popularListings.map((l) => {
+                      const name = language === 'en' && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
+                      const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
+                      const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id);
                       return (
-                        <Link key={article.id} href={`/blog/${article.id}`} className="group h-full">
-                          <div className="group rounded-[2rem] overflow-hidden shadow-md border border-black/5 bg-white hover:shadow-xl transition-all duration-500 hover:-translate-y-1 h-full flex flex-col">
-                            <div className="relative h-40 overflow-hidden">
-                              <Image src={article.image || '/placeholder.jpg'} alt={bTitle} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                              <Badge className="absolute top-4 left-4 bg-secondary text-white border-none shadow-md font-black text-[8px] uppercase tracking-wider">{article.category}</Badge>
-                            </div>
-                            <div className="p-5 flex-1 flex flex-col justify-between">
-                              <div className="space-y-2">
-                                <h4 className="text-base font-bold font-headline leading-snug line-clamp-2 group-hover:text-primary transition-colors">{bTitle}</h4>
-                                <p className="text-muted-foreground line-clamp-2 font-body text-[11px] leading-relaxed">{bExcerpt}</p>
+                        <Link key={l.id} href={path} className="group">
+                          <div className="p-[1px] bg-gradient-to-br from-transparent to-transparent hover:from-primary hover:to-secondary rounded-[2rem] shadow-md hover:shadow-xl transition-all duration-500 h-full">
+                            <Card className="rounded-[2rem] border-none overflow-hidden h-full flex flex-col bg-white">
+                              <div className="relative aspect-[4/5] overflow-hidden">
+                                <Image src={image} alt={name} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                               </div>
-                              <div className="flex items-center justify-between pt-4 border-t mt-4 text-[9px] text-muted-foreground font-bold">
-                                <span>{article.author || 'CroatiaBest'}</span>
-                                <span>{article.readTime || '5 min'}</span>
-                              </div>
-                            </div>
+                              <CardContent className="p-4 flex-1 flex flex-col justify-between bg-white">
+                                <h4 className="font-black text-sm line-clamp-1">{name}</h4>
+                                <p className="text-[9px] text-muted-foreground uppercase">{l.city}</p>
+                              </CardContent>
+                            </Card>
                           </div>
                         </Link>
                       );
                     })}
+                    <div className="h-full flex"><AdBanner format="rectangle" className="w-full h-full min-h-[250px] shadow-md rounded-[2rem]" /></div>
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center p-8 bg-white border border-dashed border-black/10 rounded-[2rem] text-center min-h-[200px]">
-                    <p className="text-muted-foreground font-medium italic">{language === 'en' ? 'New stories coming soon!' : 'Uskoro dolaze nove priče!'}</p>
+                </div>
+              </section>
+            );
+          }
+
+          if (section.type === 'premium') {
+            return (
+              <section key={section.id} className="py-24 bg-white relative z-30">
+                <div className="container mx-auto px-6">
+                  <div className="text-center mb-16 space-y-4">
+                    <Badge className="bg-primary/10 text-primary border-none font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-widest">Premium</Badge>
+                    <h2 className="text-4xl md:text-5xl font-headline font-black italic tracking-tighter text-foreground leading-none">{section.title}</h2>
+                    {section.content && <div className="text-muted-foreground max-w-2xl mx-auto" dangerouslySetInnerHTML={{ __html: section.content }} />}
                   </div>
-                )}
-
-                {/* Subcategories/tags for blogs */}
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {['Putovanja', 'Gastronomija', 'Kultura', 'Savjeti', 'Povijest', 'Poznati Hrvati', 'Izumi', 'Domovinski rat'].map((catName) => {
-                    const count = articlesList.filter(a => a.category === catName).length;
-                    return (
-                      <Link key={catName} href="/blog" className="px-4 py-2.5 bg-white border border-black/5 rounded-xl hover:border-secondary/20 transition-all shadow-sm text-xs font-bold text-foreground/80 flex items-center gap-2">
-                        <span>{catName}</span>
-                        <span className="text-[10px] text-secondary font-black">({count > 0 ? count : 1})</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-        {/* BOTTOM SECTION: KULTURNA BAŠTINA & DOMOVINSKI RAT & SPOMENICI (3-COLUMN GROUPED ROW) */}
-        <section className="py-24 bg-white relative z-30 border-b border-black/5">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-16 space-y-4">
-              <Badge className="bg-red-50 text-red-600 border-none font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-widest">
-                {language === 'en' ? 'Heritage & History' : 'Kulturna Baština i Povijest'}
-              </Badge>
-              <h2 className="text-4xl md:text-5xl font-headline font-black italic tracking-tighter text-foreground leading-none">
-                {language === 'en' ? 'History, Homeland War & Monuments' : 'Povijest, Domovinski rat i Spomenici'}
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              
-              {/* Column 1: History, Inventions, Famous Croats (Blog) */}
-              <div className="space-y-6 bg-slate-50/50 p-8 rounded-[2.5rem] border border-black/5">
-                <h3 className="text-xl font-headline font-black italic flex items-center gap-2 border-b pb-4 text-foreground">
-                  <Lightbulb className="size-5 text-primary" /> {language === 'en' ? 'History & Inventions' : 'Iz Povijesti i Izumi'}
-                </h3>
-                <div className="space-y-4">
-                  {historyArticles.length > 0 ? (
-                    historyArticles.map((a) => {
-                      const bTitle = isEn && a.titleEn ? a.titleEn : a.title;
-                      return (
-                        <Link key={a.id} href={`/blog/${a.id}`} className="block group">
-                          <div className="p-4 bg-white border border-black/5 rounded-2xl hover:shadow-md transition-all">
-                            <span className="text-[8px] font-black text-primary uppercase tracking-widest">{a.category}</span>
-                            <h4 className="font-bold text-sm text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors mt-1">{bTitle}</h4>
-                          </div>
-                        </Link>
-                      );
-                    })
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic font-body">{language === 'en' ? 'No articles available.' : 'Nema dostupnih članaka.'}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Column 2: Homeland War (Blog) */}
-              <div className="space-y-6 bg-slate-50/50 p-8 rounded-[2.5rem] border border-black/5">
-                <h3 className="text-xl font-headline font-black italic flex items-center gap-2 border-b pb-4 text-foreground">
-                  <Shield className="size-5 text-red-600" /> {language === 'en' ? 'Homeland War Stories' : 'Domovinski rat (Priče)'}
-                </h3>
-                <div className="space-y-4">
-                  {warArticles.length > 0 ? (
-                    warArticles.map((a) => {
-                      const bTitle = isEn && a.titleEn ? a.titleEn : a.title;
-                      return (
-                        <Link key={a.id} href={`/blog/${a.id}`} className="block group">
-                          <div className="p-4 bg-white border border-black/5 rounded-2xl hover:shadow-md transition-all">
-                            <span className="text-[8px] font-black text-red-600 uppercase tracking-widest">{a.category}</span>
-                            <h4 className="font-bold text-sm text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors mt-1">{bTitle}</h4>
-                          </div>
-                        </Link>
-                      );
-                    })
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic font-body">{language === 'en' ? 'No articles available.' : 'Nema dostupnih članaka.'}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Column 3: Spomenici (Monuments Listings) */}
-              <div className="space-y-6 bg-slate-50/50 p-8 rounded-[2.5rem] border border-black/5">
-                <h3 className="text-xl font-headline font-black italic flex items-center gap-2 border-b pb-4 text-foreground">
-                  <Landmark className="size-5 text-secondary" /> {language === 'en' ? 'Historical Monuments' : 'Spomenici i Znamenitosti'}
-                </h3>
-                <div className="space-y-4">
-                  {monumentListings.length > 0 ? (
-                    monumentListings.map((l) => {
-                      const name = isEn && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
-                      const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id);
-                      return (
-                        <Link key={l.id} href={path} className="block group">
-                          <div className="p-4 bg-white border border-black/5 rounded-2xl hover:shadow-md transition-all">
-                            <span className="text-[8px] font-black text-secondary uppercase tracking-widest">
-                              {l.locationCategoryId === 'homeland_war' ? (language === 'en' ? 'War Memorial' : 'Spomen obilježje') : (language === 'en' ? 'Monument' : 'Spomenik')}
-                            </span>
-                            <h4 className="font-bold text-sm text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors mt-1">{name}</h4>
-                            <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest mt-1 flex items-center gap-0.5"><MapPin className="size-2.5" /> {l.city}</p>
-                          </div>
-                        </Link>
-                      );
-                    })
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic font-body">{language === 'en' ? 'No monuments registered.' : 'Nema registriranih spomenika.'}</p>
-                  )}
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-        {/* ISLANDS BENTO GRID SECTION (Otoci) - PREDZADNJA SEKCIJA */}
-        <section className="py-24 bg-slate-50 relative z-30 border-t border-b border-black/5">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-16 space-y-4">
-              <Badge className="bg-primary/10 text-primary border-none font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-widest">
-                {language === 'en' ? 'Islands of Croatia' : 'Hrvatski Otoci'}
-              </Badge>
-              <h2 className="text-5xl md:text-6xl font-headline font-black italic tracking-tighter text-foreground leading-none">
-                {language === 'en' ? 'Explore beautiful islands' : 'Istražite otoke'}
-              </h2>
-              <p className="text-muted-foreground font-body italic text-base max-w-xl mx-auto">
-                {language === 'en' ? 'Highlighted islands Korčula, Hvar, Krk, Cres, and Mljet.' : 'Istaknuti otoci Korčula, Hvar, Krk, Cres i Mljet.'}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
-              {featuredIslands.map((island) => (
-                <Link key={island.slug} href={`/islands/${island.slug}`} className={`${island.colSpan} group`}>
-                  <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden cursor-pointer shadow-lg border border-black/5 hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out bg-slate-900">
-                    
-                    <div className="absolute top-4 right-6 z-20 text-white/20 text-4xl font-black font-headline italic tracking-tighter select-none">
-                      {island.indexStr}
-                    </div>
-
-                    <div className="relative w-full h-full">
-                      <Image src={island.image} alt={island.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover transition-all duration-1000 group-hover:scale-105" />
-                    </div>
-                    
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent z-10" />
-                    
-                    <div className="absolute inset-0 p-6 flex flex-col justify-end z-20">
-                      <p className="text-[9px] font-black uppercase text-primary mb-1 tracking-[0.2em]">{island.region}</p>
-                      <h3 className="text-2xl md:text-3xl font-black italic mb-3 text-white group-hover:text-primary transition-colors leading-tight">{island.name}</h3>
-                      
-                      <div className="overflow-hidden h-0 group-hover:h-10 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out flex items-center">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                          {language === 'en' ? 'EXPLORE ISLAND' : 'ISTRAŽI OTOK'} <Compass className="size-4 animate-spin-slow text-primary" />
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* NATIONAL PARKS SECTION - ZADNJA SEKCIJA */}
-        <section className="py-24 bg-white relative z-30 border-b border-black/5">
-          <div className="container mx-auto px-6">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
-              <div className="text-left space-y-4">
-                <Badge className="bg-emerald-100 text-emerald-700 border-none font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-widest">
-                  {language === 'en' ? 'Nature Heritage' : 'Nacionalni Parkovi'}
-                </Badge>
-                <h2 className="text-4xl md:text-5xl font-headline font-black italic tracking-tighter text-foreground leading-none">
-                  {language === 'en' ? 'Most Visited National Parks' : 'Nacionalni Parkovi'}
-                </h2>
-                <p className="text-muted-foreground font-body italic text-base max-w-xl">
-                  {language === 'en' ? 'Explore Plitvice, Krka, and Mljet National Parks.' : 'Istražite predivne prirodne ljepote Plitvica, Krke i Mljeta.'}
-                </p>
-              </div>
-              <Link href="/explore?category=national_parks">
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest px-6 py-4 rounded-full transition-all">
-                  {language === 'en' ? 'See all parks' : 'Prikaži više'} <ArrowRight className="ml-2 size-4" />
-                </Button>
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {nationalParks.map((park) => {
-                const name = isEn && park.metadata?.nameEn ? park.metadata.nameEn : park.name;
-                const desc = isEn && park.metadata?.descriptionEn ? park.metadata.descriptionEn : park.description;
-                const image = getFirstPhoto(park) || DEFAULT_LISTING_IMAGE;
-                const path = generateListingUrl('national_parks', park.name, park.id);
-                return (
-                  <Link key={park.id} href={path} className="group">
-                    <div className="p-[1px] bg-gradient-to-br from-transparent to-transparent hover:from-emerald-500 hover:to-teal-500 rounded-[2.5rem] shadow-lg hover:shadow-2xl transition-all duration-500 h-full">
-                      <Card className="rounded-[2.5rem] border-none overflow-hidden h-full flex flex-col bg-white">
-                        <div className="relative aspect-[16/10] overflow-hidden">
-                          <Image src={image} alt={name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                          <div className="absolute top-4 left-4">
-                            <Badge className="bg-emerald-600 text-white border-none shadow-md font-black uppercase text-[8px] tracking-wider px-3 py-1">
-                              {language === 'en' ? 'National Park' : 'Nacionalni park'}
-                            </Badge>
-                          </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {premiumCategories.map((cat) => (
+                      <Link key={cat.id} href={`/explore?category=${cat.id}`} className="group">
+                        <div className="p-[1px] rounded-[2.5rem] bg-gradient-to-br from-transparent to-transparent hover:from-primary hover:to-secondary transition-all duration-500 shadow-lg hover:shadow-2xl">
+                          <Card className="rounded-[2.5rem] border-none bg-white h-full p-8 flex flex-col gap-6">
+                            <div className={`size-14 rounded-2xl bg-gradient-to-br ${cat.color} text-white flex justify-center items-center shadow-md group-hover:scale-105 transition-transform duration-500`}>
+                              {React.cloneElement(cat.icon as any, { className: 'size-6' })}
+                            </div>
+                            <h3 className="font-black text-lg uppercase tracking-wider">{cat.name}</h3>
+                          </Card>
                         </div>
-                        <CardContent className="p-6 flex-1 flex flex-col justify-between">
-                          <div className="space-y-3">
-                            <h3 className="font-black text-xl text-foreground line-clamp-1 group-hover:text-emerald-600 transition-colors leading-tight">{name}</h3>
-                            <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest flex items-center gap-1"><MapPin className="size-3" /> {park.city}</p>
-                            <p className="text-muted-foreground font-body leading-relaxed text-xs line-clamp-3">{desc}</p>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            );
+          }
+
+          if (section.type === 'public_listings') {
+            return (
+              <section key={section.id} className="py-24 bg-slate-50 relative z-30">
+                <div className="container mx-auto px-6">
+                  <div className="mb-8">
+                    <h3 className="text-3xl font-headline font-black italic">{section.title}</h3>
+                    {section.content && <div dangerouslySetInnerHTML={{ __html: section.content }} className="mt-2 text-slate-600" />}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    {publicListings.map((l: any) => (
+                      <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id)}>
+                        <Card className="rounded-[2rem] border-none overflow-hidden h-64 relative group shadow-md hover:shadow-xl">
+                          <Image src={getFirstPhoto(l) || DEFAULT_LISTING_IMAGE} alt={l.name} fill className="object-cover group-hover:scale-105 transition-transform" />
+                          <div className="absolute inset-0 bg-black/40" />
+                          <div className="absolute bottom-4 left-4 right-4 text-white">
+                            <h4 className="font-bold">{l.name}</h4>
+                            <p className="text-[10px] uppercase">{l.city}</p>
                           </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
+                        </Card>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            );
+          }
+          
+          return null;
+        })}
 
       </main>
     </div>
