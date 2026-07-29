@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Calendar, User, Clock, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { formatDate, calculateReadTime } from '@/lib/utils';
 
 export default function BlogClient({ articles }: { articles: any[] }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,8 +53,8 @@ export default function BlogClient({ articles }: { articles: any[] }) {
                 </h2>
                 <div className="flex items-center gap-6 text-white/70 font-bold text-sm">
                   <span className="flex items-center gap-2"><User className="size-4" /> {featuredArticle.author || 'CroatiaBest'}</span>
-                  <span className="flex items-center gap-2"><Calendar className="size-4" /> {featuredArticle.created ? new Date(String(featuredArticle.created).replace(' ', 'T')).toLocaleDateString('hr-HR') : ''}</span>
-                  <span className="flex items-center gap-2"><Clock className="size-4" /> {featuredArticle.readTime}</span>
+                  <span className="flex items-center gap-2"><Calendar className="size-4" /> {formatDate(featuredArticle.created)}</span>
+                  <span className="flex items-center gap-2"><Clock className="size-4" /> {featuredArticle.readTime && featuredArticle.readTime !== '5 min' ? featuredArticle.readTime : `${calculateReadTime(featuredArticle.content)} min`}</span>
                 </div>
               </div>
             </section>
@@ -97,8 +98,8 @@ export default function BlogClient({ articles }: { articles: any[] }) {
                 </div>
                 <CardContent className="p-8 flex-1 flex flex-col">
                   <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4 font-bold uppercase tracking-widest">
-                    <span className="flex items-center gap-1"><Calendar className="size-3" /> {article.created ? new Date(String(article.created).replace(' ', 'T')).toLocaleDateString('hr-HR') : ''}</span>
-                    <span className="flex items-center gap-1"><Clock className="size-3" /> {article.readTime}</span>
+                    <span className="flex items-center gap-1"><Calendar className="size-3" /> {formatDate(article.created)}</span>
+                    <span className="flex items-center gap-1"><Clock className="size-3" /> {article.readTime && article.readTime !== '5 min' ? article.readTime : `${calculateReadTime(article.content)} min`}</span>
                   </div>
                   <h3 className="text-2xl font-bold mb-4 leading-tight group-hover:text-primary transition-colors flex-1">{article.title}</h3>
                   <p className="text-muted-foreground font-body line-clamp-3 mb-6">{article.excerpt}</p>
