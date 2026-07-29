@@ -45,7 +45,7 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
               </h1>
               <div className="flex flex-wrap items-center justify-center gap-6 text-white/90 font-bold">
                 <span className="flex items-center gap-2"><User className="size-5 text-primary" /> {article.author}</span>
-                <span className="flex items-center gap-2"><Calendar className="size-5 text-primary" /> {article.date || formatDate(article.created)}</span>
+                <span className="flex items-center gap-2"><Calendar className="size-5 text-primary" /> {formatDate(article.date || article.created)}</span>
                 <span className="flex items-center gap-2">
                   <Clock className="size-5 text-primary" /> 
                   {isEn ? `${displayReadTime} read` : `${displayReadTime} čitanja`}
