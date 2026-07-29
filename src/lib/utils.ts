@@ -5,9 +5,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatDate(dateStr: string | null | undefined) {
+export function formatDate(dateStr: any) {
   if (!dateStr) return '';
   try {
+    if (dateStr instanceof Date) {
+      if (isNaN(dateStr.getTime())) return '';
+      return `${dateStr.getDate()}. ${dateStr.getMonth() + 1}. ${dateStr.getFullYear()}.`;
+    }
     const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (match) {
       const year = parseInt(match[1], 10);
@@ -17,8 +21,16 @@ export function formatDate(dateStr: string | null | undefined) {
     }
     
     const d = new Date(String(dateStr).replace(' ', 'T'));
-    if (isNaN(d.getTime())) return '';
-    return `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}.`;
+    if (!isNaN(d.getTime())) {
+      return `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}.`;
+    }
+
+    const fallback = new Date(dateStr);
+    if (!isNaN(fallback.getTime())) {
+      return `${fallback.getDate()}. ${fallback.getMonth() + 1}. ${fallback.getFullYear()}.`;
+    }
+    
+    return '';
   } catch(e) {
     return '';
   }
