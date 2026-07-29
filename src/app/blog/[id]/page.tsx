@@ -59,10 +59,26 @@ export default async function ArticlePage({ params }: { params: Promise<{ id: st
   let relatedArticles: any[] = [];
   try {
     const allBlogs = await pb.collection('blogs').getFullList({ requestKey: null });
-    relatedArticles = allBlogs.filter((a: any) => a.id !== article.id);
+    relatedArticles = allBlogs.filter((a: any) => a.id !== article.id).map(a => structuredClone(a));
   } catch (e) {
     // silently fail - related articles are optional
   }
 
-  return <ArticleClient article={article} relatedArticles={relatedArticles} />;
+  // Ensure plain objects are passed to Client Components to prevent Next.js from dropping properties
+  const safeArticle = JSON.parse(JSON.stringify(article));
+  const safeRelated = JSON.parse(JSON.stringify(relatedArticles));
+
+  // If PocketBase Record dropped `created` during stringify, we manually assign it
+  if (article.created && !safeArticle.created) {
+    safeArticle.created = article.created;
+  }
+  
+  // Also fix related articles
+  safeRelated.forEach((ra: any, idx: number) => {
+    if (relatedArticles[idx].created && !ra.created) {
+      ra.created = relatedArticles[idx].created;
+    }
+  });
+
+  return <ArticleClient article={safeArticle} relatedArticles={safeRelated} />;
 }
