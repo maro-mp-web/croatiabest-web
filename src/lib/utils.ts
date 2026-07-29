@@ -8,12 +8,17 @@ export function cn(...inputs: ClassValue[]) {
 export function formatDate(dateStr: string | null | undefined) {
   if (!dateStr) return '';
   try {
+    const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      const year = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10);
+      const day = parseInt(match[3], 10);
+      return `${day}. ${month}. ${year}.`;
+    }
+    
     const d = new Date(String(dateStr).replace(' ', 'T'));
     if (isNaN(d.getTime())) return '';
-    const day = d.getDate();
-    const month = d.getMonth() + 1;
-    const year = d.getFullYear();
-    return `${day}. ${month}. ${year}.`;
+    return `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}.`;
   } catch(e) {
     return '';
   }
