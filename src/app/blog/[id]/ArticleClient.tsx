@@ -13,7 +13,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import FAQSection from '@/components/ui/FAQSection';
 import AdBanner from '@/components/ads/AdBanner';
-import { formatDate, calculateReadTime } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 
 export default function ArticleClient({ article, relatedArticles }: { article: any, relatedArticles: any[] }) {
   const { language } = useLanguage();
@@ -22,8 +22,7 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
   const title = isEn && article.titleEn ? article.titleEn : article.title;
   const excerpt = isEn && article.excerptEn ? article.excerptEn : article.excerpt;
   const content = isEn && article.contentEn ? article.contentEn : article.content;
-  const autoReadTime = calculateReadTime(content);
-  const displayReadTime = article.readTime && article.readTime !== '5 min' ? article.readTime : `${autoReadTime} min`;
+  const displayReadTime = article.readTime || '5 min';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -45,7 +44,6 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
               </h1>
               <div className="flex flex-wrap items-center justify-center gap-6 text-white/90 font-bold">
                 <span className="flex items-center gap-2"><User className="size-5 text-primary" /> {article.author}</span>
-                <span className="flex items-center gap-2"><Calendar className="size-5 text-primary" /> {formatDate(article.date || article.created)}</span>
                 <span className="flex items-center gap-2">
                   <Clock className="size-5 text-primary" /> 
                   {isEn ? `${displayReadTime} read` : `${displayReadTime} čitanja`}
