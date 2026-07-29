@@ -42,7 +42,7 @@ export default function BlogClient({ articles }: { articles: any[] }) {
 
         {/* Hero Article */}
         {featuredArticle && category === 'all' && !searchQuery && (
-          <Link href={`/blog/${featuredArticle.id}`}>
+          <Link href={`/blog/${featuredArticle.slug || featuredArticle.id}`}>
             <section className="relative h-[60vh] rounded-[3rem] overflow-hidden mb-20 group cursor-pointer shadow-2xl bg-slate-900 flex items-center justify-center">
               {featuredArticle.image && <Image src={featuredArticle.image} alt={featuredArticle.title} fill className="object-cover transition-transform duration-1000 group-hover:scale-105" />}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-8 md:p-16 text-white">
@@ -52,7 +52,7 @@ export default function BlogClient({ articles }: { articles: any[] }) {
                 </h2>
                 <div className="flex items-center gap-6 text-white/70 font-bold text-sm">
                   <span className="flex items-center gap-2"><User className="size-4" /> {featuredArticle.author || 'CroatiaBest'}</span>
-                  <span className="flex items-center gap-2"><Calendar className="size-4" /> {featuredArticle.created ? new Date(featuredArticle.created).toLocaleDateString('hr-HR') : ''}</span>
+                  <span className="flex items-center gap-2"><Calendar className="size-4" /> {featuredArticle.created ? new Date(featuredArticle.created.replace(' ', 'T')).toLocaleDateString('hr-HR') : ''}</span>
                   <span className="flex items-center gap-2"><Clock className="size-4" /> {featuredArticle.readTime}</span>
                 </div>
               </div>
@@ -85,7 +85,7 @@ export default function BlogClient({ articles }: { articles: any[] }) {
         {/* Articles Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {filteredArticles.map((article) => (
-            <Link key={article.id} href={`/blog/${article.id}`}>
+            <Link key={article.id} href={`/blog/${article.slug || article.id}`}>
               <Card className="group overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] bg-white/60 backdrop-blur-md h-full flex flex-col">
                 <div className="relative h-64 overflow-hidden bg-slate-100 flex items-center justify-center">
                   {article.image ? (
@@ -97,7 +97,7 @@ export default function BlogClient({ articles }: { articles: any[] }) {
                 </div>
                 <CardContent className="p-8 flex-1 flex flex-col">
                   <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4 font-bold uppercase tracking-widest">
-                    <span className="flex items-center gap-1"><Calendar className="size-3" /> {article.created ? new Date(article.created).toLocaleDateString('hr-HR') : ''}</span>
+                    <span className="flex items-center gap-1"><Calendar className="size-3" /> {article.created ? new Date(article.created.replace(' ', 'T')).toLocaleDateString('hr-HR') : ''}</span>
                     <span className="flex items-center gap-1"><Clock className="size-3" /> {article.readTime}</span>
                   </div>
                   <h3 className="text-2xl font-bold mb-4 leading-tight group-hover:text-primary transition-colors flex-1">{article.title}</h3>

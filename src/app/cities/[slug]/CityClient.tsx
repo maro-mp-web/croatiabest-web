@@ -319,7 +319,7 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
                     {relatedArticles.map((a) => {
                       const bTitle = isEn && a.titleEn ? a.titleEn : a.title;
                       return (
-                        <Link key={a.id} href={`/blog/${a.id}`} className="group">
+                        <Link key={a.id} href={`/blog/${a.slug || a.id}`} className="group">
                           <Card className="rounded-2xl border-none shadow-md overflow-hidden bg-white h-full flex flex-col">
                             <div className="relative aspect-[16/10] overflow-hidden">
                               <Image src={a.image} alt={bTitle} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />

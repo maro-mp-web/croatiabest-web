@@ -1373,7 +1373,7 @@ export default function AdminDashboard() {
                         </div>
                         
                         <div className="flex gap-2">
-                          <Link href={`/blog/${blog.id}`}>
+                          <Link href={`/blog/${blog.slug || blog.id}`}>
                             <Button variant="outline" size="icon" className="text-primary hover:bg-primary/10 rounded-xl size-10 border-primary/20 bg-primary/5">
                               <Sparkles className="size-4" />
                             </Button>

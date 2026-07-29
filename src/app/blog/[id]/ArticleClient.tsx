@@ -42,7 +42,7 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
               </h1>
               <div className="flex flex-wrap items-center justify-center gap-6 text-white/90 font-bold">
                 <span className="flex items-center gap-2"><User className="size-5 text-primary" /> {article.author}</span>
-                <span className="flex items-center gap-2"><Calendar className="size-5 text-primary" /> {article.date || new Date(article.created).toLocaleDateString()}</span>
+                <span className="flex items-center gap-2"><Calendar className="size-5 text-primary" /> {article.date || new Date(article.created.replace(' ', 'T')).toLocaleDateString()}</span>
                 <span className="flex items-center gap-2">
                   <Clock className="size-5 text-primary" /> 
                   {isEn ? `${article.readTime || '5 min'} read` : `${article.readTime || '5 min'} čitanja`}
@@ -106,7 +106,7 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
                     const rTitle = isEn && item.titleEn ? item.titleEn : item.title;
                     const rExcerpt = isEn && item.excerptEn ? item.excerptEn : item.excerpt;
                     return (
-                      <Link key={item.id} href={`/blog/${item.id}`}>
+                      <Link key={item.id} href={`/blog/${item.slug || item.id}`}>
                         <div className="bg-white rounded-[2rem] overflow-hidden shadow-lg group">
                           <div className="relative h-48 bg-slate-100 flex items-center justify-center">
                             {item.image ? (
