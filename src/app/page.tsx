@@ -393,42 +393,7 @@ export default function Home() {
             );
           }
 
-          if (section.type === 'cities') {
-            return (
-              <section key={section.id} className="py-24 relative z-30 bg-slate-50 border-y border-black/5">
-                <div className="container mx-auto px-6">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
-                    <div className="max-w-xl space-y-4">
-                      <Badge className="bg-primary/10 text-primary border-none font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-widest">{language === 'en' ? 'Urban Destinations' : 'Urbane Destinacije'}</Badge>
-                      <h2 className="text-4xl md:text-5xl font-headline font-black italic tracking-tighter text-foreground leading-none">
-                        {section.title}
-                      </h2>
-                      {section.content && <div className="text-muted-foreground text-lg leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: section.content }} />}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:auto-rows-min">
-                    {featuredCities.map((city) => (
-                      <div key={city.slug} className={`relative group overflow-hidden rounded-[2.5rem] shadow-xl hover:shadow-2xl transition-all duration-700 ${city.colSpan}`}>
-                        <div className="absolute inset-0 z-0">
-                          <Image src={city.image} alt={city.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover transition-all duration-1000 group-hover:scale-105" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-500" />
-                          <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 mix-blend-overlay" />
-                        </div>
-                        <div className="absolute inset-0 p-6 flex flex-col justify-end z-20">
-                          <p className="text-[9px] font-black uppercase text-primary mb-1 tracking-[0.2em]">{city.region}</p>
-                          <h3 className="text-2xl md:text-3xl font-black italic mb-3 text-white group-hover:text-primary transition-colors leading-tight">{city.name}</h3>
-                          <div className="overflow-hidden h-0 group-hover:h-10 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out flex items-center">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">VODIČ KROZ GRAD <Compass className="size-4 animate-spin-slow text-primary" /></span>
-                          </div>
-                        </div>
-                        <Link href={`/cities/${city.slug}`} className="absolute inset-0 z-30"><span className="sr-only">{city.name}</span></Link>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            );
-          }
+
 
           if (section.type === 'islands') {
             return (
