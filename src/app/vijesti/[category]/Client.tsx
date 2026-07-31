@@ -11,8 +11,11 @@ import { Search, Clock, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { calculateReadTime } from '@/lib/utils';
+import { getLocalizedUrl } from '@/lib/i18n-routes';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function VijestiClient({ articles, category }: { articles: any[], category: string }) {
+  const { language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredArticles = articles.filter(article => {
@@ -50,7 +53,7 @@ export default function VijestiClient({ articles, category }: { articles: any[],
         {/* Articles Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {filteredArticles.map((article) => (
-            <Link key={article.id} href={`/blog/${article.slug || article.id}`}>
+            <Link key={article.id} href={getLocalizedUrl(`/blog/${article.slug || article.id}`, language)}>
               <Card className="group overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] bg-white/60 backdrop-blur-md h-full flex flex-col">
                 <div className="relative h-64 overflow-hidden bg-slate-100 flex items-center justify-center">
                   {article.image ? (

@@ -28,8 +28,10 @@ import { useCollection } from '@/pocketbase';
 import Map from '@/components/map/Map';
 import WikiView from '@/components/ui/WikiView';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getFirstPhoto } from '@/app/lib/image-helpers';
+import { getLocalizedUrl } from '@/lib/i18n-routes';
 
-export default function IslandClient({ island, listings }: { island: any, listings: any[] }) {
+export default function IslandClient({ island, listings, articles }: { island: any, listings: any[], articles: any[] }) {
   const { language } = useLanguage();
   const isEn = language === 'en';
   
@@ -131,7 +133,7 @@ export default function IslandClient({ island, listings }: { island: any, listin
                 <div className="space-y-6">
                   <h4 className="font-black text-xs uppercase tracking-[0.2em] text-secondary flex items-center gap-2"><Umbrella className="size-4" /> Plaže & OPG</h4>
                   {popular.map(l => (
-                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id)}>
+                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id)}>
                       <Card className="border-none shadow-lg rounded-2xl bg-blue-50/50 p-4 hover:scale-[1.02] transition-transform cursor-pointer">
                         <p className="font-black text-sm">{l.name}</p>
                       </Card>
@@ -141,7 +143,7 @@ export default function IslandClient({ island, listings }: { island: any, listin
                 <div className="space-y-6">
                   <h4 className="font-black text-xs uppercase tracking-[0.2em] text-purple-600 flex items-center gap-2"><Binoculars className="size-4" /> Vidikovci</h4>
                   {viewpoints.map(l => (
-                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id)}>
+                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id)}>
                       <Card className="border-none shadow-lg rounded-2xl bg-purple-50/50 p-4 hover:scale-[1.02] transition-transform cursor-pointer">
                         <p className="font-black text-sm">{l.name}</p>
                       </Card>
@@ -151,7 +153,7 @@ export default function IslandClient({ island, listings }: { island: any, listin
                 <div className="space-y-6">
                   <h4 className="font-black text-xs uppercase tracking-[0.2em] text-primary flex items-center gap-2"><Utensils className="size-4" /> Gastro</h4>
                   {gastro.map(l => (
-                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id)}>
+                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id)}>
                       <Card className="border-none shadow-lg rounded-2xl bg-primary/5 p-4 hover:scale-[1.02] transition-transform cursor-pointer">
                         <p className="font-black text-sm">{l.name}</p>
                       </Card>

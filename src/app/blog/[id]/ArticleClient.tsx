@@ -14,6 +14,7 @@ import Link from 'next/link';
 import FAQSection from '@/components/ui/FAQSection';
 import AdBanner from '@/components/ads/AdBanner';
 import { formatDate } from '@/lib/utils';
+import { getLocalizedUrl } from '@/lib/i18n-routes';
 
 export default function ArticleClient({ article, relatedArticles }: { article: any, relatedArticles: any[] }) {
   const { language } = useLanguage();
@@ -114,7 +115,7 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
                     const rTitle = isEn && item.titleEn ? item.titleEn : item.title;
                     const rExcerpt = isEn && item.excerptEn ? item.excerptEn : item.excerpt;
                     return (
-                      <Link key={item.id} href={`/blog/${item.slug || item.id}`}>
+                      <Link key={item.id} href={getLocalizedUrl(`/blog/${item.slug || item.id}`, language)}>
                         <div className="bg-white rounded-[2rem] overflow-hidden shadow-lg group">
                           <div className="relative h-48 bg-slate-100 flex items-center justify-center">
                             {item.image ? (
@@ -161,7 +162,7 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
         <FAQSection type="blog" name={title} />
       </main>
       <div className="container mx-auto px-4 py-12 flex justify-center">
-        <Link href="/blog">
+        <Link href={getLocalizedUrl("/blog", language)}>
           <Button variant="ghost" className="text-foreground hover:bg-foreground/5 flex items-center gap-2">
             <ArrowLeft className="size-4" /> 
             {isEn ? 'BACK TO MAGAZINE' : 'NATRAG NA MAGAZIN'}

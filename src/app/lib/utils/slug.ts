@@ -1,3 +1,5 @@
+import { getLocalizedUrl } from '@/lib/i18n-routes';
+
 export function generateSlug(name: string): string {
   return (name || '')
     .toLowerCase()
@@ -46,9 +48,11 @@ const CATEGORY_SLUG_MAP: Record<string, string> = {
   beauty: 'salon-ljepote'
 };
 
-export function generateListingUrl(category: string, name: string, id?: string): string {
+export function generateListingUrl(category: string, name: string, lang: 'hr' | 'en' = 'hr', id?: string): string {
   const rawCat = (category || 'ostalo').toLowerCase();
   const niceCat = CATEGORY_SLUG_MAP[rawCat] || rawCat;
   const slug = generateSlug(name);
-  return `/listing/${niceCat}/${slug}`;
+  const base = `/listing/${niceCat}/${slug}`;
+  // listing is generic, but if we need translation we can pipe it through getLocalizedUrl
+  return getLocalizedUrl(base, lang);
 }

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getLocalizedUrl } from '@/lib/i18n-routes';
 
 /**
  * HreflangManager — injected as a client component inside root layout.
@@ -29,10 +30,12 @@ export function HreflangManager() {
       document.head.appendChild(link);
     };
 
-    // Both HR and EN live on the same URL — signal via hreflang
-    createLink('hr', `${BASE}${path}`);
-    createLink('en', `${BASE}${path}`);
-    createLink('x-default', `${BASE}${path}`);
+    const hrPath = getLocalizedUrl(path, 'hr');
+    const enPath = getLocalizedUrl(path, 'en');
+
+    createLink('hr', `${BASE}${hrPath}`);
+    createLink('en', `${BASE}${enPath}`);
+    createLink('x-default', `${BASE}${enPath}`); // Fallback default to english
 
     // Canonical — always reflect the current active language
     let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');

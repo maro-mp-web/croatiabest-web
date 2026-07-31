@@ -13,10 +13,13 @@ import { Search, Calendar, User, Clock, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatDate, calculateReadTime } from '@/lib/utils';
+import { getLocalizedUrl } from '@/lib/i18n-routes';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function BlogClient({ articles }: { articles: any[] }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('all');
+  const { language } = useLanguage();
 
   const filteredArticles = articles.filter(article => {
     const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -43,7 +46,7 @@ export default function BlogClient({ articles }: { articles: any[] }) {
 
         {/* Hero Article */}
         {featuredArticle && category === 'all' && !searchQuery && (
-          <Link href={`/blog/${featuredArticle.slug || featuredArticle.id}`}>
+          <Link href={getLocalizedUrl(`/blog/${featuredArticle.slug || featuredArticle.id}`, language)}>
             <section className="relative h-[60vh] rounded-[3rem] overflow-hidden mb-20 group cursor-pointer shadow-2xl bg-slate-900 flex items-center justify-center">
               {featuredArticle.image && <Image src={featuredArticle.image} alt={featuredArticle.title} fill className="object-cover transition-transform duration-1000 group-hover:scale-105" />}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-8 md:p-16 text-white">
@@ -85,7 +88,7 @@ export default function BlogClient({ articles }: { articles: any[] }) {
         {/* Articles Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {filteredArticles.map((article) => (
-            <Link key={article.id} href={`/blog/${article.slug || article.id}`}>
+            <Link key={article.id} href={getLocalizedUrl(`/blog/${article.slug || article.id}`, language)}>
               <Card className="group overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] bg-white/60 backdrop-blur-md h-full flex flex-col">
                 <div className="relative h-64 overflow-hidden bg-slate-100 flex items-center justify-center">
                   {article.image ? (

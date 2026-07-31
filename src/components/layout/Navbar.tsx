@@ -1,10 +1,10 @@
-
 "use client"
 
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Map, Menu, BookOpen, ChevronDown, Building2, LayoutDashboard, Anchor, PlusCircle } from 'lucide-react';
+import { Map, Menu, BookOpen, ChevronDown, Building2, Anchor, PlusCircle } from 'lucide-react';
+import { getLocalizedUrl } from '@/lib/i18n-routes';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -56,7 +56,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
             <Logo />
           </Link>
           <nav className="hidden gap-6 lg:flex items-center">
-            <Link href="/explore" className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider hover:text-primary transition-colors">
+            <Link href={getLocalizedUrl("/explore", language)} className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider hover:text-primary transition-colors">
               <Map className="size-4" /> {t.navExplore}
             </Link>
             
@@ -70,7 +70,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
                 {cities.map((city) => (
                   <DropdownMenuItem 
                     key={city.slug} 
-                    onSelect={() => router.push(`/cities/${city.slug}`)}
+                    onSelect={() => router.push(getLocalizedUrl(`/cities/${city.slug}`, language))}
                     className="w-full cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
                   >
                     {city.name}
@@ -89,7 +89,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
                 {islands.map((island) => (
                   <DropdownMenuItem 
                     key={island.slug} 
-                    onSelect={() => router.push(`/islands/${island.slug}`)}
+                    onSelect={() => router.push(getLocalizedUrl(`/islands/${island.slug}`, language))}
                     className="w-full cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
                   >
                     {island.name}
@@ -112,7 +112,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
                 ].map((cat) => (
                   <DropdownMenuItem 
                     key={cat} 
-                    onSelect={() => router.push(`/vijesti/${cat.toLowerCase().replace(/ /g, '-')}`)}
+                    onSelect={() => router.push(getLocalizedUrl(`/vijesti/${cat.toLowerCase().replace(/ /g, '-')}`, language))}
                     className="w-full cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
                   >
                     {cat}
@@ -121,14 +121,14 @@ export function Navbar({ transparent = false }: NavbarProps) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Link href="/blog" className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider hover:text-primary transition-colors">
+            <Link href={getLocalizedUrl("/blog", language)} className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider hover:text-primary transition-colors">
               <BookOpen className="size-4" /> {t.navBlog}
             </Link>
           </nav>
         </div>
 
         <div className="flex flex-1 items-center justify-end space-x-4">
-          <Link href="/dodaj-objekt">
+          <Link href={getLocalizedUrl("/dodaj-objekt", language)}>
             <Button variant="outline" className="rounded-full border-primary text-primary font-black px-6">
               <PlusCircle className="size-4 mr-2" /> {t.navAddListing}
             </Button>
@@ -162,15 +162,15 @@ export function Navbar({ transparent = false }: NavbarProps) {
               <div className="flex flex-col gap-8 pt-12">
                 <Logo className="mb-4" />
                 <nav className="flex flex-col gap-4">
-                  <Link href="/dodaj-objekt" className="text-xl font-black text-primary uppercase tracking-tight">
+                  <Link href={getLocalizedUrl("/dodaj-objekt", language)} className="text-xl font-black text-primary uppercase tracking-tight">
                     {t.navAddListing}
                   </Link>
-                  <Link href="/explore" className="text-xl font-black uppercase tracking-tight hover:text-primary transition-colors">{t.navExplore}</Link>
+                  <Link href={getLocalizedUrl("/explore", language)} className="text-xl font-black uppercase tracking-tight hover:text-primary transition-colors">{t.navExplore}</Link>
                   <div className="border-t pt-4 pb-2">
                     <p className="text-xs font-bold text-muted-foreground mb-4 tracking-widest uppercase">{t.navCities}</p>
                     <div className="grid grid-cols-2 gap-2">
                       {cities.map(city => (
-                        <Link key={city.slug} href={`/cities/${city.slug}`} className="text-sm font-bold hover:text-primary transition-colors">{city.name}</Link>
+                        <Link key={city.slug} href={getLocalizedUrl(`/cities/${city.slug}`, language)} className="text-sm font-bold hover:text-primary transition-colors">{city.name}</Link>
                       ))}
                     </div>
                   </div>

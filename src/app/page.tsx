@@ -39,6 +39,7 @@ import AdBanner from '@/components/ads/AdBanner';
 import { generateListingUrl } from '@/app/lib/utils/slug';
 import { useRouter } from 'next/navigation';
 import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
+import { getLocalizedUrl } from '@/lib/i18n-routes';
 
 export default function Home() {
   const { language, t } = useLanguage();
@@ -328,7 +329,7 @@ export default function Home() {
               {/* Cities Bento Grid (9/12) */}
               <div className="lg:col-span-9 grid grid-cols-1 md:grid-cols-9 gap-6">
                 {featuredCities.map((city) => (
-                  <Link key={city.slug} href={`/cities/${city.slug}`} className={`${city.colSpan} group`}>
+                  <Link key={city.slug} href={getLocalizedUrl(`/cities/${city.slug}`, language)} className={`${city.colSpan} group`}>
                     <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden cursor-pointer shadow-lg border border-black/5 hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out bg-slate-900">
                       
                       <div className="absolute top-4 right-6 z-20 text-white/20 text-4xl font-black font-headline italic tracking-tighter select-none">
@@ -438,7 +439,7 @@ export default function Home() {
                           <p className="text-[9px] font-black uppercase text-secondary mb-1 tracking-[0.2em]">{island.region}</p>
                           <h3 className="text-2xl md:text-3xl font-black italic mb-2 text-white group-hover:text-secondary transition-colors leading-tight">{island.name}</h3>
                         </div>
-                        <Link href={`/islands/${island.slug}`} className="absolute inset-0 z-30"><span className="sr-only">{island.name}</span></Link>
+                        <Link href={getLocalizedUrl(`/islands/${island.slug}`, language)} className="absolute inset-0 z-30"><span className="sr-only">{island.name}</span></Link>
                       </div>
                     ))}
                   </div>
@@ -457,7 +458,7 @@ export default function Home() {
                       <h3 className="text-3xl md:text-4xl font-headline font-black italic tracking-tighter text-foreground leading-none">{section.title}</h3>
                       {section.content && <div className="text-muted-foreground font-medium" dangerouslySetInnerHTML={{ __html: section.content }} />}
                     </div>
-                    <Link href="/explore">
+                    <Link href={getLocalizedUrl("/explore", language)}>
                       <Button variant="link" className="text-primary font-black uppercase text-xs tracking-wider">
                         {language === 'en' ? 'See all' : 'Istraži sve'} <ArrowRight className="ml-1 size-4" />
                       </Button>

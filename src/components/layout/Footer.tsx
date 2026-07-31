@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Facebook, Instagram, Music, MapPin, Mail } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getLocalizedUrl } from '@/lib/i18n-routes';
 
 export default function Footer() {
   const { t, language } = useLanguage();
@@ -28,8 +29,8 @@ export default function Footer() {
             <h3 className="text-xl font-bold">{isHr ? 'Istraži' : 'Explore'}</h3>
             <ul className="space-y-3 text-sm text-background/70 font-medium">
               <li><Link href="/" className="hover:text-primary transition-colors">{isHr ? 'Naslovnica' : 'Home'}</Link></li>
-              <li><Link href="/explore" className="hover:text-primary transition-colors">{isHr ? 'Karta' : 'Map'}</Link></li>
-              <li><Link href="/about" className="hover:text-primary transition-colors">{isHr ? 'O nama' : 'About Us'}</Link></li>
+              <li><Link href={getLocalizedUrl("/explore", language)} className="hover:text-primary transition-colors">{isHr ? 'Karta' : 'Map'}</Link></li>
+              <li><Link href={getLocalizedUrl("/about", language)} className="hover:text-primary transition-colors">{isHr ? 'O nama' : 'About Us'}</Link></li>
             </ul>
           </div>
 

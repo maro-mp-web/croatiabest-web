@@ -27,7 +27,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { generateListingUrl } from '@/app/lib/utils/slug';
 import { Card, CardContent } from '@/components/ui/card';
 import { getFirstPhoto } from '@/app/lib/image-helpers';
-import { Badge } from '@/components/ui/badge';
+import { getLocalizedUrl } from '@/lib/i18n-routes';
 import { useCollection } from '@/pocketbase';
 import Map from '@/components/map/Map';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -179,7 +179,7 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
                 <div className="space-y-6">
                   <h4 className="font-black text-xs uppercase tracking-[0.2em] text-blue-600 flex items-center gap-2"><Umbrella className="size-4" /> {isEn ? 'Popular Places' : 'Popularno'}</h4>
                   {popularListings.map(l => (
-                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id)}>
+                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id)}>
                       <Card className="border-none shadow-lg rounded-2xl bg-blue-50/50 p-4 hover:scale-[1.02] transition-transform cursor-pointer">
                         <p className="font-black text-sm">{l.name}</p>
                       </Card>
@@ -189,7 +189,7 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
                 <div className="space-y-6">
                   <h4 className="font-black text-xs uppercase tracking-[0.2em] text-purple-600 flex items-center gap-2"><Binoculars className="size-4" /> {isEn ? 'Viewpoints' : 'Vidikovci'}</h4>
                   {viewpointListings.map(l => (
-                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id)}>
+                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id)}>
                       <Card className="border-none shadow-lg rounded-2xl bg-purple-50/50 p-4 hover:scale-[1.02] transition-transform cursor-pointer">
                         <p className="font-black text-sm">{l.name}</p>
                       </Card>
@@ -199,7 +199,7 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
                 <div className="space-y-6">
                   <h4 className="font-black text-xs uppercase tracking-[0.2em] text-primary flex items-center gap-2"><Utensils className="size-4" /> {isEn ? 'Gastronomy' : 'Gastro'}</h4>
                   {gastroListings.map(l => (
-                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id)}>
+                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id)}>
                       <Card className="border-none shadow-lg rounded-2xl bg-orange-50/50 p-4 hover:scale-[1.02] transition-transform cursor-pointer">
                         <p className="font-black text-sm">{l.name}</p>
                       </Card>
@@ -319,7 +319,7 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
                     {relatedArticles.map((a) => {
                       const bTitle = isEn && a.titleEn ? a.titleEn : a.title;
                       return (
-                        <Link key={a.id} href={`/blog/${a.slug || a.id}`} className="group">
+                        <Link key={a.id} href={getLocalizedUrl(`/blog/${a.slug || a.id}`, language)} className="group">
                           <Card className="rounded-2xl border-none shadow-md overflow-hidden bg-white h-full flex flex-col">
                             <div className="relative aspect-[16/10] overflow-hidden">
                               <Image src={a.image} alt={bTitle} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
