@@ -8,6 +8,7 @@ import { PocketBaseProvider } from '@/pocketbase';
 import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 import Footer from '@/components/layout/Footer';
 import Script from 'next/script';
+import { HreflangManager } from '@/components/seo/HreflangManager';
 
 const alegreya = Alegreya({
   subsets: ['latin', 'latin-ext'],
@@ -84,6 +85,7 @@ export default function RootLayout({
         </Script>
         <PocketBaseProvider>
           <LanguageProvider>
+            <HreflangManager />
             <div className="flex flex-col min-h-screen">
               {children}
               <Footer />
