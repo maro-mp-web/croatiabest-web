@@ -27,6 +27,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { generateListingUrl } from '@/app/lib/utils/slug';
 import { Card, CardContent } from '@/components/ui/card';
 import { getFirstPhoto } from '@/app/lib/image-helpers';
+import { Badge } from '@/components/ui/badge';
 import { getLocalizedUrl } from '@/lib/i18n-routes';
 import { useCollection } from '@/pocketbase';
 import Map from '@/components/map/Map';
