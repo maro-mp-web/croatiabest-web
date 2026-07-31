@@ -202,6 +202,8 @@ export default function Home() {
 
   const historyArticles = articlesList.filter(a => ['Povijest', 'Izumi', 'Poznati Hrvati'].includes(a.category)).slice(0, 3);
   const warArticles = articlesList.filter(a => a.category === 'Domovinski rat').slice(0, 3);
+  
+  const homepageNews = articlesList.filter(a => a.showOnHomepage === true).slice(0, 5);
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden selection:bg-primary selection:text-white">
@@ -399,7 +401,7 @@ export default function Home() {
             return (
               <section key={section.id} className="py-24 relative z-30 bg-white">
                 <div className="container mx-auto px-6">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+                  <div className="flex flex-col-reverse md:flex-row justify-between items-start md:items-end mb-12 gap-6">
                     <div className="max-w-xl space-y-4">
                       <Badge className="bg-secondary/10 text-secondary border-none font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-widest">{language === 'en' ? 'Island Hopping' : 'Otočne Destinacije'}</Badge>
                       <h2 className="text-4xl md:text-5xl font-headline font-black italic tracking-tighter text-foreground leading-none">
@@ -407,6 +409,23 @@ export default function Home() {
                       </h2>
                       {section.content && <div className="text-muted-foreground text-lg leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: section.content }} />}
                     </div>
+                    {homepageNews.length > 0 && (
+                      <div className="w-full md:w-auto flex-1 overflow-x-auto pb-2 snap-x snap-mandatory flex gap-4 scrollbar-hide md:justify-end">
+                        {homepageNews.map((news: any) => (
+                          <Link key={news.id} href={`/blog/${news.slug || news.id}`} className="w-[140px] h-[90px] md:w-[160px] md:h-[100px] relative group overflow-hidden rounded-2xl flex-shrink-0 snap-start shadow-md hover:shadow-xl transition-all border border-black/5">
+                            {news.image ? (
+                              <Image src={news.image} alt={news.title} fill className="object-cover transition-transform group-hover:scale-105" />
+                            ) : (
+                              <div className="w-full h-full bg-slate-200" />
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent group-hover:from-black/70 transition-colors" />
+                            <div className="absolute inset-0 p-3 flex flex-col justify-end">
+                              <h4 className="text-white font-black text-[10px] md:text-xs leading-tight line-clamp-3">{news.title}</h4>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:auto-rows-min">
                     {featuredIslands.map((island) => (

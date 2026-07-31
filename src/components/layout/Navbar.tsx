@@ -98,6 +98,29 @@ export function Navbar({ transparent = false }: NavbarProps) {
               </DropdownMenuContent>
             </DropdownMenu>
 
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider hover:text-primary transition-colors outline-none">
+                  <BookOpen className="size-4" /> {language === 'en' ? 'News' : 'Vijesti'} <ChevronDown className="size-3" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 rounded-xl p-2 grid grid-cols-1 gap-1">
+                {[
+                  'Vijesti iz Hrvatske', 'Vijesti iz Svijeta', 'Poznati Hrvati',
+                  'Slavni u Hrvatskoj', 'Zanimljivosti', 'Iz Povijesti',
+                  'Iz geografije', 'Domovinski rat'
+                ].map((cat) => (
+                  <DropdownMenuItem 
+                    key={cat} 
+                    onSelect={() => router.push(`/vijesti/${cat.toLowerCase().replace(/ /g, '-')}`)}
+                    className="w-full cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                  >
+                    {cat}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Link href="/blog" className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider hover:text-primary transition-colors">
               <BookOpen className="size-4" /> {t.navBlog}
             </Link>
@@ -156,6 +179,18 @@ export function Navbar({ transparent = false }: NavbarProps) {
                     <div className="grid grid-cols-2 gap-2">
                       {islands.map(island => (
                         <Link key={island.slug} href={`/islands/${island.slug}`} className="text-sm font-bold hover:text-primary transition-colors">{island.name}</Link>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="border-t pt-4 pb-2">
+                    <p className="text-xs font-bold text-muted-foreground mb-4 tracking-widest uppercase">{language === 'en' ? 'News' : 'Vijesti'}</p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {[
+                        'Vijesti iz Hrvatske', 'Vijesti iz Svijeta', 'Poznati Hrvati',
+                        'Slavni u Hrvatskoj', 'Zanimljivosti', 'Iz Povijesti',
+                        'Iz geografije', 'Domovinski rat'
+                      ].map((cat) => (
+                        <Link key={cat} href={`/vijesti/${cat.toLowerCase().replace(/ /g, '-')}`} className="text-sm font-bold hover:text-primary transition-colors">{cat}</Link>
                       ))}
                     </div>
                   </div>

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
+import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { Save, ArrowLeft, Loader2, BookOpen, Globe, Flag, ImageIcon } from 'lucide-react';
 import { useUser, usePB } from '@/pocketbase';
@@ -32,7 +33,8 @@ function AdminNewBlogPage() {
   // Croatian fields
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState('Blog');
+  const [showOnHomepage, setShowOnHomepage] = useState(false);
   const [image, setImage] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
@@ -78,7 +80,8 @@ function AdminNewBlogPage() {
         .then((blog: any) => {
           setTitle(blog.title || '');
           setSlug(blog.slug || '');
-          setCategory(blog.category || '');
+          setCategory(blog.category || 'Blog');
+          setShowOnHomepage(blog.showOnHomepage || false);
           setImage(blog.image || '');
           setExcerpt(blog.excerpt || '');
           setContent(blog.content || '');
@@ -116,6 +119,7 @@ function AdminNewBlogPage() {
         titleEn,
         slug,
         category,
+        showOnHomepage,
         image,
         excerpt,
         excerptEn,
@@ -320,7 +324,25 @@ function AdminNewBlogPage() {
               <CardContent className="p-8 space-y-6">
                 <div className="space-y-3">
                   <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Kategorija</Label>
-                  <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Npr. Ljeto 2026" className="h-12 rounded-xl bg-secondary/5 border-none" />
+                  <select 
+                    value={category} 
+                    onChange={(e) => setCategory(e.target.value)} 
+                    className="flex h-12 w-full rounded-xl border-none bg-secondary/5 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary font-medium"
+                  >
+                    <option value="Blog">Blog</option>
+                    <option value="Vijesti iz Hrvatske">Vijesti iz Hrvatske</option>
+                    <option value="Vijesti iz Svijeta">Vijesti iz Svijeta</option>
+                    <option value="Poznati Hrvati">Poznati Hrvati</option>
+                    <option value="Slavni u Hrvatskoj">Slavni u Hrvatskoj</option>
+                    <option value="Zanimljivosti">Zanimljivosti</option>
+                    <option value="Iz Povijesti">Iz Povijesti</option>
+                    <option value="Iz geografije">Iz geografije</option>
+                    <option value="Domovinski rat">Domovinski rat</option>
+                  </select>
+                </div>
+                <div className="flex items-center justify-between space-x-2 rounded-xl bg-secondary/5 p-4 border border-black/5">
+                  <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground cursor-pointer" onClick={() => setShowOnHomepage(!showOnHomepage)}>Prikaži na naslovnici (Vijesti)</Label>
+                  <Switch checked={showOnHomepage} onCheckedChange={setShowOnHomepage} />
                 </div>
                 <div className="space-y-3">
                   <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Autor</Label>
