@@ -42,7 +42,7 @@ export default async function VijestiCategoryPage({ params }: { params: { catego
   try {
     articles = await pb.collection('blogs').getFullList({
       filter: `category = "${actualCategory}"`,
-      sort: '-publishDate,-created'
+      sort: '-publishDate'
     });
   } catch (e) {
     console.error(e);

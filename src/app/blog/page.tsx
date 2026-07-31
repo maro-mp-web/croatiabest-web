@@ -9,7 +9,7 @@ export default async function BlogPage() {
   let articles: any[] = [];
   try {
     articles = await pb.collection('blogs').getFullList({
-      sort: '-publishDate,-created',
+      sort: '-publishDate',
       requestKey: null
     });
   } catch (e) {
