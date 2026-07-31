@@ -188,7 +188,7 @@ export default function Home() {
   // 1. Most popular locations (listings from paid categories)
   const popularListings = (allListings || [])
     .filter(l => ['restaurants', 'hotels', 'beaches', 'wineries'].includes(l.locationCategoryId || l.categoryId))
-    .slice(0, 3);
+    .slice(0, 8);
 
   // 2. Public locations (landmarks, Homeland War, viewpoints)
   const publicListings = (allListings || [])
@@ -463,28 +463,28 @@ export default function Home() {
                       </Button>
                     </Link>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {popularListings.map((l) => {
                       const name = language === 'en' && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
                       const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
                       const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id);
                       return (
                         <Link key={l.id} href={path} className="group">
-                          <div className="p-[1px] bg-gradient-to-br from-transparent to-transparent hover:from-primary hover:to-secondary rounded-[2rem] shadow-md hover:shadow-xl transition-all duration-500 h-full">
-                            <Card className="rounded-[2rem] border-none overflow-hidden h-full flex flex-col bg-white">
-                              <div className="relative aspect-[4/5] overflow-hidden">
-                                <Image src={image} alt={name} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                              </div>
-                              <CardContent className="p-4 flex-1 flex flex-col justify-between bg-white">
-                                <h4 className="font-black text-sm line-clamp-1">{name}</h4>
-                                <p className="text-[9px] text-muted-foreground uppercase">{l.city}</p>
-                              </CardContent>
-                            </Card>
+                          <div className="flex bg-white rounded-2xl p-2.5 gap-4 items-center shadow-sm border border-slate-200 hover:border-primary/50 hover:shadow-md transition-all h-full">
+                            <div className="relative size-16 md:size-20 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
+                              <Image src={image} alt={name} fill sizes="80px" className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                            </div>
+                            <div className="flex-1 min-w-0 py-1">
+                              <h4 className="font-black text-sm text-slate-800 line-clamp-2 leading-tight group-hover:text-primary transition-colors">{name}</h4>
+                              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mt-1 truncate">{l.city}</p>
+                            </div>
                           </div>
                         </Link>
                       );
                     })}
-                    <div className="h-full flex"><AdBanner format="rectangle" className="w-full h-full min-h-[250px] shadow-md rounded-[2rem]" /></div>
+                  </div>
+                  <div className="mt-8 flex justify-center w-full">
+                    <AdBanner format="horizontal" className="w-full max-w-4xl shadow-sm rounded-2xl overflow-hidden border border-black/5" />
                   </div>
                 </div>
               </section>
