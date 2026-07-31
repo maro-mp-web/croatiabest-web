@@ -55,7 +55,7 @@ export default function Home() {
   const { data: homepageSections } = useCollection('homepage_sections', { sort: 'order' });
 
   const { data: blogArticles } = useCollection('blogs', {
-    sort: '-created',
+    sort: '-publishDate,-created',
   });
 
   const [searchQuery, setSearchQuery] = useState('');
