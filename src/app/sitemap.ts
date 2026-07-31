@@ -59,6 +59,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'yearly',
       priority: 0.3,
     },
+    ...[
+      'vijesti-iz-hrvatske', 'vijesti-iz-svijeta', 'poznati-hrvati',
+      'slavni-u-hrvatskoj', 'zanimljivosti', 'iz-povijesti',
+      'iz-geografije', 'domovinski-rat'
+    ].map((cat) => ({
+      url: `${BASE_URL}/vijesti/${cat}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.8,
+    })),
   ];
 
   try {

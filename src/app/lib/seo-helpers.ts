@@ -128,9 +128,15 @@ export const generateListingSchema = (listing: any) => {
 };
 
 export const generateArticleSchema = (article: any) => {
+  const isNews = [
+    'Vijesti iz Hrvatske', 'Vijesti iz Svijeta', 'Poznati Hrvati',
+    'Slavni u Hrvatskoj', 'Zanimljivosti', 'Iz Povijesti',
+    'Iz geografije', 'Domovinski rat'
+  ].includes(article.category);
+
   const schema: any = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': isNews ? 'NewsArticle' : 'Article',
     headline: article.title,
     datePublished: article.created,
     dateModified: article.updated,
