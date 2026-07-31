@@ -138,7 +138,7 @@ export const generateArticleSchema = (article: any) => {
     '@context': 'https://schema.org',
     '@type': isNews ? 'NewsArticle' : 'Article',
     headline: article.title,
-    datePublished: article.created,
+    datePublished: article.publishDate || article.created,
     dateModified: article.updated,
     author: [{
       '@type': 'Person',

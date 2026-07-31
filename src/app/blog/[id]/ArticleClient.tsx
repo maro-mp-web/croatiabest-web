@@ -23,6 +23,7 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
   const excerpt = isEn && article.excerptEn ? article.excerptEn : article.excerpt;
   const content = isEn && article.contentEn ? article.contentEn : article.content;
   const displayReadTime = article.readTime || '5 min';
+  const displayDate = article.publishDate ? formatDate(article.publishDate) : (article.created ? formatDate(article.created) : null);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -43,6 +44,12 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
                 {title}
               </h1>
               <div className="flex flex-wrap items-center justify-center gap-6 text-white/90 font-bold">
+                {displayDate && (
+                  <span className="flex items-center gap-2">
+                    <Calendar className="size-5 text-primary" />
+                    {displayDate}
+                  </span>
+                )}
                 <span className="flex items-center gap-2"><User className="size-5 text-primary" /> {article.author}</span>
                 <span className="flex items-center gap-2">
                   <Clock className="size-5 text-primary" /> 

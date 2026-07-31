@@ -53,6 +53,7 @@ function AdminNewBlogPage() {
   // Common fields
   const [author, setAuthor] = useState('CroatiaBest');
   const [readTime, setReadTime] = useState('5 min');
+  const [publishDate, setPublishDate] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingBlog, setIsLoadingBlog] = useState(false);
 
@@ -96,6 +97,7 @@ function AdminNewBlogPage() {
           setSeoDescriptionEn(blog.seoDescriptionEn || '');
           setAuthor(blog.author || 'CroatiaBest');
           setReadTime(blog.readTime || '5 min');
+          setPublishDate(blog.publishDate ? blog.publishDate.split(' ')[0] : '');
         })
         .catch((err: any) => {
           console.error('Error loading blog:', err);
@@ -133,6 +135,7 @@ function AdminNewBlogPage() {
         seoDescriptionEn,
         author,
         readTime,
+        publishDate: publishDate ? new Date(publishDate).toISOString() : null,
       };
 
       if (editId) {
@@ -347,6 +350,10 @@ function AdminNewBlogPage() {
                 <div className="space-y-3">
                   <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Autor</Label>
                   <Input value={author} onChange={(e) => setAuthor(e.target.value)} className="h-12 rounded-xl bg-secondary/5 border-none" />
+                </div>
+                <div className="space-y-3">
+                  <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Datum objave</Label>
+                  <Input type="date" value={publishDate} onChange={(e) => setPublishDate(e.target.value)} className="h-12 rounded-xl bg-secondary/5 border-none" />
                 </div>
                 <div className="space-y-3">
                   <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Vrijeme čitanja</Label>
