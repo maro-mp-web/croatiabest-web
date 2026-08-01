@@ -6,6 +6,7 @@ export const ROUTE_TRANSLATIONS = {
     '/blog': '/magazin',
     '/news': '/vijesti',
     '/about': '/o-nama',
+    '/listing': '/objekt',
   },
   en: {
     '/istrazi': '/explore',
@@ -14,6 +15,7 @@ export const ROUTE_TRANSLATIONS = {
     '/magazin': '/blog',
     '/vijesti': '/news',
     '/o-nama': '/about',
+    '/objekt': '/listing',
   }
 } as const;
 

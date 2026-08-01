@@ -84,6 +84,10 @@ const nextConfig: NextConfig = {
         destination: '/blog/:slug*',
       },
       {
+        source: '/objekt/:slug*',
+        destination: '/listing/:slug*',
+      },
+      {
         source: '/vijesti/:slug*',
         destination: '/vijesti/:slug*', // Already named vijesti, just map for consistency
       },
