@@ -71,6 +71,13 @@ export default function IslandClient({ island, listings = [], articles = [], isl
   const gastroListings = listings?.filter(l => ['restaurants'].includes(l.locationCategoryId || l.categoryId)) || [];
   const apartmentsListings = listings?.filter(l => ['apartments', 'hotels', 'camps', 'accommodation', 'rooms', 'villas'].includes(l.locationCategoryId || l.categoryId)) || [];
 
+  // Vijesti filtrirane po tagu (imenu otoka)
+  const islandNews = articles?.filter(a => {
+    if (!a.tags) return false;
+    const tagArray = Array.isArray(a.tags) ? a.tags : typeof a.tags === 'string' ? a.tags.split(',').map((t: string) => t.trim()) : [];
+    return tagArray.some((t: string) => t.toLowerCase() === island.name.toLowerCase());
+  }).slice(0, 5) || [];
+
   const getDirectionsUrl = (lat: number, lng: number) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
   const emergencyServices = [
@@ -213,6 +220,34 @@ export default function IslandClient({ island, listings = [], articles = [], isl
                   </div>
                 </div>
               </Card>
+
+              {/* ISLAND NEWS (TAGGED BLOGS) */}
+              {islandNews.length > 0 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 border-b border-black/5 pb-4">
+                    <Umbrella className="size-6 text-primary" />
+                    <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
+                      {isEn ? `News & Articles: ${island.name}` : `Vijesti i članci: ${island.name}`}
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                    {islandNews.map((a) => {
+                      const bTitle = isEn && a.titleEn ? a.titleEn : a.title;
+                      return (
+                        <Link key={a.id} href={getLocalizedUrl(`/blog/${a.slug || a.id}`, language)} className="group block">
+                          <Card className="rounded-2xl border-none shadow-md overflow-hidden bg-white relative h-32 group-hover:shadow-lg transition-all duration-300">
+                            <Image src={a.image} alt={bTitle} fill className="object-cover brightness-[0.5] group-hover:scale-105 transition-transform duration-700" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                            <CardContent className="absolute bottom-2 left-3 right-3 p-0 z-10">
+                              <h4 className="font-black text-xs leading-tight text-white group-hover:text-primary transition-colors line-clamp-3">{bTitle}</h4>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* GOOGLE ADS TILE IN CONTENT */}
               <div className="my-8">

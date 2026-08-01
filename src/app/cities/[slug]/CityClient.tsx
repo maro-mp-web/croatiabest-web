@@ -101,9 +101,11 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
   ).slice(0, 3);
 
   // Vijesti filtrirane po tagu (imenu grada)
-  const cityNews = allBlogs.filter(
-    a => a.tags && Array.isArray(a.tags) && a.tags.some((t: string) => t.toLowerCase() === city.name.toLowerCase())
-  ).slice(0, 5);
+  const cityNews = allBlogs.filter(a => {
+    if (!a.tags) return false;
+    const tagArray = Array.isArray(a.tags) ? a.tags : typeof a.tags === 'string' ? a.tags.split(',').map((t: string) => t.trim()) : [];
+    return tagArray.some((t: string) => t.toLowerCase() === city.name.toLowerCase());
+  }).slice(0, 5);
 
   const getDirectionsUrl = (lat: number, lng: number) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 

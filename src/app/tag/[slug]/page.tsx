@@ -38,8 +38,9 @@ export default async function TagPage({ params }: { params: Promise<{ slug: stri
   // To be safe against substring matches (e.g. "hrana" matching "hrana123"), 
   // we filter accurately in JS just in case.
   const filteredArticles = articles.filter(a => {
-    if (!a.tags || !Array.isArray(a.tags)) return false;
-    return a.tags.map((t: string) => t.toLowerCase()).includes(tag);
+    if (!a.tags) return false;
+    const tagArray = Array.isArray(a.tags) ? a.tags : typeof a.tags === 'string' ? a.tags.split(',').map((t: string) => t.trim()) : [];
+    return tagArray.map((t: string) => t.toLowerCase()).includes(tag);
   });
 
   return <TagClient articles={filteredArticles} tag={tag} />;
