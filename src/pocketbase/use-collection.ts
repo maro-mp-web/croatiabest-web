@@ -32,7 +32,7 @@ export function useCollection<T = RecordModel>(
 ): UseCollectionResult<T> {
   const pb = usePB();
   const [data, setData] = useState<T[] | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(!!collectionName);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {

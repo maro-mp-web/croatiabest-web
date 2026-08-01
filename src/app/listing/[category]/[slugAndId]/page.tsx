@@ -76,7 +76,7 @@ export default function ListingDetailPage() {
     }
   };
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
+  if (isLoading || allActiveListings === null) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
   if (!listing) return notFound();
 
   const photos = getAllPhotos(listing);
