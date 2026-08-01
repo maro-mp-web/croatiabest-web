@@ -100,6 +100,11 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
          a.excerpt?.toLowerCase().includes(city.name.toLowerCase())
   ).slice(0, 3);
 
+  // Vijesti filtrirane po tagu (imenu grada)
+  const cityNews = allBlogs.filter(
+    a => a.tags && Array.isArray(a.tags) && a.tags.some((t: string) => t.toLowerCase() === city.name.toLowerCase())
+  ).slice(0, 5);
+
   const getDirectionsUrl = (lat: number, lng: number) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
   const renderCategoryCards = (listings: any[], categoryTitle: string, icon: React.ReactNode, colorClass: string, viewMoreSlug: string) => {
@@ -212,6 +217,34 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
                   </div>
                 </div>
               </Card>
+
+              {/* CITY NEWS (TAGGED BLOGS) */}
+              {cityNews.length > 0 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 border-b border-black/5 pb-4">
+                    <BookOpen className="size-6 text-primary" />
+                    <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
+                      {isEn ? `News & Articles: ${city.name}` : `Vijesti i članci: ${city.name}`}
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                    {cityNews.map((a) => {
+                      const bTitle = isEn && a.titleEn ? a.titleEn : a.title;
+                      return (
+                        <Link key={a.id} href={getLocalizedUrl(`/blog/${a.slug || a.id}`, language)} className="group block">
+                          <Card className="rounded-2xl border-none shadow-md overflow-hidden bg-white relative h-32 group-hover:shadow-lg transition-all duration-300">
+                            <Image src={a.image} alt={bTitle} fill className="object-cover brightness-[0.5] group-hover:scale-105 transition-transform duration-700" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                            <CardContent className="absolute bottom-2 left-3 right-3 p-0 z-10">
+                              <h4 className="font-black text-xs leading-tight text-white group-hover:text-primary transition-colors line-clamp-3">{bTitle}</h4>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* GOOGLE ADS TILE IN CONTENT */}
               <div className="my-8">

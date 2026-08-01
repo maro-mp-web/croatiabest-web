@@ -54,6 +54,7 @@ function AdminNewBlogPage() {
   const [author, setAuthor] = useState('CroatiaBest');
   const [readTime, setReadTime] = useState('5 min');
   const [publishDate, setPublishDate] = useState('');
+  const [tags, setTags] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingBlog, setIsLoadingBlog] = useState(false);
 
@@ -98,6 +99,7 @@ function AdminNewBlogPage() {
           setAuthor(blog.author || 'CroatiaBest');
           setReadTime(blog.readTime || '5 min');
           setPublishDate(blog.publishDate ? blog.publishDate.split(' ')[0] : '');
+          setTags(blog.tags && Array.isArray(blog.tags) ? blog.tags.join(', ') : '');
         })
         .catch((err: any) => {
           console.error('Error loading blog:', err);
@@ -136,6 +138,7 @@ function AdminNewBlogPage() {
         author,
         readTime,
         publishDate: publishDate ? new Date(publishDate).toISOString() : null,
+        tags: tags.split(',').map(t => t.trim()).filter(Boolean),
       };
 
       if (editId) {
@@ -362,6 +365,10 @@ function AdminNewBlogPage() {
                 <div className="space-y-3">
                   <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Slug (URL) *</Label>
                   <Input value={slug} onChange={(e) => setSlug(e.target.value)} className="h-12 rounded-xl bg-secondary/5 border-none" />
+                </div>
+                <div className="space-y-3">
+                  <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Tagovi (odvojeni zarezom)</Label>
+                  <Input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="hrana, dubrovnik, more..." className="h-12 rounded-xl bg-secondary/5 border-none" />
                 </div>
               </CardContent>
             </Card>
