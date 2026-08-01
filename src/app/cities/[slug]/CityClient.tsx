@@ -20,7 +20,8 @@ import {
   Compass,
   ArrowRight,
   ChevronRight,
-  BookOpen
+  BookOpen,
+  BedDouble
 } from 'lucide-react';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -50,6 +51,7 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
 
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [wikiData, setWikiData] = useState<{extract: string, thumbnail?: string}>({ extract: '' });
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   useEffect(() => {
     if (city) {
@@ -68,10 +70,10 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
   if (!city) return null;
 
   // Filter listings
-  const emergencyListings = cityListings?.filter(l => ['pharmacy', 'emergency', 'police', 'firefighters'].includes(l.locationCategoryId || l.categoryId)) || [];
   const popularListings = cityListings?.filter(l => ['beaches', 'opgs', 'wineries'].includes(l.locationCategoryId || l.categoryId)) || [];
   const viewpointListings = cityListings?.filter(l => ['viewpoints', 'landmarks'].includes(l.locationCategoryId || l.categoryId)) || [];
   const gastroListings = cityListings?.filter(l => ['restaurants'].includes(l.locationCategoryId || l.categoryId)) || [];
+  const apartmentsListings = cityListings?.filter(l => ['apartments', 'hotels', 'camps', 'accommodation', 'rooms', 'villas'].includes(l.locationCategoryId || l.categoryId)) || [];
 
   // Hitne službe telefonski brojevi
   const emergencyServices = [
@@ -85,7 +87,7 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
   // Obližnji spomenici Domovinskog rata
   const nearbyWarMemorials = globalSpecialListings.filter(
     l => l.locationCategoryId === 'homeland_war' && (l.region === city.region || l.city === city.name)
-  );
+  ).slice(0, 8); // Max 8 spomenika
 
   // Obližnji Nacionalni parkovi
   const nearbyNationalParks = globalSpecialListings.filter(
@@ -99,6 +101,39 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
   ).slice(0, 3);
 
   const getDirectionsUrl = (lat: number, lng: number) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+  const renderCategoryCards = (listings: any[], categoryTitle: string, icon: React.ReactNode, colorClass: string, viewMoreSlug: string) => {
+    const limitedListings = listings.slice(0, 5);
+    if (limitedListings.length === 0) return null;
+
+    return (
+      <div className="space-y-6 flex flex-col h-full">
+        <h4 className={`font-black text-sm uppercase tracking-[0.2em] flex items-center gap-2 ${colorClass}`}>
+          {icon} {categoryTitle}
+        </h4>
+        <div className="flex-1 space-y-4">
+          {limitedListings.map(l => {
+            const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
+            const name = isEn && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
+            return (
+              <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id)} className="block group">
+                <Card className="relative overflow-hidden border-none shadow-md rounded-2xl h-24 hover:shadow-lg transition-all duration-300">
+                  <Image src={image} alt={name} fill className="object-cover brightness-[0.6] group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                  <div className="absolute bottom-3 left-4 right-4">
+                    <p className="font-black text-white text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">{name}</p>
+                  </div>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+        <Link href={getLocalizedUrl(`/listing/${viewMoreSlug}`, language)} className={`w-full py-3 rounded-xl border-2 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:bg-foreground hover:text-white ${colorClass.replace('text-', 'border-').replace('600', '200')}`}>
+          {isEn ? 'View More' : 'Pogledaj više'} <ArrowRight className="size-4" />
+        </Link>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -123,12 +158,24 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
               {/* O GRADU CARD */}
               <Card className="rounded-[3rem] shadow-2xl border-none overflow-hidden bg-white/95 backdrop-blur-3xl p-8 md:p-12">
                 <div className="flex flex-col md:flex-row gap-12">
-                  <div className="flex-1 space-y-8">
-                    <h2 className="text-4xl font-headline font-black leading-tight">{isEn ? `About ${city.name}` : `O gradu ${city.name}`}</h2>
-                    <div 
-                      className="prose prose-xl max-w-none text-muted-foreground font-body italic leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: language === 'en' && city.descriptionEn ? city.descriptionEn : city.description }}
-                    />
+                  <div className="flex-1">
+                    <h2 className="text-4xl font-headline font-black leading-tight mb-8">{isEn ? `About ${city.name}` : `O gradu ${city.name}`}</h2>
+                    <div className="relative">
+                      <div 
+                        className={`prose prose-xl max-w-none text-muted-foreground font-body italic leading-relaxed transition-all duration-500 ${isDescriptionExpanded ? '' : 'max-h-[300px] overflow-hidden'}`}
+                        dangerouslySetInnerHTML={{ __html: language === 'en' && city.descriptionEn ? city.descriptionEn : city.description }}
+                      />
+                      {!isDescriptionExpanded && (
+                        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
+                      )}
+                    </div>
+                    <button 
+                      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                      className="mt-4 font-black text-sm uppercase tracking-widest text-primary flex items-center gap-2 hover:underline bg-primary/10 px-6 py-2.5 rounded-full"
+                    >
+                      {isDescriptionExpanded ? (isEn ? 'Read less' : 'Prikaži manje') : (isEn ? 'Read more' : 'Pročitaj više')}
+                      <ChevronRight className={`size-4 transition-transform ${isDescriptionExpanded ? '-rotate-90' : 'rotate-90'}`} />
+                    </button>
                   </div>
                   
                   {/* SIDE INFO */}
@@ -166,74 +213,6 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
                 </div>
               </Card>
 
-              {/* LISTINGS CATEGORIES COLUMNS */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="space-y-6">
-                  <h4 className="font-black text-xs uppercase tracking-[0.2em] text-red-600 flex items-center gap-2"><ShieldAlert className="size-4" /> {isEn ? 'Emergency Services' : 'Hitne službe'}</h4>
-                  {emergencyListings.map(l => (
-                    <Card key={l.id} className="border-none shadow-lg rounded-2xl bg-red-50/50 p-4">
-                      <p className="font-black text-sm mb-1">{l.name}</p>
-                      <a href={`tel:${l.contactPhone}`} className="text-xs font-black text-red-600 flex items-center gap-1"><PhoneIcon className="size-3" /> {l.contactPhone}</a>
-                    </Card>
-                  ))}
-                </div>
-                <div className="space-y-6">
-                  <h4 className="font-black text-xs uppercase tracking-[0.2em] text-blue-600 flex items-center gap-2"><Umbrella className="size-4" /> {isEn ? 'Popular Places' : 'Popularno'}</h4>
-                  {popularListings.map(l => (
-                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id)}>
-                      <Card className="border-none shadow-lg rounded-2xl bg-blue-50/50 p-4 hover:scale-[1.02] transition-transform cursor-pointer">
-                        <p className="font-black text-sm">{l.name}</p>
-                      </Card>
-                    </Link>
-                  ))}
-                </div>
-                <div className="space-y-6">
-                  <h4 className="font-black text-xs uppercase tracking-[0.2em] text-purple-600 flex items-center gap-2"><Binoculars className="size-4" /> {isEn ? 'Viewpoints' : 'Vidikovci'}</h4>
-                  {viewpointListings.map(l => (
-                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id)}>
-                      <Card className="border-none shadow-lg rounded-2xl bg-purple-50/50 p-4 hover:scale-[1.02] transition-transform cursor-pointer">
-                        <p className="font-black text-sm">{l.name}</p>
-                      </Card>
-                    </Link>
-                  ))}
-                </div>
-                <div className="space-y-6">
-                  <h4 className="font-black text-xs uppercase tracking-[0.2em] text-primary flex items-center gap-2"><Utensils className="size-4" /> {isEn ? 'Gastronomy' : 'Gastro'}</h4>
-                  {gastroListings.map(l => (
-                    <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id)}>
-                      <Card className="border-none shadow-lg rounded-2xl bg-orange-50/50 p-4 hover:scale-[1.02] transition-transform cursor-pointer">
-                        <p className="font-black text-sm">{l.name}</p>
-                      </Card>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* TELEFONSKE SLUŽBE (EMERGENCY SERVICE NUMBERS) */}
-              <Card className="rounded-[2.5rem] shadow-xl border-none overflow-hidden bg-slate-900 text-white p-8 space-y-6">
-                <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-                  <ShieldAlert className="size-6 text-red-500 animate-pulse" />
-                  <h3 className="text-xl font-headline font-black uppercase tracking-wider">{isEn ? 'Emergency Call Services' : 'Telefonski brojevi hitnih službi'}</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {emergencyServices.map((srv, idx) => (
-                    <a 
-                      key={idx} 
-                      href={`tel:${srv.phone}`}
-                      className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="font-black text-sm text-white">{srv.name}</p>
-                        <p className="text-[10px] text-white/50">{srv.desc}</p>
-                      </div>
-                      <Badge className="bg-red-600 text-white font-black text-xs px-3.5 py-1.5 rounded-full tracking-wider">
-                        {srv.phone}
-                      </Badge>
-                    </a>
-                  ))}
-                </div>
-              </Card>
-
               {/* GOOGLE ADS TILE IN CONTENT */}
               <div className="my-8">
                 <AdBanner format="rectangle" className="w-full h-[250px] shadow-sm rounded-3xl" />
@@ -243,27 +222,27 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
               {nearbyWarMemorials.length > 0 && (
                 <div className="space-y-6">
                   <div className="flex items-center gap-2 border-b border-black/5 pb-4">
-                    <Shield className="size-5 text-red-600" />
-                    <h3 className="text-2xl font-headline font-black italic tracking-tighter text-foreground">
-                      {isEn ? 'Nearby Homeland War Memorials' : 'Spomen obilježja Domovinskog rata u blizini'}
+                    <Shield className="size-6 text-red-600" />
+                    <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
+                      {isEn ? 'Homeland War Memorials' : 'Spomen obilježja Domovinskog rata'}
                     </h3>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                     {nearbyWarMemorials.map((l) => {
                       const name = isEn && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
                       const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
-                      const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id);
+                      const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id);
                       return (
                         <Link key={l.id} href={path} className="group">
                           <Card className="rounded-2xl border-none shadow-md overflow-hidden bg-white h-full flex flex-col">
-                            <div className="relative aspect-[16/10] overflow-hidden">
+                            <div className="relative aspect-square overflow-hidden">
                               <Image src={image} alt={name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                              <Badge className="absolute top-3 left-3 bg-red-600 text-white border-none font-black text-[8px] uppercase tracking-wider">
+                              <Badge className="absolute top-3 left-3 bg-red-600 text-white border-none font-black text-[8px] uppercase tracking-wider shadow-md">
                                 {isEn ? 'Memorial' : 'Spomen obilježje'}
                               </Badge>
                             </div>
-                            <CardContent className="p-4 flex-1">
-                              <h4 className="font-bold text-sm leading-tight text-foreground group-hover:text-primary transition-colors">{name}</h4>
+                            <CardContent className="p-4 flex-1 bg-white z-10 -mt-2 rounded-t-xl">
+                              <h4 className="font-black text-sm leading-tight text-foreground group-hover:text-primary transition-colors line-clamp-2">{name}</h4>
                             </CardContent>
                           </Card>
                         </Link>
@@ -277,16 +256,16 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
               {nearbyNationalParks.length > 0 && (
                 <div className="space-y-6">
                   <div className="flex items-center gap-2 border-b border-black/5 pb-4">
-                    <Trees className="size-5 text-emerald-600" />
-                    <h3 className="text-2xl font-headline font-black italic tracking-tighter text-foreground">
+                    <Trees className="size-6 text-emerald-600" />
+                    <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
                       {isEn ? 'Nearby National Parks' : 'Nacionalni parkovi u blizini'}
                     </h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {nearbyNationalParks.map((l) => {
                       const name = isEn && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
-                      const image = getFirstPhoto(l.photoUrls) || DEFAULT_LISTING_IMAGE;
-                      const path = generateListingUrl('national_parks', l.name, l.id);
+                      const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
+                      const path = generateListingUrl('national_parks', l.name, language, l.id);
                       return (
                         <Link key={l.id} href={path} className="group">
                           <Card className="rounded-2xl border-none shadow-md overflow-hidden bg-white h-full flex flex-col">
@@ -311,8 +290,8 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
               {relatedArticles.length > 0 && (
                 <div className="space-y-6">
                   <div className="flex items-center gap-2 border-b border-black/5 pb-4">
-                    <BookOpen className="size-5 text-secondary" />
-                    <h3 className="text-2xl font-headline font-black italic tracking-tighter text-foreground">
+                    <BookOpen className="size-6 text-secondary" />
+                    <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
                       {isEn ? `Stories and News from ${city.name}` : `Zanimljivosti i vijesti iz: ${city.name}`}
                     </h3>
                   </div>
@@ -363,8 +342,54 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
 
               {/* Sidebar Ad Placement */}
               <AdBanner format="vertical" className="w-full h-[600px] shadow-sm rounded-3xl" />
+
+              {/* TELEFONSKE SLUŽBE (EMERGENCY SERVICE NUMBERS) - MOVED TO SIDEBAR */}
+              <Card className="rounded-[2.5rem] shadow-xl border-none overflow-hidden bg-slate-900 text-white p-8 space-y-6">
+                <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+                  <ShieldAlert className="size-6 text-red-500 animate-pulse" />
+                  <h3 className="text-xl font-headline font-black uppercase tracking-wider">{isEn ? 'Emergency Call Services' : 'Hitne službe'}</h3>
+                </div>
+                <div className="flex flex-col gap-4">
+                  {emergencyServices.map((srv, idx) => (
+                    <a 
+                      key={idx} 
+                      href={`tel:${srv.phone}`}
+                      className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all flex items-center justify-between group"
+                    >
+                      <div>
+                        <p className="font-black text-sm text-white group-hover:text-red-400 transition-colors">{srv.name}</p>
+                        <p className="text-[10px] text-white/50">{srv.desc}</p>
+                      </div>
+                      <Badge className="bg-red-600 text-white font-black text-xs px-3.5 py-1.5 rounded-full tracking-wider shadow-lg">
+                        {srv.phone}
+                      </Badge>
+                    </a>
+                  ))}
+                </div>
+              </Card>
+
             </aside>
           </div>
+
+          {/* LISTINGS CATEGORIES COLUMNS - FULL WIDTH SECTION */}
+          {(popularListings.length > 0 || viewpointListings.length > 0 || gastroListings.length > 0 || apartmentsListings.length > 0) && (
+            <div className="mt-20 pt-16 border-t border-black/5">
+              <div className="text-center mb-12">
+                <h3 className="text-4xl font-headline font-black italic tracking-tighter">
+                  {isEn ? 'Explore Top Categories' : 'Istražite najbolje lokacije'}
+                </h3>
+                <p className="text-muted-foreground mt-4 font-medium max-w-2xl mx-auto">
+                  {isEn ? `Discover the best places in ${city.name} categorized for your convenience.` : `Pronađite najbolje lokacije u gradu ${city.name} podijeljene po kategorijama.`}
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {renderCategoryCards(popularListings, isEn ? 'Popular Places' : 'Popularno', <Umbrella className="size-5" />, 'text-blue-600', 'beaches')}
+                {renderCategoryCards(viewpointListings, isEn ? 'Viewpoints' : 'Vidikovci', <Binoculars className="size-5" />, 'text-purple-600', 'viewpoints')}
+                {renderCategoryCards(gastroListings, isEn ? 'Gastronomy' : 'Gastro', <Utensils className="size-5" />, 'text-orange-600', 'restaurants')}
+                {renderCategoryCards(apartmentsListings, isEn ? 'Accommodation' : 'Apartmani', <BedDouble className="size-5" />, 'text-emerald-600', 'apartments')}
+              </div>
+            </div>
+          )}
 
           {/* WIKIPEDIA SECTIONS */}
           {city?.wikiSections?.length > 0 && (

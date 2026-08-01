@@ -60,5 +60,26 @@ export default async function IslandPage({ params }: { params: Promise<{ slug: s
     // ignore
   }
 
-  return <IslandClient island={island} listings={listings} />;
+  let islandCities: any[] = [];
+  try {
+    // Pokušaj povući gradove koji pripadaju ovom otoku (ako postoji relacija)
+    islandCities = await pb.collection('cities').getFullList({
+      filter: `island="${island.id}"`,
+      sort: 'name',
+      requestKey: null
+    });
+  } catch (e) {
+    // Fallback ako se veza čuva kao ime otoka
+    try {
+      islandCities = await pb.collection('cities').getFullList({
+        filter: `island="${island.name}"`,
+        sort: 'name',
+        requestKey: null
+      });
+    } catch(err) {
+      console.log('Nije uspjelo dohvaćanje gradova otoka', err);
+    }
+  }
+
+  return <IslandClient island={island} listings={listings} articles={[]} islandCities={islandCities} />;
 }
