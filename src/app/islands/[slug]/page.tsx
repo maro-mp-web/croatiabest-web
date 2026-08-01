@@ -14,8 +14,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     const title = island.seoTitle || `Otok ${island.name} - Turistički vodič | CroatiaBest`;
     const description = island.seoDescription || (island.description ? island.description.replace(/<[^>]*>/g, '').substring(0, 160) : `Istražite otok ${island.name} — plaže, restorani, znamenitosti i sve informacije.`);
-    const keywords = island.seoKeywords ? island.seoKeywords.split(',').map((k: string) => k.trim()) : [island.name, 'otok', 'Hrvatska', 'turizam'];
+    let keywords = island.seoKeywords ? island.seoKeywords.split(',').map((k: string) => k.trim()) : [island.name, 'otok', 'Hrvatska', 'turizam'];
 
+    if (island.wikiSections && Array.isArray(island.wikiSections)) {
+      const wikiKeywords = island.wikiSections
+        .filter((section: any) => section.title)
+        .map((section: any) => `${island.name.toLowerCase()} ${section.title.toLowerCase()}`);
+      
+      keywords = Array.from(new Set([...keywords, ...wikiKeywords]));
+    }
     return {
       title,
       description,

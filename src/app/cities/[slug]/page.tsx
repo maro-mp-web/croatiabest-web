@@ -14,8 +14,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     const title = city.seoTitle || `${city.name} - Turistički vodič | CroatiaBest`;
     const description = city.seoDescription || (city.description ? city.description.replace(/<[^>]*>/g, '').substring(0, 160) : `Istražite ${city.name} — sve informacije, restorani, plaže, smještaj i znamenitosti.`);
-    const keywords = city.seoKeywords ? city.seoKeywords.split(',').map((k: string) => k.trim()) : [city.name, 'Hrvatska', 'turizam', 'vodič'];
+    let keywords = city.seoKeywords ? city.seoKeywords.split(',').map((k: string) => k.trim()) : [city.name, 'Hrvatska', 'turizam', 'vodič'];
 
+    if (city.wikiSections && Array.isArray(city.wikiSections)) {
+      const wikiKeywords = city.wikiSections
+        .filter((section: any) => section.title)
+        .map((section: any) => `${city.name.toLowerCase()} ${section.title.toLowerCase()}`);
+      
+      // Merge and remove duplicates
+      keywords = Array.from(new Set([...keywords, ...wikiKeywords]));
+    }
     return {
       title,
       description,
