@@ -14,7 +14,7 @@ export function generateSlug(name: string): string {
     .replace(/(^-|-$)+/g, '');
 }
 
-const CATEGORY_SLUG_MAP: Record<string, string> = {
+export const CATEGORY_SLUG_MAP: Record<string, string> = {
   pharmacy: 'ljekarna',
   emergency: 'hitna-pomoc',
   police: 'policija',
@@ -48,11 +48,11 @@ const CATEGORY_SLUG_MAP: Record<string, string> = {
   beauty: 'salon-ljepote'
 };
 
-export function generateListingUrl(category: string, name: string, lang: 'hr' | 'en' = 'hr', id?: string): string {
+export function generateListingUrl(category: string, nameOrSlug: string, langOrId?: 'hr' | 'en' | string, id?: string): string {
   const rawCat = (category || 'ostalo').toLowerCase();
   const niceCat = CATEGORY_SLUG_MAP[rawCat] || rawCat;
-  const slug = generateSlug(name);
+  const slug = generateSlug(nameOrSlug || '');
+  const lang = (langOrId === 'en' || langOrId === 'hr') ? langOrId : 'hr';
   const base = `/listing/${niceCat}/${slug}`;
-  // listing is generic, but if we need translation we can pipe it through getLocalizedUrl
   return getLocalizedUrl(base, lang);
 }
