@@ -44,7 +44,16 @@ export default function ListingDetailPage() {
     sort: '-created',
   });
 
-  const listing = allActiveListings?.find(l => generateSlug(l.name) === slug);
+  const idParts = slug.split('-');
+  const lastPart = idParts[idParts.length - 1];
+
+  const listing = allActiveListings?.find(l => 
+    (l.metadata && l.metadata.slug === slug) ||
+    generateSlug(l.name) === slug ||
+    l.slug === slug ||
+    l.id === slug ||
+    (lastPart && lastPart.length === 15 && l.id === lastPart)
+  );
   
   const handleSendInquiry = async () => {
     if (!listing || !pb) return;
@@ -259,7 +268,7 @@ export default function ListingDetailPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {promotedListings.map(l => (
-                  <Link key={l.id} href={generateListingUrl(l.locationCategoryId, l.name, l.id)}>
+                  <Link key={l.id} href={generateListingUrl(l.locationCategoryId, l.metadata?.slug || l.name, language)}>
                     <Card className="group border-none shadow-md hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col bg-white">
                       <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-4 group-hover:shadow-lg transition-all duration-300 bg-secondary/5">
                         <Image src={getFirstPhoto(l) || DEFAULT_LISTING_IMAGE} alt={l.name} fill sizes="25vw" className="object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -282,7 +291,7 @@ export default function ListingDetailPage() {
             <h3 className="text-3xl font-black italic mb-8">Slični objekti u blizini</h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {relatedListings.map(l => (
-                <Link key={l.id} href={generateListingUrl(l.locationCategoryId, l.name, l.id)}>
+                <Link key={l.id} href={generateListingUrl(l.locationCategoryId, l.metadata?.slug || l.name, language)}>
                   <Card className="group border-none shadow-md hover:shadow-xl transition-all rounded-3xl overflow-hidden h-full flex flex-col bg-secondary/5">
                     <div className="relative aspect-square overflow-hidden">
                       <Image src={getFirstPhoto(l) || DEFAULT_LISTING_IMAGE} alt={l.name} fill sizes="25vw" className="object-cover group-hover:scale-110 transition-transform duration-700" />
