@@ -1,15 +1,15 @@
-
 "use client"
 
 import React, { useState } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { CATEGORIES } from '@/app/lib/constants';
 import { CATEGORY_FIELDS } from '@/app/lib/category-fields';
+import { generateSlug, CATEGORY_SLUG_MAP, generateListingUrl } from '@/app/lib/utils/slug';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ui/image-upload';
@@ -29,7 +29,10 @@ import {
   Loader2,
   Sparkles,
   Compass,
-  ShoppingBag
+  ShoppingBag,
+  X,
+  Search,
+  Languages
 } from 'lucide-react';
 import { useUser, usePB, useCollection } from '@/pocketbase';
 import { useRouter } from 'next/navigation';
@@ -42,7 +45,9 @@ export default function AdminNewListingPage() {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [isAiTranslating, setIsAiTranslating] = useState(false);
   const [isFetchingCoords, setIsFetchingCoords] = useState(false);
+  const [langTab, setLangTab] = useState<'hr' | 'en'>('hr');
 
   const { data: citiesData } = useCollection('cities', { requestKey: null });
   const { data: islandsData } = useCollection('islands', { requestKey: null });
@@ -50,12 +55,12 @@ export default function AdminNewListingPage() {
   const cities = citiesData || [];
   const islands = islandsData || [];
 
-
   // Stroga provjera administratora
   const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
 
   const [formData, setFormData] = useState({
     name: '',
+    slug: '',
     locationCategoryId: '',
     address: '',
     city: '', 
@@ -63,6 +68,17 @@ export default function AdminNewListingPage() {
     latitude: '',
     longitude: '',
     description: '',
+    seoTitle: '',
+    seoDescription: '',
+    seoKeywords: '',
+
+    // English fields
+    nameEn: '',
+    descriptionEn: '',
+    seoTitleEn: '',
+    seoDescriptionEn: '',
+    seoKeywordsEn: '',
+
     contactPhone: '',
     contactEmail: '',
     webAddress: '',
@@ -93,6 +109,19 @@ export default function AdminNewListingPage() {
       ...prev,
       photoUrls: [...prev.photoUrls, url]
     }));
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setFormData(prev => {
+      const prevAutoSlug = generateSlug(prev.name);
+      const shouldUpdateSlug = !prev.slug || prev.slug === prevAutoSlug;
+      return {
+        ...prev,
+        name: val,
+        slug: shouldUpdateSlug ? generateSlug(val) : prev.slug
+      };
+    });
   };
 
   const fetchCoordinates = async () => {
@@ -133,13 +162,58 @@ export default function AdminNewListingPage() {
       const result = await aiContentAssistant({
         contentType: 'listing',
         category: category?.name,
-        promptInstruction: `Napiši luksuzan i privlačan opis za objekt "${formData.name}" u gradu/na otoku ${formData.city}.`
+        promptInstruction: `Napiši luksuzan i privlačan opis za objekt "${formData.name}" u gradu/na otoku ${formData.city}. Također predloži SEO naslov i kratki meta opis do 150 znakova.`
       });
-      setFormData({ ...formData, description: result.generatedContent });
+      
+      const generatedText = result.generatedContent;
+      setFormData(prev => ({ 
+        ...prev, 
+        description: generatedText,
+        seoTitle: prev.seoTitle || `${prev.name} | ${category?.name || 'CroatiaBest'} ${prev.city}`,
+        seoDescription: prev.seoDescription || (generatedText.replace(/<[^>]*>/g, '').substring(0, 155) + '...'),
+        seoKeywords: prev.seoKeywords || `${prev.name.toLowerCase()}, ${category?.name.toLowerCase()}, ${prev.city.toLowerCase()}, hrvatska, ponuda, radno vrijeme`
+      }));
+      toast({ title: "Uspjeh", description: "AI je uspješno generirao opis i SEO prijedloge!" });
     } catch (error) {
       toast({ title: "Greška", description: "AI asistent nije uspio.", variant: "destructive" });
     } finally {
       setIsAiGenerating(false);
+    }
+  };
+
+  const translateWithAi = async () => {
+    if (!formData.name && !formData.description) {
+      toast({ title: "Nedostaju podaci", description: "Unesite hrvatski naziv ili opis prije prijevoda.", variant: "destructive" });
+      return;
+    }
+    setIsAiTranslating(true);
+    try {
+      const category = CATEGORIES.find(c => c.id === formData.locationCategoryId);
+      const prompt = `Translate the following Croatian listing into English for CroatiaBest tourist guide.
+Croatian Name: "${formData.name}"
+Croatian Description: "${formData.description}"
+Croatian City: "${formData.city}"
+Provide a high quality English description, English name, and suggest English SEO Title and Meta description.`;
+
+      const result = await aiContentAssistant({
+        contentType: 'listing',
+        category: category?.name,
+        promptInstruction: prompt
+      });
+
+      setFormData(prev => ({
+        ...prev,
+        nameEn: prev.nameEn || prev.name,
+        descriptionEn: result.generatedContent,
+        seoTitleEn: prev.seoTitleEn || `${prev.name} - ${category?.name || 'Guide'} in ${prev.city} | CroatiaBest`,
+        seoDescriptionEn: prev.seoDescriptionEn || `Discover ${prev.name} in ${prev.city}, Croatia. View offers, location, opening hours and reviews on CroatiaBest.`,
+        seoKeywordsEn: prev.seoKeywordsEn || `${prev.name.toLowerCase()}, ${prev.city.toLowerCase()} croatia, best ${category?.name.toLowerCase() || 'places'}, visit croatia`
+      }));
+      toast({ title: "Uspjeh", description: "Engleski prijevod i SEO polja uspješno generirani!" });
+    } catch (error) {
+      toast({ title: "Greška", description: "AI prijevod nije uspio.", variant: "destructive" });
+    } finally {
+      setIsAiTranslating(false);
     }
   };
 
@@ -149,122 +223,369 @@ export default function AdminNewListingPage() {
       toast({ title: "Obavezna polja", description: "Naziv, kategorija i lokacija su obavezni.", variant: "destructive" });
       return;
     }
-    if (!formData.address) {
-      toast({ title: "Obavezna adresa", description: "Ulica i kućni broj su obavezni za točnu lokaciju na karti.", variant: "destructive" });
-      return;
-    }
 
     setIsSaving(true);
     const selectedCategory = CATEGORIES.find(c => c.id === formData.locationCategoryId);
     
     const knownLoc = [...cities, ...islands].find(l => l.name === formData.city);
     const region = knownLoc?.region || formData.region;
+    const finalSlug = formData.slug ? generateSlug(formData.slug) : generateSlug(formData.name);
 
-    // Ako koordinate nisu unesene, dohvati ih automatski iz adrese
-    let lat = parseFloat(formData.latitude);
-    let lng = parseFloat(formData.longitude);
-    
-    if (!lat || !lng) {
-      try {
-        const query = encodeURIComponent(`${formData.address}, ${formData.city}, Croatia`);
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
-        const data = await res.json();
-        if (data && data.length > 0) {
-          lat = parseFloat(data[0].lat);
-          lng = parseFloat(data[0].lon);
-        }
-      } catch (e) {
-        // Ako ne uspije dohvatiti koordinate, koristi default
-      }
-    }
-
-    const listingData = {
-      ...formData,
-      region,
-      latitude: lat || (knownLoc?.lat || 45.8150),
-      longitude: lng || (knownLoc?.lng || 15.9819),
-      locationCategoryType: selectedCategory?.type === 'paid' ? 'Paid' : 'Free',
-      paymentStatus: selectedCategory?.type === 'paid' ? 'paid' : 'not_applicable',
-      ownerId: user.id,
-      status: 'pending',
+    const updatedMetadata = {
+      ...formData.metadata,
+      slug: finalSlug,
+      seoTitle: formData.seoTitle || `${formData.name} - CroatiaBest`,
+      seoDescription: formData.seoDescription,
+      seoKeywords: formData.seoKeywords,
+      nameEn: formData.nameEn,
+      descriptionEn: formData.descriptionEn,
+      seoTitleEn: formData.seoTitleEn,
+      seoDescriptionEn: formData.seoDescriptionEn,
+      seoKeywordsEn: formData.seoKeywordsEn
     };
 
     try {
-      await pb.collection('listings').create(listingData);
-      toast({ title: "Uspjeh", description: "Objekt spremljen u bazu." });
+      await pb.collection('listings').create({
+        name: formData.name,
+        locationCategoryId: formData.locationCategoryId,
+        address: formData.address,
+        city: formData.city,
+        region,
+        latitude: parseFloat(formData.latitude) || (knownLoc?.lat || 45.8150),
+        longitude: parseFloat(formData.longitude) || (knownLoc?.lng || 15.9819),
+        description: formData.description,
+        contactPhone: formData.contactPhone,
+        contactEmail: formData.contactEmail,
+        webAddress: formData.webAddress,
+        locationCategoryType: selectedCategory?.type === 'paid' ? 'Paid' : 'Free',
+        paymentStatus: selectedCategory?.type === 'paid' ? 'paid' : 'not_applicable',
+        ownerId: user.id,
+        status: formData.status,
+        photoUrls: formData.photoUrls,
+        products: formData.products,
+        faq: formData.faq,
+        metadata: updatedMetadata
+      });
+      toast({ title: "Uspjeh", description: "Novi objekt i SEO podaci uspješno kreirani." });
       router.refresh();
       router.push('/admin');
-    } catch (error) {
+    } catch (error: any) {
       setIsSaving(false);
-      toast({ title: "Greška", description: "Spremanje nije uspjelo.", variant: "destructive" });
+      console.error("Create error:", error);
+      toast({ title: "Greška", description: `Spremanje nije uspjelo: ${error.message || ''}`, variant: "destructive" });
     }
   };
 
-  if (isUserLoading) return <div className="p-20 text-center">Učitavanje...</div>;
+  if (isUserLoading) return <div className="p-20 text-center"><Loader2 className="animate-spin size-8 mx-auto text-primary" /></div>;
   if (!isAdmin) return <div className="p-20 text-center font-black">PRISTUP ODBIJEN</div>;
 
   const allLocations = [...cities, ...islands].sort((a,b) => a.name.localeCompare(b.name));
   const isFreeCategory = CATEGORIES.find(c => c.id === formData.locationCategoryId)?.type === 'free';
+  const categorySlug = CATEGORY_SLUG_MAP[formData.locationCategoryId] || formData.locationCategoryId || 'objekt';
+  const currentSlug = formData.slug || generateSlug(formData.name);
 
   return (
     <div className="min-h-screen bg-background pb-24">
       <Navbar />
       <main className="container mx-auto px-4 py-12 max-w-5xl">
-        <div className="flex justify-between items-center mb-12">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full"><ArrowLeft /></Button>
-            <h1 className="text-4xl font-black">Novi Unos</h1>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-black">Novi Objekt & SEO</h1>
+              <p className="text-xs text-muted-foreground font-medium mt-1">
+                Dodajte novi objekt s dvojezičnim opisom, SEO metapodacima i ključnim riječima.
+              </p>
+            </div>
           </div>
-          <Button onClick={handleSave} disabled={isSaving} className="h-14 px-10 rounded-2xl font-black bg-primary shadow-xl">
-            {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} SPREMI
+          <Button onClick={handleSave} disabled={isSaving} className="h-12 px-8 rounded-2xl font-black bg-primary shadow-xl">
+            {isSaving ? <Loader2 className="animate-spin mr-2 size-4" /> : <Save className="mr-2 size-4" />} OBJAVI OBJEKT
           </Button>
+        </div>
+
+        {/* Google SERP Preview Card */}
+        <Card className="rounded-[2.5rem] shadow-sm border border-black/5 bg-white mb-8 overflow-hidden">
+          <CardHeader className="bg-secondary/5 border-b py-4 px-8 flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Search className="size-4 text-blue-600" />
+              <CardTitle className="text-sm font-black uppercase tracking-wider">Google SERP & SEO Pregled</CardTitle>
+            </div>
+            <span className="text-[10px] font-mono bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-bold">Live URL Preview</span>
+          </CardHeader>
+          <CardContent className="p-8 space-y-2">
+            <div className="text-xs text-emerald-700 font-mono flex items-center gap-1.5 break-all">
+              <span>https://croatiabest.com.hr/objekt/{categorySlug}/<strong className="text-emerald-900">{currentSlug || 'vas-slug'}</strong></span>
+            </div>
+            <h3 className="text-xl font-bold text-blue-700 hover:underline cursor-pointer">
+              {formData.seoTitle || (formData.name ? `${formData.name} - CroatiaBest` : 'Naziv vašeg objekta - CroatiaBest')}
+            </h3>
+            <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
+              {formData.seoDescription || (formData.description ? formData.description.replace(/<[^>]*>/g, '').substring(0, 160) : 'Dodajte meta opis kako bi privukli posjetitelje s Google tražilice...')}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Language Tabs */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-secondary/10 p-1.5 rounded-2xl flex gap-2">
+            <button
+              type="button"
+              onClick={() => setLangTab('hr')}
+              className={`px-8 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
+                langTab === 'hr' ? 'bg-white shadow-md text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <span className="text-base">🇭🇷</span> Hrvatski Sadržaj & SEO
+            </button>
+            <button
+              type="button"
+              onClick={() => setLangTab('en')}
+              className={`px-8 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
+                langTab === 'en' ? 'bg-white shadow-md text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <span className="text-base">🇬🇧</span> English Translation & SEO
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none">
-              <CardHeader className="bg-secondary/5 border-b"><CardTitle>Osnovni podaci</CardTitle></CardHeader>
-              <CardContent className="p-8 space-y-6">
-                <div className="space-y-2">
-                  <Label>Naziv</Label>
-                  <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="h-12 rounded-xl" />
-                </div>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label>Kategorija</Label>
-                    <Select onValueChange={v => setFormData({...formData, locationCategoryId: v})} value={formData.locationCategoryId}>
-                      <SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {CATEGORIES.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Status</Label>
-                    <Select onValueChange={v => setFormData({...formData, status: v})} value={formData.status}>
-                      <SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="draft">Draft</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between mb-1"><Label>Opis</Label><Button variant="outline" size="sm" onClick={generateWithAi} disabled={isAiGenerating} className="text-[10px] font-black"><Sparkles className="size-3 mr-1" /> AI WRITER</Button></div>
-                  <Textarea className="min-h-[200px] rounded-2xl" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
-                </div>
-              </CardContent>
-            </Card>
+            
+            {/* HRVATSKI SADRŽAJ */}
+            {langTab === 'hr' && (
+              <>
+                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none bg-white">
+                  <CardHeader className="bg-secondary/5 border-b"><CardTitle>Osnovni podaci (Hrvatski)</CardTitle></CardHeader>
+                  <CardContent className="p-8 space-y-6">
+                    <div className="space-y-2">
+                      <Label className="font-bold">Naziv objekta (Hrvatski)</Label>
+                      <Input 
+                        value={formData.name} 
+                        onChange={handleNameChange} 
+                        placeholder="npr. Konoba Dubrava" 
+                        className="h-12 rounded-xl text-base font-semibold" 
+                      />
+                    </div>
 
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label className="font-bold">Prilagođeni SEO Link (Slug)</Label>
+                        <span className="text-[10px] text-muted-foreground font-mono">Automatski generirano iz naziva</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono text-muted-foreground bg-secondary/5 px-3 py-3 rounded-xl border border-black/5">/objekt/{categorySlug}/</span>
+                        <Input 
+                          value={formData.slug} 
+                          onChange={e => setFormData({...formData, slug: generateSlug(e.target.value)})} 
+                          placeholder="konoba-dubrava" 
+                          className="h-12 rounded-xl font-mono text-sm" 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label className="font-bold">Kategorija</Label>
+                        <Select onValueChange={v => setFormData({...formData, locationCategoryId: v})} value={formData.locationCategoryId}>
+                          <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Odaberi kategoriju..." /></SelectTrigger>
+                          <SelectContent>
+                            {CATEGORIES.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="font-bold">Status</Label>
+                        <Select onValueChange={v => setFormData({...formData, status: v})} value={formData.status}>
+                          <SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active (Objavljeno)</SelectItem>
+                            <SelectItem value="draft">Draft (Skica)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <Label className="font-bold">Opis objekta (Hrvatski)</Label>
+                        <Button variant="outline" size="sm" onClick={generateWithAi} disabled={isAiGenerating} className="text-[10px] font-black rounded-xl">
+                          {isAiGenerating ? <Loader2 className="animate-spin size-3 mr-1" /> : <Sparkles className="size-3 mr-1 text-amber-500" />} AI WRITER
+                        </Button>
+                      </div>
+                      <Textarea 
+                        className="min-h-[200px] rounded-2xl text-base leading-relaxed" 
+                        placeholder="Napišite detaljan opis ponude, ambijenta, povijesti ili specijaliteta..."
+                        value={formData.description} 
+                        onChange={e => setFormData({...formData, description: e.target.value})} 
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* HRVATSKI SEO BLOK */}
+                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none bg-white">
+                  <CardHeader className="bg-secondary/5 border-b flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle className="text-xl font-black flex items-center gap-2">
+                        <Search className="size-5 text-primary" /> SEO Postavke (Hrvatski)
+                      </CardTitle>
+                      <CardDescription className="text-xs">Optimizirajte prikaz objekta za Google tražilicu.</CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-8 space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Label className="font-bold">SEO Naslov (Title Tag)</Label>
+                        <span className="text-[10px] text-muted-foreground">{formData.seoTitle.length}/60 znakova</span>
+                      </div>
+                      <Input 
+                        value={formData.seoTitle} 
+                        onChange={e => setFormData({...formData, seoTitle: e.target.value})} 
+                        placeholder={formData.name ? `${formData.name} - Najbolji restorani | CroatiaBest` : 'Naslov za Google...'} 
+                        className="h-12 rounded-xl text-sm" 
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Label className="font-bold">Meta Opis (Meta Description)</Label>
+                        <span className={`text-[10px] font-mono ${formData.seoDescription.length > 160 ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>
+                          {formData.seoDescription.length}/160 znakova
+                        </span>
+                      </div>
+                      <Textarea 
+                        rows={3}
+                        value={formData.seoDescription} 
+                        onChange={e => setFormData({...formData, seoDescription: e.target.value})} 
+                        placeholder="Privlačan kratki sažetak za Google tražilicu (do 160 znakova)..." 
+                        className="rounded-xl text-sm leading-relaxed" 
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="font-bold">Ključne riječi (Keywords)</Label>
+                      <Input 
+                        value={formData.seoKeywords} 
+                        onChange={e => setFormData({...formData, seoKeywords: e.target.value})} 
+                        placeholder="npr. restoran dubrovnik, dalmatinska spiza, svježa riba, večera" 
+                        className="h-12 rounded-xl text-sm" 
+                      />
+                      <p className="text-[11px] text-muted-foreground">Unosite ključne riječi odvojene zarezom.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+
+            {/* ENGLESKI SADRŽAJ */}
+            {langTab === 'en' && (
+              <>
+                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none bg-white">
+                  <CardHeader className="bg-blue-500/5 border-b flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle className="text-xl font-black flex items-center gap-2">
+                        <Languages className="size-5 text-blue-600" /> English Content (Engleski)
+                      </CardTitle>
+                      <CardDescription className="text-xs">Unesite engleski prijevod naziva i opisa.</CardDescription>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={translateWithAi} 
+                      disabled={isAiTranslating} 
+                      className="text-xs font-black rounded-xl border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    >
+                      {isAiTranslating ? <Loader2 className="animate-spin size-3 mr-1" /> : <Sparkles className="size-3 mr-1 text-blue-600" />}
+                      AI Prevedi s hrvatskog
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="p-8 space-y-6">
+                    <div className="space-y-2">
+                      <Label className="font-bold">Naziv na engleskom (Name EN)</Label>
+                      <Input 
+                        value={formData.nameEn} 
+                        onChange={e => setFormData({...formData, nameEn: e.target.value})} 
+                        placeholder={formData.name || 'e.g. Dubrava Tavern'} 
+                        className="h-12 rounded-xl text-base font-semibold" 
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="font-bold">Opis na engleskom (Description EN)</Label>
+                      <Textarea 
+                        className="min-h-[200px] rounded-2xl text-base leading-relaxed" 
+                        placeholder="Write a detailed description in English for foreign visitors..."
+                        value={formData.descriptionEn} 
+                        onChange={e => setFormData({...formData, descriptionEn: e.target.value})} 
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* ENGLESKI SEO BLOK */}
+                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none bg-white">
+                  <CardHeader className="bg-blue-500/5 border-b">
+                    <CardTitle className="text-xl font-black flex items-center gap-2">
+                      <Search className="size-5 text-blue-600" /> SEO Settings (English)
+                    </CardTitle>
+                    <CardDescription className="text-xs">Optimizirajte prikaz objekta za strane posjetitelje na Googleu.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-8 space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Label className="font-bold">SEO Title (EN)</Label>
+                        <span className="text-[10px] text-muted-foreground">{formData.seoTitleEn.length}/60 characters</span>
+                      </div>
+                      <Input 
+                        value={formData.seoTitleEn} 
+                        onChange={e => setFormData({...formData, seoTitleEn: e.target.value})} 
+                        placeholder="e.g. Dubrava Tavern - Best Dining in Dubrovnik | CroatiaBest" 
+                        className="h-12 rounded-xl text-sm" 
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Label className="font-bold">Meta Description (EN)</Label>
+                        <span className={`text-[10px] font-mono ${formData.seoDescriptionEn.length > 160 ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>
+                          {formData.seoDescriptionEn.length}/160 characters
+                        </span>
+                      </div>
+                      <Textarea 
+                        rows={3}
+                        value={formData.seoDescriptionEn} 
+                        onChange={e => setFormData({...formData, seoDescriptionEn: e.target.value})} 
+                        placeholder="Catchy English snippet for search engines (up to 160 chars)..." 
+                        className="rounded-xl text-sm leading-relaxed" 
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="font-bold">Keywords (EN)</Label>
+                      <Input 
+                        value={formData.seoKeywordsEn} 
+                        onChange={e => setFormData({...formData, seoKeywordsEn: e.target.value})} 
+                        placeholder="e.g. dubrovnik restaurant, traditional croatian food, seafood, best dinner" 
+                        className="h-12 rounded-xl text-sm" 
+                      />
+                      <p className="text-[11px] text-muted-foreground">Separate keywords with commas.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+
+            {/* Specifičnosti kategorije */}
             {CATEGORY_FIELDS[formData.locationCategoryId] && (
-              <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none">
+              <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none bg-white">
                 <CardHeader className="bg-secondary/5 border-b"><CardTitle>Specifičnosti kategorije</CardTitle></CardHeader>
                 <CardContent className="p-8 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {CATEGORY_FIELDS[formData.locationCategoryId].map(field => (
                       <div key={field.id} className="space-y-2">
-                        <Label>{field.label}</Label>
+                        <Label className="font-bold">{field.label}</Label>
                         {field.type === 'text' || field.type === 'number' ? (
                           <Input 
                             type={field.type}
@@ -291,7 +612,7 @@ export default function AdminNewListingPage() {
                               onChange={e => setFormData({...formData, metadata: {...formData.metadata, [field.id]: e.target.checked}})}
                               className="size-5 rounded border-gray-300 accent-primary focus:ring-primary cursor-pointer"
                             />
-                            <Label htmlFor={field.id} className="font-bold cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{field.label}</Label>
+                            <Label htmlFor={field.id} className="font-bold cursor-pointer leading-none">{field.label}</Label>
                           </div>
                         ) : null}
                       </div>
@@ -300,14 +621,16 @@ export default function AdminNewListingPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Ponuda & Proizvodi i FAQ */}
             {!isFreeCategory && (
               <div className="space-y-8">
-                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none mt-8">
+                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none bg-white">
                   <CardHeader className="bg-secondary/5 border-b"><CardTitle>Ponuda & Proizvodi</CardTitle></CardHeader>
                   <CardContent className="p-8 space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Naziv proizvoda</Label>
+                        <Label>Naziv proizvoda / usluge</Label>
                         <Input placeholder="npr. Pizza Margarita" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="rounded-xl" />
                       </div>
                       <div className="space-y-2">
@@ -332,18 +655,18 @@ export default function AdminNewListingPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none mt-8">
+                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none bg-white">
                   <CardHeader className="bg-secondary/5 border-b"><CardTitle>Česta Pitanja (FAQ)</CardTitle></CardHeader>
                   <CardContent className="p-8 space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Pitanje</Label>
-                        <Input placeholder="npr. Imate li parking?" value={newFaq.question} onChange={e => setNewFaq({...newFaq, question: e.target.value})} className="rounded-xl" />
+                        <Input placeholder="npr. Imate li osiguran parking?" value={newFaq.question} onChange={e => setNewFaq({...newFaq, question: e.target.value})} className="rounded-xl" />
                       </div>
                       <div className="space-y-2">
                         <Label>Odgovor</Label>
                         <div className="flex gap-2">
-                          <Input placeholder="npr. Da, parking je besplatan." value={newFaq.answer} onChange={e => setNewFaq({...newFaq, answer: e.target.value})} className="rounded-xl" />
+                          <Input placeholder="npr. Da, besplatan parking za goste." value={newFaq.answer} onChange={e => setNewFaq({...newFaq, answer: e.target.value})} className="rounded-xl" />
                           <Button type="button" onClick={addFaq} variant="secondary" className="rounded-xl">Dodaj</Button>
                         </div>
                       </div>
@@ -364,15 +687,19 @@ export default function AdminNewListingPage() {
               </div>
             )}
 
-            <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none">
-              <CardHeader className="bg-secondary/5 border-b"><CardTitle>Učitavanje fotografija</CardTitle></CardHeader>
+            {/* Fotografije */}
+            <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none bg-white">
+              <CardHeader className="bg-secondary/5 border-b"><CardTitle>Fotografije objekta</CardTitle></CardHeader>
               <CardContent className="p-8 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <ImageUpload onUploadComplete={handleImageUploaded} />
                   <div className="grid grid-cols-2 gap-2">
                     {formData.photoUrls.map((url, i) => (
-                      <div key={i} className="relative aspect-square rounded-xl overflow-hidden border">
-                        <img src={url} className="object-cover w-full h-full" />
+                      <div key={i} className="relative aspect-square rounded-xl overflow-hidden border group">
+                        <img src={url} className="object-cover w-full h-full" alt="Upload" />
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button type="button" variant="destructive" size="icon" onClick={() => setFormData(prev => ({...prev, photoUrls: prev.photoUrls.filter((_, idx) => idx !== i)}))}><X className="size-4" /></Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -381,25 +708,35 @@ export default function AdminNewListingPage() {
             </Card>
           </div>
 
+          {/* Desni stupac - Lokacija & Kontakt */}
           <div className="space-y-8">
-            <Card className="rounded-[2.5rem] shadow-xl border-none">
+            <Card className="rounded-[2.5rem] shadow-xl border-none bg-white">
               <CardHeader className="bg-secondary/5 border-b"><CardTitle>Lokacija</CardTitle></CardHeader>
               <CardContent className="p-6 space-y-4">
-                <Select onValueChange={v => setFormData({...formData, city: v})} value={formData.city}>
-                  <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Grad ili Otok" /></SelectTrigger>
-                  <SelectContent>{allLocations.map(l => <SelectItem key={l.slug} value={l.name}>{l.name}</SelectItem>)}</SelectContent>
-                </Select>
-                <div className="flex gap-2">
-                  <Input placeholder="Adresa" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="rounded-xl flex-1" />
-                  <Button variant="secondary" onClick={fetchCoordinates} disabled={isFetchingCoords} className="rounded-xl px-4 font-black">
-                    {isFetchingCoords ? <Loader2 className="animate-spin size-4 mr-2" /> : <MapPin className="size-4 mr-2" />}
-                    Dohvati
-                  </Button>
+                <div className="space-y-1.5">
+                  <Label className="font-bold">Grad ili Otok</Label>
+                  <Select onValueChange={v => setFormData({...formData, city: v})} value={formData.city}>
+                    <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Grad ili Otok" /></SelectTrigger>
+                    <SelectContent>{allLocations.map(l => <SelectItem key={l.slug} value={l.name}>{l.name}</SelectItem>)}</SelectContent>
+                  </Select>
                 </div>
+                
+                <div className="space-y-1.5">
+                  <Label className="font-bold">Adresa</Label>
+                  <div className="flex gap-2">
+                    <Input placeholder="npr. Ilica 10" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="rounded-xl flex-1" />
+                    <Button variant="secondary" onClick={fetchCoordinates} disabled={isFetchingCoords} className="rounded-xl px-4 font-black">
+                      {isFetchingCoords ? <Loader2 className="animate-spin size-4 mr-2" /> : <MapPin className="size-4 mr-2" />}
+                      Dohvati
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-2">
-                  <Input placeholder="Lat (Opcionalno)" type="number" value={formData.latitude} onChange={e => setFormData({...formData, latitude: e.target.value})} className="rounded-xl" />
-                  <Input placeholder="Lng (Opcionalno)" type="number" value={formData.longitude} onChange={e => setFormData({...formData, longitude: e.target.value})} className="rounded-xl" />
+                  <Input placeholder="Lat" type="number" value={formData.latitude} onChange={e => setFormData({...formData, latitude: e.target.value})} className="rounded-xl" />
+                  <Input placeholder="Lng" type="number" value={formData.longitude} onChange={e => setFormData({...formData, longitude: e.target.value})} className="rounded-xl" />
                 </div>
+                
                 <div className="pt-2">
                   <LocationPicker 
                     lat={formData.latitude ? parseFloat(formData.latitude) : null}
@@ -413,12 +750,21 @@ export default function AdminNewListingPage() {
             </Card>
 
             {!isFreeCategory && (
-              <Card className="rounded-[2.5rem] shadow-xl border-none">
-                <CardHeader className="bg-secondary/5 border-b"><CardTitle>Kontakt</CardTitle></CardHeader>
+              <Card className="rounded-[2.5rem] shadow-xl border-none bg-white">
+                <CardHeader className="bg-secondary/5 border-b"><CardTitle>Kontakt podaci</CardTitle></CardHeader>
                 <CardContent className="p-6 space-y-4">
-                  <Input placeholder="Telefon" value={formData.contactPhone} onChange={e => setFormData({...formData, contactPhone: e.target.value})} className="rounded-xl" />
-                  <Input placeholder="Email" value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} className="rounded-xl" />
-                  <Input placeholder="Web stranica" value={formData.webAddress} onChange={e => setFormData({...formData, webAddress: e.target.value})} className="rounded-xl" />
+                  <div className="space-y-1.5">
+                    <Label className="font-bold">Telefon</Label>
+                    <Input placeholder="+385 91 ..." value={formData.contactPhone} onChange={e => setFormData({...formData, contactPhone: e.target.value})} className="rounded-xl" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-bold">Email</Label>
+                    <Input placeholder="info@objekt.hr" value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} className="rounded-xl" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-bold">Web stranica</Label>
+                    <Input placeholder="https://www.objekt.hr" value={formData.webAddress} onChange={e => setFormData({...formData, webAddress: e.target.value})} className="rounded-xl" />
+                  </div>
                 </CardContent>
               </Card>
             )}
