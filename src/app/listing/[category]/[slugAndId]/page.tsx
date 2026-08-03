@@ -89,8 +89,64 @@ export default function ListingDetailPage() {
   if (!listing) return notFound();
 
   const photos = getAllPhotos(listing);
-
   const category = CATEGORIES.find(c => c.id === listing.locationCategoryId);
+  const isFreeCategory = category?.type === 'free' || listing.locationCategoryType === 'free' || listing.locationCategoryType === 'Free';
+
+  // Helper for parsing JSON safely
+  const parseJsonArray = (val: any): any[] => {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string') {
+      const trimmed = val.trim();
+      if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          return Array.isArray(parsed) ? parsed : [parsed];
+        } catch (e) {
+          return [];
+        }
+      }
+    }
+    return val ? [val] : [];
+  };
+
+  // Only show inquiry form if not a free category and actually has an owner
+  const hasOwner = Boolean(listing.ownerId && typeof listing.ownerId === 'string' && listing.ownerId.trim().length > 0);
+  const showInquiryForm = !isFreeCategory && hasOwner;
+
+  // Contact details verification
+  const contactPhone = listing.contactPhone?.trim();
+  const webAddress = listing.webAddress?.trim();
+  const contactEmail = listing.contactEmail?.trim();
+  const hasContactDetails = Boolean(contactPhone || webAddress || contactEmail);
+
+  // Products and Offer verification
+  const rawProducts = parseJsonArray(listing.products);
+  const validProducts = rawProducts.filter((p: any) => p && typeof p === 'object' && (p.name || p.title) && (p.price || p.desc));
+  const menuDescription = listing.menuDescription?.trim();
+  const hasOffer = validProducts.length > 0 || Boolean(menuDescription && menuDescription.length > 0);
+
+  // Custom FAQ verification
+  const rawFaq = parseJsonArray(listing.faq);
+  const validFaq = rawFaq.filter((f: any) => f && typeof f === 'object' && f.question && f.answer && f.question.trim().length > 0 && f.answer.trim().length > 0);
+  const hasFaq = validFaq.length > 0;
+
+  // Specific category metadata fields verification
+  const activeCategoryFields = (CATEGORY_FIELDS[listing.locationCategoryId] || []).filter(field => {
+    const value = listing.metadata?.[field.id];
+    return value !== undefined && value !== null && value !== '' && value !== false;
+  });
+
+  // Description verification
+  const descriptionHtml = (language === 'en' && listing.metadata?.descriptionEn) ? listing.metadata.descriptionEn : listing.description;
+  const hasDescription = Boolean(descriptionHtml && descriptionHtml.trim().length > 0);
+
+  // Location / coordinates check
+  const lat = parseFloat(listing.latitude);
+  const lng = parseFloat(listing.longitude);
+  const hasValidCoordinates = !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
+
+  const addressText = listing.address?.trim();
+  const cityText = listing.city?.trim();
 
   const relatedListings = allActiveListings
     ?.filter(l => l.id !== listing.id && (l.locationCategoryId === listing.locationCategoryId || l.city === listing.city))
@@ -123,75 +179,102 @@ export default function ListingDetailPage() {
           <div className="flex-1 space-y-12">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Badge className="bg-primary/10 text-primary border-none px-6 py-1.5 uppercase font-black text-[10px] tracking-widest">{category ? (t[`cat_${category.id}` as keyof typeof t] || category.name) : ''}</Badge>
-                <Badge variant="outline" className="text-secondary border-secondary px-6 py-1.5 font-black text-[10px]">{listing.city}</Badge>
+                {category && (
+                  <Badge className="bg-primary/10 text-primary border-none px-6 py-1.5 uppercase font-black text-[10px] tracking-widest">
+                    {t[`cat_${category.id}` as keyof typeof t] || category.name}
+                  </Badge>
+                )}
+                {cityText && (
+                  <Badge variant="outline" className="text-secondary border-secondary px-6 py-1.5 font-black text-[10px]">
+                    {cityText}
+                  </Badge>
+                )}
               </div>
               <h1 className="text-6xl font-headline font-black tracking-tighter">
                 {language === 'en' && listing.metadata?.nameEn ? listing.metadata.nameEn : listing.name}
               </h1>
-              <p className="text-xl text-muted-foreground flex items-center gap-2"><MapPin className="size-5 text-primary" /> {listing.address}</p>
+              {(addressText || cityText) && (
+                <p className="text-xl text-muted-foreground flex items-center gap-2">
+                  <MapPin className="size-5 text-primary" /> 
+                  {addressText ? (cityText && !addressText.toLowerCase().includes(cityText.toLowerCase()) ? `${addressText}, ${cityText}` : addressText) : cityText}
+                </p>
+              )}
             </div>
 
             <Tabs defaultValue="info" className="w-full">
               <TabsList className="bg-secondary/5 p-1 rounded-2xl h-14">
-                <TabsTrigger value="info" className="px-10 h-full rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md font-black uppercase text-xs">Informacije</TabsTrigger>
-                {(listing.products || listing.menuDescription) && (
-                  <TabsTrigger value="offer" className="px-10 h-full rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md font-black uppercase text-xs">Ponuda</TabsTrigger>
+                <TabsTrigger value="info" className="px-10 h-full rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md font-black uppercase text-xs">
+                  Informacije
+                </TabsTrigger>
+                {hasOffer && (
+                  <TabsTrigger value="offer" className="px-10 h-full rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md font-black uppercase text-xs">
+                    Ponuda
+                  </TabsTrigger>
                 )}
-                {listing.faq && listing.faq.length > 0 && (
-                  <TabsTrigger value="faq" className="px-10 h-full rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md font-black uppercase text-xs">Česta Pitanja</TabsTrigger>
+                {hasFaq && (
+                  <TabsTrigger value="faq" className="px-10 h-full rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md font-black uppercase text-xs">
+                    Česta Pitanja
+                  </TabsTrigger>
                 )}
               </TabsList>
               
               <TabsContent value="info" className="pt-10 space-y-8">
-                {CATEGORY_FIELDS[listing.locationCategoryId] && listing.metadata && Object.keys(listing.metadata).length > 0 && (
+                {activeCategoryFields.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-10 p-8 bg-secondary/5 rounded-[2rem]">
-                    {CATEGORY_FIELDS[listing.locationCategoryId].map(field => {
+                    {activeCategoryFields.map(field => {
                       const value = listing.metadata[field.id];
-                      if (value === undefined || value === null || value === '' || value === false) return null;
-                      
                       return (
                         <div key={field.id} className="flex flex-col space-y-1">
-                           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t[`field_${field.id}` as keyof typeof t] || field.label}</span>
+                           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                             {t[`field_${field.id}` as keyof typeof t] || field.label}
+                           </span>
                           <span className="font-black text-lg flex items-center gap-2">
                             {field.type === 'checkbox' ? (
                               <div className="flex items-center gap-2 text-primary"><Check className="size-5" /> {language === 'en' ? 'Yes' : 'Da'}</div>
                             ) : (
-                              value
+                              String(value)
                             )}
                           </span>
                         </div>
-                      )
+                      );
                     })}
                   </div>
                 )}
-                <div 
-                  className="prose prose-lg max-w-none font-body italic text-foreground/80 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: language === 'en' && listing.metadata?.descriptionEn ? listing.metadata.descriptionEn : listing.description }}
-                />
-              </TabsContent>
-
-              <TabsContent value="offer" className="pt-10 space-y-10">
-                {listing.menuDescription && <div className="p-10 bg-secondary/5 rounded-[2rem] italic text-2xl font-body">{listing.menuDescription}</div>}
-                {listing.products && (
-                  <div className="space-y-6">
-                    <h3 className="text-3xl font-black italic flex items-center gap-4"><ShoppingBag className="text-primary" /> Katalog Proizvoda</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {listing.products.map((p: any, i: number) => (
-                        <div key={i} className="flex justify-between items-center p-6 bg-white rounded-2xl border border-black/5 shadow-sm">
-                          <span className="font-bold text-lg">{p.name}</span>
-                          <Badge variant="secondary" className="text-lg px-4 py-1">{p.price}</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                {hasDescription && (
+                  <div 
+                    className="prose prose-lg max-w-none font-body italic text-foreground/80 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+                  />
                 )}
               </TabsContent>
 
-              {listing.faq && listing.faq.length > 0 && (
+              {hasOffer && (
+                <TabsContent value="offer" className="pt-10 space-y-10">
+                  {menuDescription && (
+                    <div className="p-10 bg-secondary/5 rounded-[2rem] italic text-2xl font-body">
+                      {menuDescription}
+                    </div>
+                  )}
+                  {validProducts.length > 0 && (
+                    <div className="space-y-6">
+                      <h3 className="text-3xl font-black italic flex items-center gap-4"><ShoppingBag className="text-primary" /> Katalog Proizvoda</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {validProducts.map((p: any, i: number) => (
+                          <div key={i} className="flex justify-between items-center p-6 bg-white rounded-2xl border border-black/5 shadow-sm">
+                            <span className="font-bold text-lg">{p.name || p.title}</span>
+                            {(p.price || p.desc) && <Badge variant="secondary" className="text-lg px-4 py-1">{p.price || p.desc}</Badge>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+              )}
+
+              {hasFaq && (
                 <TabsContent value="faq" className="pt-10">
                   <Accordion type="single" collapsible className="w-full space-y-4">
-                    {listing.faq.map((f: any, i: number) => (
+                    {validFaq.map((f: any, i: number) => (
                       <AccordionItem key={i} value={`item-${i}`} className="border-none bg-secondary/5 rounded-2xl px-6 py-2">
                         <AccordionTrigger className="text-xl font-bold hover:no-underline">{f.question}</AccordionTrigger>
                         <AccordionContent className="text-lg text-muted-foreground pb-4 leading-relaxed">
@@ -206,13 +289,13 @@ export default function ListingDetailPage() {
           </div>
 
           <aside className="w-full lg:w-96 space-y-8">
-            {listing.latitude && listing.longitude && (
+            {hasValidCoordinates && (
               <Card className="rounded-[3rem] shadow-2xl border-none overflow-hidden h-[250px] relative z-0">
-                <MiniMap latitude={listing.latitude} longitude={listing.longitude} className="h-full w-full" />
+                <MiniMap latitude={lat} longitude={lng} className="h-full w-full" />
               </Card>
             )}
 
-            {listing.locationCategoryType !== 'free' && (
+            {showInquiryForm && (
               <Card className="rounded-[3rem] shadow-2xl border-none overflow-hidden">
                 <div className="bg-foreground p-8 text-white flex justify-between items-center">
                   <h3 className="text-2xl font-black italic">Kontakt Forma</h3>
@@ -237,12 +320,25 @@ export default function ListingDetailPage() {
               </Card>
             )}
 
-            {listing.locationCategoryType !== 'free' && (listing.contactPhone || listing.webAddress) && (
+            {hasContactDetails && (
               <Card className="rounded-[3rem] shadow-2xl border-none p-8 space-y-4">
                 <h4 className="text-xl font-black">Detalji</h4>
                 <div className="space-y-3">
-                  {listing.contactPhone && <div className="flex items-center gap-3 font-bold text-sm"><Phone className="size-4 text-primary" /> {listing.contactPhone}</div>}
-                  {listing.webAddress && <a href={listing.webAddress} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 font-bold text-sm text-secondary hover:underline"><Globe className="size-4" /> Web stranica</a>}
+                  {contactPhone && (
+                    <a href={`tel:${contactPhone}`} className="flex items-center gap-3 font-bold text-sm hover:text-primary transition-colors">
+                      <Phone className="size-4 text-primary" /> {contactPhone}
+                    </a>
+                  )}
+                  {contactEmail && (
+                    <a href={`mailto:${contactEmail}`} className="flex items-center gap-3 font-bold text-sm hover:text-primary transition-colors">
+                      <Mail className="size-4 text-primary" /> {contactEmail}
+                    </a>
+                  )}
+                  {webAddress && (
+                    <a href={webAddress.startsWith('http') ? webAddress : `https://${webAddress}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 font-bold text-sm text-secondary hover:underline">
+                      <Globe className="size-4" /> Web stranica
+                    </a>
+                  )}
                 </div>
               </Card>
             )}
@@ -310,7 +406,7 @@ export default function ListingDetailPage() {
         {/* DYNAMIC FAQ SECTION */}
         {listing && (
           <div className="container mx-auto px-4 mt-16">
-            <FAQSection type="listing" name={listing.name} cityContext={listing.city} />
+            <FAQSection type="listing" name={listing.name} cityContext={listing.city} isFreeCategory={isFreeCategory} />
           </div>
         )}
       </main>

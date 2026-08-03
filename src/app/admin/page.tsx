@@ -1517,9 +1517,11 @@ export default function AdminDashboard() {
                 <CardTitle className="text-2xl font-black uppercase tracking-tight">Nacionalni Parkovi</CardTitle>
                 <CardDescription>Upravljajte nacionalnim parkovima i njihovim detaljnim opisima te lokacijama.</CardDescription>
               </div>
-              <Button onClick={() => startEditPark()} className="bg-primary text-white rounded-xl font-bold h-10 px-4">
-                <PlusCircle className="size-4 mr-2" /> Dodaj Park
-              </Button>
+              <Link href="/admin/new-listing">
+                <Button className="bg-primary text-white rounded-xl font-bold h-10 px-4">
+                  <PlusCircle className="size-4 mr-2" /> Dodaj Park / Objekt
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent className="p-0">
               {listingsLoading ? (
@@ -1546,9 +1548,11 @@ export default function AdminDashboard() {
                           </div>
                           
                           <div className="flex gap-2">
-                            <Button variant="outline" size="icon" onClick={() => startEditPark(park)} className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
-                              <Edit2 className="size-4" />
-                            </Button>
+                            <Link href={`/admin/edit-listing/${park.id}`}>
+                              <Button variant="outline" size="icon" title="Uredi objekt i SEO" className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
+                                <Edit2 className="size-4" />
+                              </Button>
+                            </Link>
                             <Button variant="outline" size="icon" onClick={() => handleDelete(park.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
                               <Trash2 className="size-4" />
                             </Button>

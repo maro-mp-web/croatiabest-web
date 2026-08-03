@@ -16,9 +16,10 @@ interface FAQSectionProps {
   cityContext?: string;
   zipCode?: string;
   population?: string;
+  isFreeCategory?: boolean;
 }
 
-export default function FAQSection({ type, name, cityContext, zipCode, population }: FAQSectionProps) {
+export default function FAQSection({ type, name, cityContext, zipCode, population, isFreeCategory }: FAQSectionProps) {
   const { language } = useLanguage();
   const isEn = language === 'en';
   const [openIdx, setOpenIdx] = useState<number | null>(0);
@@ -102,20 +103,30 @@ export default function FAQSection({ type, name, cityContext, zipCode, populatio
           {
             q: isEn ? `What makes ${name} a unique place to visit?` : `Što čini ${name} posebnim mjestom za posjet?`,
             a: isEn 
-              ? `It offers authentic services, premium features, and a high-quality tourist experience. Check out our description and photo gallery above to learn about its history and highlights.` 
-              : `Nudi vrhunsku uslugu, ugodan ambijent i autentičan doživljaj. Pogledajte opis i galeriju fotografija iznad kako biste saznali više o povijesti i ponudi.`
+              ? `It offers authentic experience, natural or cultural value, and great highlights. Check out our description and photo gallery above to learn about its history and features.` 
+              : `Nudi autentičan doživljaj, prirodnu ili kulturnu vrijednost i izvanrednu lokaciju. Pogledajte opis i galeriju fotografija iznad kako biste saznali više o povijesti i detaljima.`
           },
-          {
-            q: isEn ? `How can I contact the management of ${name}?` : `Kako mogu stupiti u kontakt s ${name}?`,
+          isFreeCategory ? {
+            q: isEn ? `Is there an entrance fee or ticket required for ${name}?` : `Plaća li se ulaznica za posjet ${name}?`,
             a: isEn 
-              ? `You can use the official contact details listed on this page, including the telephone number, email, or visit their website directly via our verified external link.` 
-              : `Možete koristiti službene kontakt podatke navedene na ovoj stranici, uključujući telefonski broj, e-mail adresu ili posjetiti njihovu web stranicu preko izravnog linka.`
+              ? `Most natural locations, beaches, viewpoints, and public monuments are freely accessible year-round. Certain protected nature parks or specific heritage museums may have nominal local entrance fees.` 
+              : `Većina javnih znamenitosti, plaža, vidikovaca i spomenika slobodna je za posjet tijekom cijele godine bez naknade, dok zaštićeni parkovi ili muzeji mogu imati lokalne ulaznice.`
+          } : {
+            q: isEn ? `How can I contact the management or book services at ${name}?` : `Kako mogu stupiti u kontakt ili rezervirati uslugu kod ${name}?`,
+            a: isEn 
+              ? `You can use the verified contact details or the inquiry form on this page to reach the owners directly.` 
+              : `Možete koristiti provjerene kontakt podatke ili poslati upit izravno putem forme na ovoj stranici.`
           },
-          {
-            q: isEn ? `Is booking or reservation required for ${name}?` : `Je li potrebna rezervacija ili najava za posjet ${name}?`,
+          isFreeCategory ? {
+            q: isEn ? `When is the best time of day to visit ${name}?` : `Kada je najbolje vrijeme u danu za posjet ${name}?`,
+            a: isEn 
+              ? `Early mornings and golden sunset hours usually offer the most peaceful atmosphere, mild temperatures, and the best natural lighting for photography.` 
+              : `Rana jutra i poslijepodneva u vrijeme zalaska sunca nude najugodniji mir, ugodnije temperature i najbolje osvjetljenje za fotografiranje i uživanje.`
+          } : {
+            q: isEn ? `Is booking or reservation required for ${name}?` : `Je li potrebna prethodna rezervacija ili najava za posjet ${name}?`,
             a: isEn 
               ? `We recommend contacting them in advance, especially during the high summer season, to check availability and ensure you get the best seating or accommodation.` 
-              : `Preporučujemo da ih kontaktirate unaprijed, posebno tijekom ljetne sezone, kako biste provjerili slobodna mjesta ili rezervirali svoj termin.`
+              : `Preporučujemo da ih kontaktirate unaprijed, posebno tijekom ljetne turističke sezone, kako biste provjerili slobodne termine ili osigurali mjesto.`
           },
           {
             q: isEn ? `Are there other tourist attractions or points of interest nearby?` : `Nalaze li se u blizini druge turističke atrakcije?`,
