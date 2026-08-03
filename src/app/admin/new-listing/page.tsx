@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { CATEGORIES } from '@/app/lib/constants';
 import { CATEGORY_FIELDS } from '@/app/lib/category-fields';
-import { generateSlug, CATEGORY_SLUG_MAP, generateListingUrl } from '@/app/lib/utils/slug';
+import { generateSlug, CATEGORY_SLUG_MAP } from '@/app/lib/utils/slug';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,27 +16,15 @@ import { ImageUpload } from '@/components/ui/image-upload';
 import { 
   Save, 
   ArrowLeft, 
-  Building2, 
   MapPin, 
-  Phone, 
-  Globe, 
-  Image as ImageIcon, 
-  Video, 
-  Share2, 
-  Utensils, 
-  Bed, 
-  ShieldCheck,
-  Loader2,
-  Sparkles,
-  Compass,
   ShoppingBag,
   X,
   Search,
-  Languages
+  Languages,
+  Loader2
 } from 'lucide-react';
 import { useUser, usePB, useCollection } from '@/pocketbase';
 import { useRouter } from 'next/navigation';
-import { aiContentAssistant } from '@/ai/flows/ai-content-assistant';
 import LocationPicker from '@/components/map/LocationPicker';
 
 export default function AdminNewListingPage() {
@@ -44,8 +32,6 @@ export default function AdminNewListingPage() {
   const pb = usePB();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
-  const [isAiGenerating, setIsAiGenerating] = useState(false);
-  const [isAiTranslating, setIsAiTranslating] = useState(false);
   const [isFetchingCoords, setIsFetchingCoords] = useState(false);
   const [langTab, setLangTab] = useState<'hr' | 'en'>('hr');
 
@@ -148,72 +134,6 @@ export default function AdminNewListingPage() {
       toast({ title: "Greška", description: "Greška kod spajanja na server za mape.", variant: "destructive" });
     } finally {
       setIsFetchingCoords(false);
-    }
-  };
-
-  const generateWithAi = async () => {
-    if (!formData.name || !formData.locationCategoryId) {
-      toast({ title: "Nedostaju podaci", description: "Unesite naziv i kategoriju za AI.", variant: "destructive" });
-      return;
-    }
-    setIsAiGenerating(true);
-    try {
-      const category = CATEGORIES.find(c => c.id === formData.locationCategoryId);
-      const result = await aiContentAssistant({
-        contentType: 'listing',
-        category: category?.name,
-        promptInstruction: `Napiši luksuzan i privlačan opis za objekt "${formData.name}" u gradu/na otoku ${formData.city}. Također predloži SEO naslov i kratki meta opis do 150 znakova.`
-      });
-      
-      const generatedText = result.generatedContent;
-      setFormData(prev => ({ 
-        ...prev, 
-        description: generatedText,
-        seoTitle: prev.seoTitle || `${prev.name} | ${category?.name || 'CroatiaBest'} ${prev.city}`,
-        seoDescription: prev.seoDescription || (generatedText.replace(/<[^>]*>/g, '').substring(0, 155) + '...'),
-        seoKeywords: prev.seoKeywords || `${prev.name.toLowerCase()}, ${category?.name.toLowerCase()}, ${prev.city.toLowerCase()}, hrvatska, ponuda, radno vrijeme`
-      }));
-      toast({ title: "Uspjeh", description: "AI je uspješno generirao opis i SEO prijedloge!" });
-    } catch (error) {
-      toast({ title: "Greška", description: "AI asistent nije uspio.", variant: "destructive" });
-    } finally {
-      setIsAiGenerating(false);
-    }
-  };
-
-  const translateWithAi = async () => {
-    if (!formData.name && !formData.description) {
-      toast({ title: "Nedostaju podaci", description: "Unesite hrvatski naziv ili opis prije prijevoda.", variant: "destructive" });
-      return;
-    }
-    setIsAiTranslating(true);
-    try {
-      const category = CATEGORIES.find(c => c.id === formData.locationCategoryId);
-      const prompt = `Translate the following Croatian listing into English for CroatiaBest tourist guide.
-Croatian Name: "${formData.name}"
-Croatian Description: "${formData.description}"
-Croatian City: "${formData.city}"
-Provide a high quality English description, English name, and suggest English SEO Title and Meta description.`;
-
-      const result = await aiContentAssistant({
-        contentType: 'listing',
-        category: category?.name,
-        promptInstruction: prompt
-      });
-
-      setFormData(prev => ({
-        ...prev,
-        nameEn: prev.nameEn || prev.name,
-        descriptionEn: result.generatedContent,
-        seoTitleEn: prev.seoTitleEn || `${prev.name} - ${category?.name || 'Guide'} in ${prev.city} | CroatiaBest`,
-        seoDescriptionEn: prev.seoDescriptionEn || `Discover ${prev.name} in ${prev.city}, Croatia. View offers, location, opening hours and reviews on CroatiaBest.`,
-        seoKeywordsEn: prev.seoKeywordsEn || `${prev.name.toLowerCase()}, ${prev.city.toLowerCase()} croatia, best ${category?.name.toLowerCase() || 'places'}, visit croatia`
-      }));
-      toast({ title: "Uspjeh", description: "Engleski prijevod i SEO polja uspješno generirani!" });
-    } catch (error) {
-      toast({ title: "Greška", description: "AI prijevod nije uspio.", variant: "destructive" });
-    } finally {
-      setIsAiTranslating(false);
     }
   };
 
@@ -408,12 +328,7 @@ Provide a high quality English description, English name, and suggest English SE
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex justify-between items-center mb-1">
-                        <Label className="font-bold">Opis objekta (Hrvatski)</Label>
-                        <Button variant="outline" size="sm" onClick={generateWithAi} disabled={isAiGenerating} className="text-[10px] font-black rounded-xl">
-                          {isAiGenerating ? <Loader2 className="animate-spin size-3 mr-1" /> : <Sparkles className="size-3 mr-1 text-amber-500" />} AI WRITER
-                        </Button>
-                      </div>
+                      <Label className="font-bold">Opis objekta (Hrvatski)</Label>
                       <Textarea 
                         className="min-h-[200px] rounded-2xl text-base leading-relaxed" 
                         placeholder="Napišite detaljan opis ponude, ambijenta, povijesti ili specijaliteta..."
@@ -490,16 +405,6 @@ Provide a high quality English description, English name, and suggest English SE
                       </CardTitle>
                       <CardDescription className="text-xs">Unesite engleski prijevod naziva i opisa.</CardDescription>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={translateWithAi} 
-                      disabled={isAiTranslating} 
-                      className="text-xs font-black rounded-xl border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
-                    >
-                      {isAiTranslating ? <Loader2 className="animate-spin size-3 mr-1" /> : <Sparkles className="size-3 mr-1 text-blue-600" />}
-                      AI Prevedi s hrvatskog
-                    </Button>
                   </CardHeader>
                   <CardContent className="p-8 space-y-6">
                     <div className="space-y-2">
