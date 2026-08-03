@@ -32,11 +32,13 @@ import {
   Trees,
   BookOpen,
   Settings,
-  X
+  X,
+  ExternalLink
 } from 'lucide-react';
 import { WikiSectionsEditor } from '@/components/ui/WikiSectionsEditor';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { CATEGORIES } from '@/app/lib/constants';
+import { generateListingUrl } from '@/app/lib/utils/slug';
 import Link from 'next/link';
 import { useUser, useCollection, usePB } from '@/pocketbase';
 import { getFirstPhoto } from '@/app/lib/image-helpers';
@@ -1321,12 +1323,21 @@ export default function AdminDashboard() {
                                     <RotateCcw className="size-3 mr-1" /> Reset
                                   </Button>
                                 )}
+                                <a 
+                                  href={generateListingUrl(listing.locationCategoryId || listing.categoryId, listing.metadata?.slug || listing.name)} 
+                                  target="_blank" 
+                                  rel="noreferrer"
+                                >
+                                  <Button variant="outline" size="icon" title="Otvori javni SEO link" className="text-emerald-600 hover:bg-emerald-50 rounded-xl size-10 border-emerald-500/20 bg-emerald-500/5">
+                                    <ExternalLink className="size-4" />
+                                  </Button>
+                                </a>
                                 <Link href={`/admin/edit-listing/${listing.id}`}>
-                                  <Button variant="outline" size="icon" className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
+                                  <Button variant="outline" size="icon" title="Uredi objekt i SEO" className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
                                     <Edit2 className="size-4" />
                                   </Button>
                                 </Link>
-                                <Button variant="outline" size="icon" onClick={() => handleDelete(listing.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
+                                <Button variant="outline" size="icon" title="Obriši" onClick={() => handleDelete(listing.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
                                   <Trash2 className="size-4" />
                                 </Button>
                               </div>
