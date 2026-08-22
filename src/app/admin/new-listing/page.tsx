@@ -623,9 +623,15 @@ export default function AdminNewListingPage() {
               <CardContent className="p-6 space-y-4">
                 <div className="space-y-1.5">
                   <Label className="font-bold">Grad ili Otok</Label>
-                  <Select onValueChange={v => setFormData({...formData, city: v})} value={formData.city || undefined}>
+                  <Select 
+                    onValueChange={v => {
+                      const selected = allLocations.find(l => l.uniqueSlug === v);
+                      if (selected) setFormData({...formData, city: selected.name});
+                    }} 
+                    value={allLocations.find(l => l.name === formData.city)?.uniqueSlug || undefined}
+                  >
                     <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Grad ili Otok" /></SelectTrigger>
-                    <SelectContent className="max-h-60 overflow-y-auto">{allLocations.map(l => <SelectItem key={l.uniqueSlug} value={l.name}>{l.displayName}</SelectItem>)}</SelectContent>
+                    <SelectContent className="max-h-60 overflow-y-auto">{allLocations.map(l => <SelectItem key={l.uniqueSlug} value={l.uniqueSlug}>{l.displayName}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 
