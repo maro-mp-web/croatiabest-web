@@ -199,7 +199,10 @@ export default function AdminNewListingPage() {
   if (isUserLoading) return <div className="p-20 text-center"><Loader2 className="animate-spin size-8 mx-auto text-primary" /></div>;
   if (!isAdmin) return <div className="p-20 text-center font-black">PRISTUP ODBIJEN</div>;
 
-  const allLocations = [...cities, ...islands].sort((a,b) => a.name.localeCompare(b.name));
+  const allLocations = [
+    ...cities.map(c => ({ ...c, displayName: c.name, uniqueSlug: `grad-${c.slug}` })),
+    ...islands.map(i => ({ ...i, displayName: `${i.name} (Otok)`, uniqueSlug: `otok-${i.slug}` }))
+  ].sort((a,b) => a.displayName.localeCompare(b.displayName));
   const isFreeCategory = CATEGORIES.find(c => c.id === formData.locationCategoryId)?.type === 'free';
   const categorySlug = CATEGORY_SLUG_MAP[formData.locationCategoryId] || formData.locationCategoryId || 'objekt';
   const currentSlug = formData.slug || generateSlug(formData.name);
@@ -308,7 +311,7 @@ export default function AdminNewListingPage() {
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label className="font-bold">Kategorija</Label>
-                        <Select onValueChange={v => setFormData({...formData, locationCategoryId: v})} value={formData.locationCategoryId || undefined}>
+                        <Select onValueChange={v => setFormData({...formData, locationCategoryId: v})} value={formData.locationCategoryId}>
                           <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Odaberi kategoriju..." /></SelectTrigger>
                           <SelectContent>
                             {CATEGORIES.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
@@ -317,7 +320,7 @@ export default function AdminNewListingPage() {
                       </div>
                       <div className="space-y-2">
                         <Label className="font-bold">Status</Label>
-                        <Select onValueChange={v => setFormData({...formData, status: v})} value={formData.status || undefined}>
+                        <Select onValueChange={v => setFormData({...formData, status: v})} value={formData.status}>
                           <SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="active">Active (Objavljeno)</SelectItem>
@@ -620,9 +623,9 @@ export default function AdminNewListingPage() {
               <CardContent className="p-6 space-y-4">
                 <div className="space-y-1.5">
                   <Label className="font-bold">Grad ili Otok</Label>
-                  <Select onValueChange={v => setFormData({...formData, city: v})} value={formData.city || undefined}>
+                  <Select onValueChange={v => setFormData({...formData, city: v})} value={formData.city}>
                     <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Grad ili Otok" /></SelectTrigger>
-                    <SelectContent className="max-h-60 overflow-y-auto">{allLocations.map(l => <SelectItem key={l.slug} value={l.name}>{l.name}</SelectItem>)}</SelectContent>
+                    <SelectContent className="max-h-60 overflow-y-auto">{allLocations.map(l => <SelectItem key={l.uniqueSlug} value={l.displayName}>{l.displayName}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 
