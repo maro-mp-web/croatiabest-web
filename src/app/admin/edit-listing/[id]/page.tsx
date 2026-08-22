@@ -373,7 +373,7 @@ export default function AdminEditListingPage() {
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label className="font-bold">Kategorija</Label>
-                        <Select onValueChange={v => setFormData({...formData, locationCategoryId: v})} value={formData.locationCategoryId}>
+                        <Select onValueChange={v => setFormData({...formData, locationCategoryId: v})} value={formData.locationCategoryId || undefined}>
                           <SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             {CATEGORIES.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
@@ -382,7 +382,7 @@ export default function AdminEditListingPage() {
                       </div>
                       <div className="space-y-2">
                         <Label className="font-bold">Status</Label>
-                        <Select onValueChange={v => setFormData({...formData, status: v})} value={formData.status}>
+                        <Select onValueChange={v => setFormData({...formData, status: v})} value={formData.status || undefined}>
                           <SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="active">Active (Objavljeno)</SelectItem>
@@ -686,9 +686,9 @@ export default function AdminEditListingPage() {
               <CardContent className="p-6 space-y-4">
                 <div className="space-y-1.5">
                   <Label className="font-bold">Grad ili Otok</Label>
-                  <Select onValueChange={v => setFormData({...formData, city: v})} value={formData.city}>
+                  <Select onValueChange={v => setFormData({...formData, city: v})} value={formData.city || undefined}>
                     <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Grad ili Otok" /></SelectTrigger>
-                    <SelectContent>{allLocations.map(l => <SelectItem key={l.slug} value={l.name}>{l.name}</SelectItem>)}</SelectContent>
+                    <SelectContent className="max-h-60 overflow-y-auto">{allLocations.map(l => <SelectItem key={l.slug} value={l.name}>{l.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 
