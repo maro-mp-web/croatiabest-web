@@ -33,19 +33,39 @@ import {
   BookOpen,
   Settings,
   X,
-  ExternalLink
+  ExternalLink,
+  LogOut
 } from 'lucide-react';
 import { WikiSectionsEditor } from '@/components/ui/WikiSectionsEditor';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { CATEGORIES } from '@/app/lib/constants';
 import { generateListingUrl } from '@/app/lib/utils/slug';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useUser, useCollection, usePB } from '@/pocketbase';
 import { getFirstPhoto } from '@/app/lib/image-helpers';
 
 export default function AdminDashboard() {
   const { user, isUserLoading } = useUser();
   const pb = usePB();
+  const router = useRouter();
+
+  // Helper: parse wikiSections that may come as JSON string from PocketBase
+  const parseWikiSections = (raw: any): any[] => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string') {
+      try { return JSON.parse(raw); } catch { return []; }
+    }
+    return [];
+  };
+
+  // Logout handler
+  const handleLogout = () => {
+    if (!pb) return;
+    pb.authStore.clear();
+    router.push('/');
+  };
   
   // Stroga provjera administratora - isključivo maro.webdeveloper@gmail.com
   const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
@@ -224,7 +244,7 @@ export default function AdminDashboard() {
         seoTitleEn: cityItem.seoTitleEn || '',
         seoDescriptionEn: cityItem.seoDescriptionEn || '',
         seoKeywordsEn: cityItem.seoKeywordsEn || '',
-        wikiSections: cityItem.wikiSections || [],
+        wikiSections: parseWikiSections(cityItem.wikiSections),
       });
     } else {
       setEditId(null);
@@ -248,6 +268,7 @@ export default function AdminDashboard() {
         seoTitleEn: '',
         seoDescriptionEn: '',
         seoKeywordsEn: '',
+        wikiSections: [],
       });
     }
     setIsEditing(true);
@@ -276,7 +297,7 @@ export default function AdminDashboard() {
         seoTitleEn: islandItem.seoTitleEn || '',
         seoDescriptionEn: islandItem.seoDescriptionEn || '',
         seoKeywordsEn: islandItem.seoKeywordsEn || '',
-        wikiSections: islandItem.wikiSections || [],
+        wikiSections: parseWikiSections(islandItem.wikiSections),
       });
     } else {
       setEditId(null);
@@ -299,6 +320,7 @@ export default function AdminDashboard() {
         seoTitleEn: '',
         seoDescriptionEn: '',
         seoKeywordsEn: '',
+        wikiSections: [],
       });
     }
     setIsEditing(true);
@@ -607,6 +629,15 @@ export default function AdminDashboard() {
             <h1 className="text-5xl font-headline font-black tracking-tight">Upravljačka ploča</h1>
             <p className="text-muted-foreground mt-2">Prijavljen kao: <span className="font-bold text-foreground">{user?.email}</span></p>
           </div>
+          
+          {/* Logout Button */}
+          <Button 
+            onClick={handleLogout} 
+            variant="outline" 
+            className="rounded-2xl h-14 px-8 font-black border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 shadow-sm"
+          >
+            <LogOut className="size-5 mr-2" /> Odjavi se
+          </Button>
           
           <div className="flex flex-wrap gap-3">
             <Link href="/admin/new-listing">

@@ -3,14 +3,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Map, Menu, BookOpen, ChevronDown, Building2, Anchor, PlusCircle } from 'lucide-react';
+import { Map, Menu, BookOpen, ChevronDown, Building2, Anchor, PlusCircle, LogOut, User, LayoutDashboard } from 'lucide-react';
 import { getLocalizedUrl } from '@/lib/i18n-routes';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/brand/Logo';
-import { useUser, useCollection } from '@/pocketbase';
+import { useUser, useCollection, usePB } from '@/pocketbase';
 
 interface NavbarProps {
   transparent?: boolean;
@@ -19,7 +19,17 @@ interface NavbarProps {
 export function Navbar({ transparent = false }: NavbarProps) {
   const { language, setLanguage, t } = useLanguage();
   const { user } = useUser();
+  const pb = usePB();
   const router = useRouter();
+
+  // Logout handler
+  const handleLogout = () => {
+    if (!pb) return;
+    pb.authStore.clear();
+    router.push('/');
+  };
+
+  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
 
   const { data: citiesData } = useCollection('cities', { sort: 'name', requestKey: null });
   const { data: islandsData } = useCollection('islands', { sort: 'name', requestKey: null });
@@ -27,8 +37,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
   const cities = citiesData || [];
   const islands = islandsData || [];
 
-  // Stroga provjera administratora
-  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
+
 
   const [isScrolled, setIsScrolled] = React.useState(false);
 
@@ -134,6 +143,41 @@ export function Navbar({ transparent = false }: NavbarProps) {
             </Button>
           </Link>
 
+          {/* User Menu (when logged in) */}
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="rounded-full font-bold gap-2 px-4">
+                  <User className="size-4" />
+                  <span className="hidden md:inline text-sm">{user.email?.split('@')[0]}</span>
+                  <ChevronDown className="size-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 rounded-xl p-2">
+                {isAdmin && (
+                  <DropdownMenuItem 
+                    onSelect={() => router.push('/admin')}
+                    className="cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors gap-2"
+                  >
+                    <LayoutDashboard className="size-4" /> Admin Panel
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem 
+                  onSelect={() => router.push('/dashboard')}
+                  className="cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors gap-2"
+                >
+                  <User className="size-4" /> Moj Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onSelect={handleLogout}
+                  className="cursor-pointer font-medium hover:bg-red-50 text-red-600 hover:text-red-700 rounded-lg transition-colors gap-2"
+                >
+                  <LogOut className="size-4" /> Odjavi se
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
           <div className="flex items-center space-x-2 font-black text-sm">
             <button 
               onClick={() => setLanguage('hr')} 
@@ -195,6 +239,26 @@ export function Navbar({ transparent = false }: NavbarProps) {
                     </div>
                   </div>
                   <Link href="/blog" className="text-xl font-black uppercase tracking-tight hover:text-primary transition-colors">{t.navBlog}</Link>
+                  {user && (
+                    <div className="border-t pt-6 mt-4 space-y-3">
+                      <p className="text-xs font-bold text-muted-foreground tracking-widest uppercase">Moj Račun</p>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                      {isAdmin && (
+                        <Link href="/admin" className="flex items-center gap-2 text-sm font-bold hover:text-primary transition-colors">
+                          <LayoutDashboard className="size-4" /> Admin Panel
+                        </Link>
+                      )}
+                      <Link href="/dashboard" className="flex items-center gap-2 text-sm font-bold hover:text-primary transition-colors">
+                        <User className="size-4" /> Moj Dashboard
+                      </Link>
+                      <button 
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 text-sm font-bold text-red-600 hover:text-red-700 transition-colors"
+                      >
+                        <LogOut className="size-4" /> Odjavi se
+                      </button>
+                    </div>
+                  )}
                 </nav>
               </div>
             </SheetContent>

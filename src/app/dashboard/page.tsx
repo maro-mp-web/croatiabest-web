@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Navbar } from '@/components/layout/Navbar';
-import { useUser, useCollection } from '@/pocketbase';
+import { useUser, useCollection, usePB } from '@/pocketbase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,15 +18,26 @@ import {
   MessageSquare,
   ShieldCheck,
   Star,
-  ChevronRight
+  ChevronRight,
+  LogOut
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { CATEGORIES } from '@/app/lib/constants';
 import { generateListingUrl } from '@/app/lib/utils/slug';
 
 export default function UserDashboard() {
   const { user, isUserLoading } = useUser();
+  const pb = usePB();
+  const router = useRouter();
+
+  // Logout handler
+  const handleLogout = () => {
+    if (!pb) return;
+    pb.authStore.clear();
+    router.push('/');
+  };
 
   const { data: listings, isLoading: listingsLoading } = useCollection('listings', {
     filter: user?.id ? `ownerId = "${user.id}"` : '',
@@ -94,6 +105,13 @@ export default function UserDashboard() {
                 <div className="space-y-3">
                   <Button variant="secondary" className="w-full rounded-xl h-12 font-bold justify-start"><Settings className="size-4 mr-3" /> Postavke Profila</Button>
                   <Button variant="secondary" className="w-full rounded-xl h-12 font-bold justify-start"><CreditCard className="size-4 mr-3" /> Povijest Plaćanja</Button>
+                  <Button 
+                    onClick={handleLogout}
+                    variant="outline" 
+                    className="w-full rounded-xl h-12 font-bold justify-start border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                  >
+                    <LogOut className="size-4 mr-3" /> Odjavi se
+                  </Button>
                 </div>
               </CardContent>
             </Card>
