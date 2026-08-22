@@ -625,7 +625,7 @@ export default function AdminNewListingPage() {
                   <Label className="font-bold">Grad ili Otok</Label>
                   <Select onValueChange={v => setFormData({...formData, city: v})} value={formData.city || undefined}>
                     <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Grad ili Otok" /></SelectTrigger>
-                    <SelectContent className="max-h-60 overflow-y-auto">{allLocations.map(l => <SelectItem key={l.uniqueSlug} value={l.displayName}>{l.displayName}</SelectItem>)}</SelectContent>
+                    <SelectContent className="max-h-60 overflow-y-auto">{allLocations.map(l => <SelectItem key={l.uniqueSlug} value={l.name}>{l.displayName}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 
