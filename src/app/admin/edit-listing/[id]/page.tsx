@@ -39,8 +39,8 @@ export default function AdminEditListingPage() {
   const [isFetchingCoords, setIsFetchingCoords] = useState(false);
   const [langTab, setLangTab] = useState<'hr' | 'en'>('hr');
 
-  const { data: citiesData } = useCollection('cities', { requestKey: null });
-  const { data: islandsData } = useCollection('islands', { requestKey: null });
+  const { data: citiesData } = useCollection('cities', { requestKey: 'edit-listing-cities' });
+  const { data: islandsData } = useCollection('islands', { requestKey: 'edit-listing-islands' });
 
   const cities = citiesData || [];
   const islands = islandsData || [];
