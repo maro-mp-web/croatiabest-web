@@ -39,11 +39,18 @@ export default function AdminEditListingPage() {
   const [isFetchingCoords, setIsFetchingCoords] = useState(false);
   const [langTab, setLangTab] = useState<'hr' | 'en'>('hr');
 
-  const { data: citiesData } = useCollection('cities', { requestKey: 'edit-listing-cities' });
-  const { data: islandsData } = useCollection('islands', { requestKey: 'edit-listing-islands' });
+  const [cities, setCities] = useState<any[]>([]);
+  const [islands, setIslands] = useState<any[]>([]);
 
-  const cities = citiesData || [];
-  const islands = islandsData || [];
+  useEffect(() => {
+    if (!pb) return;
+    pb.collection('cities').getFullList({ sort: 'name' })
+      .then(data => setCities(data))
+      .catch(e => console.error('Cities fetch error:', e));
+    pb.collection('islands').getFullList({ sort: 'name' })
+      .then(data => setIslands(data))
+      .catch(e => console.error('Islands fetch error:', e));
+  }, [pb]);
 
   // Stroga provjera administratora
   const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
