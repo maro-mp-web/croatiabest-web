@@ -689,16 +689,19 @@ export default function AdminEditListingPage() {
               <CardContent className="p-6 space-y-4">
                 <div className="space-y-1.5">
                   <Label className="font-bold">Grad ili Otok</Label>
-                  <Select 
-                    onValueChange={v => {
-                      const selected = allLocations.find(l => l.uniqueSlug === v);
-                      if (selected) setFormData({...formData, city: selected.name});
-                    }} 
-                    value={allLocations.find(l => l.name === formData.city)?.uniqueSlug || undefined}
+                  <select
+                    value={formData.city}
+                    onChange={e => setFormData({...formData, city: e.target.value})}
+                    className="flex h-12 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Grad ili Otok" /></SelectTrigger>
-                    <SelectContent className="max-h-60 overflow-y-auto">{allLocations.map(l => <SelectItem key={l.uniqueSlug} value={l.uniqueSlug}>{l.displayName}</SelectItem>)}</SelectContent>
-                  </Select>
+                    <option value="">-- Odaberi grad ili otok --</option>
+                    <optgroup label="Gradovi">
+                      {cities.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                    </optgroup>
+                    <optgroup label="Otoci">
+                      {islands.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
+                    </optgroup>
+                  </select>
                 </div>
                 
                 <div className="space-y-1.5">
