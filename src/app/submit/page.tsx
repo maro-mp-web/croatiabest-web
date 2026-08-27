@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ImageUpload } from '@/components/ui/image-upload';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { toast } from '@/hooks/use-toast';
 import { 
   CheckCircle2, 
@@ -148,6 +149,7 @@ export default function SubmitListingPage() {
     const listingData = {
       name: formData.objectName,
       locationCategoryId: formData.categoryId,
+      categoryId: formData.categoryId,
       address: formData.address,
       city: formData.city,
       description: formData.description,
@@ -206,7 +208,15 @@ export default function SubmitListingPage() {
     } catch (error: any) {
       setIsSubmitting(false);
       console.error('Listing creation error:', error);
-      toast({ title: "Greška", description: "Slanje nije uspjelo. Pokušajte ponovno.", variant: "destructive" });
+      let errorMsg = error?.message || "Došlo je do greške prilikom spremanja.";
+      if (error?.status) errorMsg += ` (Status: ${error.status})`;
+      if (error?.response?.data) {
+        const fieldErrors = Object.entries(error.response.data)
+          .map(([field, err]: [string, any]) => `${field}: ${err?.message || JSON.stringify(err)}`)
+          .join(', ');
+        if (fieldErrors) errorMsg = `${errorMsg} — Detalji: ${fieldErrors}`;
+      }
+      toast({ title: "Greška", description: `Slanje nije uspjelo: ${errorMsg}`, variant: "destructive" });
     }
   };
 
@@ -423,11 +433,10 @@ export default function SubmitListingPage() {
 
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">Opis i vizija</Label>
-                  <Textarea 
-                    placeholder="Recite nam nešto o svom objektu, povijesti, ponudi..." 
+                  <RichTextEditor 
                     value={formData.description} 
-                    onChange={e => setFormData({...formData, description: e.target.value})} 
-                    className="min-h-[150px] rounded-2xl border-none bg-secondary/10 text-lg"
+                    onChange={v => setFormData({...formData, description: v})} 
+                    placeholder="Recite nam nešto o svom objektu, povijesti, ponudi..."
                   />
                 </div>
 

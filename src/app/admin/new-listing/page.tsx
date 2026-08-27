@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ui/image-upload';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { 
   Save, 
   ArrowLeft, 
@@ -175,6 +176,7 @@ export default function AdminNewListingPage() {
       await pb.collection('listings').create({
         name: formData.name,
         locationCategoryId: formData.locationCategoryId,
+        categoryId: formData.locationCategoryId,
         address: formData.address,
         city: formData.city,
         region,
@@ -199,7 +201,15 @@ export default function AdminNewListingPage() {
     } catch (error: any) {
       setIsSaving(false);
       console.error("Create error:", error);
-      toast({ title: "Greška", description: `Spremanje nije uspjelo: ${error.message || ''}`, variant: "destructive" });
+      let errorMsg = error?.message || "Došlo je do greške prilikom spremanja.";
+      if (error?.status) errorMsg += ` (Status: ${error.status})`;
+      if (error?.response?.data) {
+        const fieldErrors = Object.entries(error.response.data)
+          .map(([field, err]: [string, any]) => `${field}: ${err?.message || JSON.stringify(err)}`)
+          .join(', ');
+        if (fieldErrors) errorMsg = `${errorMsg} — Detalji: ${fieldErrors}`;
+      }
+      toast({ title: "Greška", description: `Spremanje nije uspjelo: ${errorMsg}`, variant: "destructive" });
     }
   };
 
@@ -339,11 +349,10 @@ export default function AdminNewListingPage() {
 
                     <div className="space-y-2">
                       <Label className="font-bold">Opis objekta (Hrvatski)</Label>
-                      <Textarea 
-                        className="min-h-[200px] rounded-2xl text-base leading-relaxed" 
-                        placeholder="Napišite detaljan opis ponude, ambijenta, povijesti ili specijaliteta..."
+                      <RichTextEditor 
                         value={formData.description} 
-                        onChange={e => setFormData({...formData, description: e.target.value})} 
+                        onChange={v => setFormData({...formData, description: v})} 
+                        placeholder="Napišite detaljan opis ponude, ambijenta, povijesti ili specijaliteta..."
                       />
                     </div>
                   </CardContent>
@@ -429,11 +438,10 @@ export default function AdminNewListingPage() {
 
                     <div className="space-y-2">
                       <Label className="font-bold">Opis na engleskom (Description EN)</Label>
-                      <Textarea 
-                        className="min-h-[200px] rounded-2xl text-base leading-relaxed" 
-                        placeholder="Write a detailed description in English for foreign visitors..."
+                      <RichTextEditor 
                         value={formData.descriptionEn} 
-                        onChange={e => setFormData({...formData, descriptionEn: e.target.value})} 
+                        onChange={v => setFormData({...formData, descriptionEn: v})} 
+                        placeholder="Write a detailed description in English for foreign visitors..."
                       />
                     </div>
                   </CardContent>
