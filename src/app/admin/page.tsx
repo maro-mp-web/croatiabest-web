@@ -1364,7 +1364,7 @@ export default function AdminDashboard() {
                                   </Button>
                                 </a>
                                 <Link href={`/admin/edit-listing/${listing.id}`}>
-                                  <Button variant="outline" size="icon" title="Uredi objekt i SEO" className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
+                                  <Button variant="outline" size="icon" title="Uredi objekt i SEO" className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5" >                                  
                                     <Edit2 className="size-4" />
                                   </Button>
                                 </Link>
