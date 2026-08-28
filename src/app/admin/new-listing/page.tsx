@@ -7,6 +7,8 @@ import { CATEGORY_FIELDS } from '@/app/lib/category-fields';
 import { generateSlug, CATEGORY_SLUG_MAP } from '@/app/lib/utils/slug';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { logError } from '@/app/actions/logger';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -172,8 +174,7 @@ export default function AdminNewListingPage() {
       seoKeywordsEn: formData.seoKeywordsEn
     };
 
-    try {
-      await pb.collection('listings').create({
+    const payloadData = {
         name: formData.name,
         locationCategoryId: formData.locationCategoryId,
         address: formData.address,
@@ -195,7 +196,19 @@ export default function AdminNewListingPage() {
           ...updatedMetadata,
           faq: formData.faq
         }
-      });
+      };
+
+      try {
+        await pb.collection('listings').create(payloadData);
+      } catch (err: any) {
+        await logError(payloadData, {
+          message: err?.message,
+          status: err?.status,
+          data: err?.response?.data || err?.data
+        });
+        throw err;
+      }
+
       toast({ title: "Uspjeh", description: "Novi objekt i SEO podaci uspješno kreirani." });
       router.refresh();
       router.push('/admin');

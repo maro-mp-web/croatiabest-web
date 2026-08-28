@@ -7,6 +7,7 @@ import { CATEGORY_FIELDS } from '@/app/lib/category-fields';
 import { generateSlug, CATEGORY_SLUG_MAP } from '@/app/lib/utils/slug';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { logError } from '@/app/actions/logger';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -84,6 +85,7 @@ export default function AdminEditListingPage() {
     products: [] as {name: string, price: string}[],
     faq: [] as {question: string, answer: string}[],
     status: 'active',
+    ownerId: '',
     metadata: {} as Record<string, any>
   });
 
@@ -126,6 +128,7 @@ export default function AdminEditListingPage() {
         products: parseJsonArray(record.products),
         faq: parseJsonArray(meta.faq || []),
         status: record.status || 'pending',
+        ownerId: record.ownerId || '',
         metadata: meta
       });
       setIsLoading(false);
@@ -227,8 +230,7 @@ export default function AdminEditListingPage() {
       seoKeywordsEn: formData.seoKeywordsEn
     };
 
-    try {
-      await pb.collection('listings').update(id, {
+    const payloadData = {
         name: formData.name,
         locationCategoryId: formData.locationCategoryId,
         address: formData.address,
@@ -242,7 +244,7 @@ export default function AdminEditListingPage() {
         webAddress: formData.webAddress || null,
         locationCategoryType: selectedCategory?.type === 'paid' ? 'Paid' : 'Free',
         paymentStatus: selectedCategory?.type === 'paid' ? 'paid' : 'not_applicable',
-        ownerId: user.id,
+        ownerId: formData.ownerId || user.id,
         status: formData.status,
         photoUrls: formData.photoUrls,
         products: formData.products,
@@ -250,11 +252,19 @@ export default function AdminEditListingPage() {
           ...updatedMetadata,
           faq: formData.faq
         }
-      });
+    };
+
+    try {
+      await pb.collection('listings').update(id, payloadData);
       toast({ title: "Uspjeh", description: "Objekt i SEO podaci uspješno ažurirani." });
       router.refresh();
       router.push('/admin');
     } catch (error: any) {
+      await logError(payloadData, {
+        message: error?.message,
+        status: error?.status,
+        data: error?.response?.data || error?.data
+      });
       setIsSaving(false);
       console.error("Save error:", error);
       toast({ title: "Greška", description: `Spremanje nije uspjelo: ${error.message || ''}`, variant: "destructive" });
