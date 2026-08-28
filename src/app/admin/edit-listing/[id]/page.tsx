@@ -40,6 +40,7 @@ export default function AdminEditListingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFetchingCoords, setIsFetchingCoords] = useState(false);
   const [langTab, setLangTab] = useState<'hr' | 'en'>('hr');
+  const [errorDebugInfo, setErrorDebugInfo] = useState<string | null>(null);
 
   const [cities, setCities] = useState<any[]>([]);
   const [islands, setIslands] = useState<any[]>([]);
@@ -268,6 +269,14 @@ export default function AdminEditListingPage() {
       setIsSaving(false);
       console.error("Save error:", error);
       toast({ title: "Greška", description: `Spremanje nije uspjelo: ${error.message || ''}`, variant: "destructive" });
+      setErrorDebugInfo(JSON.stringify({
+        payloadData,
+        error: {
+          message: error?.message,
+          status: error?.status,
+          data: error?.response?.data || error?.data
+        }
+      }, null, 2));
     }
   };
 
@@ -771,6 +780,13 @@ export default function AdminEditListingPage() {
             )}
           </div>
         </div>
+
+        {errorDebugInfo && (
+          <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-xl overflow-auto text-xs font-mono text-red-900">
+            <h3 className="font-bold text-red-700 mb-2">DEBUG INFORMACIJE (Molimo kopirajte ovo):</h3>
+            <pre>{errorDebugInfo}</pre>
+          </div>
+        )}
       </main>
     </div>
   );

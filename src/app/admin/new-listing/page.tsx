@@ -37,6 +37,7 @@ export default function AdminNewListingPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isFetchingCoords, setIsFetchingCoords] = useState(false);
   const [langTab, setLangTab] = useState<'hr' | 'en'>('hr');
+  const [errorDebugInfo, setErrorDebugInfo] = useState<string | null>(null);
 
   const [cities, setCities] = useState<any[]>([]);
   const [islands, setIslands] = useState<any[]>([]);
@@ -224,6 +225,14 @@ export default function AdminNewListingPage() {
         if (fieldErrors) errorMsg = `${errorMsg} — Detalji: ${fieldErrors}`;
       }
       toast({ title: "Greška", description: `Spremanje nije uspjelo: ${errorMsg}`, variant: "destructive" });
+      setErrorDebugInfo(JSON.stringify({
+        payloadData,
+        error: {
+          message: error?.message,
+          status: error?.status,
+          data: error?.response?.data || error?.data
+        }
+      }, null, 2));
     }
   };
 
@@ -716,6 +725,13 @@ export default function AdminNewListingPage() {
             )}
           </div>
         </div>
+
+        {errorDebugInfo && (
+          <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-xl overflow-auto text-xs font-mono text-red-900">
+            <h3 className="font-bold text-red-700 mb-2">DEBUG INFORMACIJE (Molimo kopirajte ovo):</h3>
+            <pre>{errorDebugInfo}</pre>
+          </div>
+        )}
       </main>
     </div>
   );
