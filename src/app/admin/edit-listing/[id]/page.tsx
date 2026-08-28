@@ -7,7 +7,6 @@ import { CATEGORY_FIELDS } from '@/app/lib/category-fields';
 import { generateSlug, CATEGORY_SLUG_MAP } from '@/app/lib/utils/slug';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { logError } from '@/app/actions/logger';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -261,24 +260,23 @@ export default function AdminEditListingPage() {
       router.refresh();
       router.push('/admin');
     } catch (error: any) {
-      await logError(payloadData, {
-        message: error?.message,
-        status: error?.status,
-        data: error?.response?.data || error?.data
-      });
       setIsSaving(false);
       console.error("Save error:", error);
-      toast({ title: "Greška", description: `Spremanje nije uspjelo: ${error.message || ''}`, variant: "destructive" });
       
-      const debugStr = JSON.stringify({
-        message: error?.message,
+      let errorMsg = error?.message || 'Nepoznata greška';
+      if (error?.response?.data) {
+        errorMsg += " | " + JSON.stringify(error.response.data);
+      }
+      
+      toast({ title: "Greška", description: `Spremanje nije uspjelo: ${errorMsg}`, variant: "destructive" });
+      
+      setErrorDebugInfo(JSON.stringify({
+        msg: error?.message,
+        name: error?.name,
+        stack: error?.stack,
         status: error?.status,
         data: error?.response?.data || error?.data
-      }, null, 2);
-      
-      alert(`GREŠKA OD POCKETBASE-a:\n\n${debugStr}\n\nMolim vas, kopirajte ili uslikajte ovaj prozor i pošaljite ga asistentu!`);
-      
-      setErrorDebugInfo(debugStr);
+      }, null, 2));
     }
   };
 

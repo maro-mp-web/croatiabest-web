@@ -8,7 +8,6 @@ import { generateSlug, CATEGORY_SLUG_MAP } from '@/app/lib/utils/slug';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { logError } from '@/app/actions/logger';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -199,41 +198,30 @@ export default function AdminNewListingPage() {
         }
       };
 
-      try {
-        await pb.collection('listings').create(payloadData);
-      } catch (err: any) {
-        await logError(payloadData, {
-          message: err?.message,
-          status: err?.status,
-          data: err?.response?.data || err?.data
-        });
-        throw err;
-      }
 
-      toast({ title: "Uspjeh", description: "Novi objekt i SEO podaci uspješno kreirani." });
+    try {
+      await pb.collection('listings').create(payloadData);
+      toast({ title: "Uspjeh", description: "Novi objekt je uspješno dodan." });
       router.refresh();
       router.push('/admin');
     } catch (error: any) {
       setIsSaving(false);
       console.error("Create error:", error);
-      let errorMsg = error?.message || "Došlo je do greške prilikom spremanja.";
-      if (error?.status) errorMsg += ` (Status: ${error.status})`;
+      
+      let errorMsg = error?.message || 'Nepoznata greška';
       if (error?.response?.data) {
-        const fieldErrors = Object.entries(error.response.data)
-          .map(([field, err]: [string, any]) => `${field}: ${err?.message || JSON.stringify(err)}`)
-          .join(', ');
-        if (fieldErrors) errorMsg = `${errorMsg} — Detalji: ${fieldErrors}`;
+        errorMsg += " | " + JSON.stringify(error.response.data);
       }
+      
       toast({ title: "Greška", description: `Spremanje nije uspjelo: ${errorMsg}`, variant: "destructive" });
-      const debugStr = JSON.stringify({
-        message: error?.message,
+      
+      setErrorDebugInfo(JSON.stringify({
+        msg: error?.message,
+        name: error?.name,
+        stack: error?.stack,
         status: error?.status,
         data: error?.response?.data || error?.data
-      }, null, 2);
-      
-      alert(`GREŠKA OD POCKETBASE-a:\n\n${debugStr}\n\nMolim vas, kopirajte ili uslikajte ovaj prozor i pošaljite ga asistentu!`);
-      
-      setErrorDebugInfo(debugStr);
+      }, null, 2));
     }
   };
 
