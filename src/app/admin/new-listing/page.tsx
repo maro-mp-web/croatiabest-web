@@ -176,7 +176,6 @@ export default function AdminNewListingPage() {
       await pb.collection('listings').create({
         name: formData.name,
         locationCategoryId: formData.locationCategoryId,
-        categoryId: formData.locationCategoryId,
         address: formData.address,
         city: formData.city,
         region,
@@ -192,8 +191,10 @@ export default function AdminNewListingPage() {
         status: formData.status,
         photoUrls: formData.photoUrls,
         products: formData.products,
-        faq: formData.faq,
-        metadata: updatedMetadata
+        metadata: {
+          ...updatedMetadata,
+          faq: formData.faq
+        }
       });
       toast({ title: "Uspjeh", description: "Novi objekt i SEO podaci uspješno kreirani." });
       router.refresh();

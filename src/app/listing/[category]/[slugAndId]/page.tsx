@@ -126,7 +126,7 @@ export default function ListingDetailPage() {
   const hasOffer = validProducts.length > 0 || Boolean(menuDescription && menuDescription.length > 0);
 
   // Custom FAQ verification
-  const rawFaq = parseJsonArray(listing.faq);
+  const rawFaq = parseJsonArray(listing.metadata?.faq || []);
   const validFaq = rawFaq.filter((f: any) => f && typeof f === 'object' && f.question && f.answer && f.question.trim().length > 0 && f.answer.trim().length > 0);
   const hasFaq = validFaq.length > 0;
 

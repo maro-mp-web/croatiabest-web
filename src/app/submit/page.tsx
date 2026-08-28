@@ -149,7 +149,6 @@ export default function SubmitListingPage() {
     const listingData = {
       name: formData.objectName,
       locationCategoryId: formData.categoryId,
-      categoryId: formData.categoryId,
       address: formData.address,
       city: formData.city,
       description: formData.description,

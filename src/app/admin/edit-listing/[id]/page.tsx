@@ -124,7 +124,7 @@ export default function AdminEditListingPage() {
         webAddress: record.webAddress || '',
         photoUrls: parseJsonArray(record.photoUrls),
         products: parseJsonArray(record.products),
-        faq: parseJsonArray(record.faq),
+        faq: parseJsonArray(meta.faq || []),
         status: record.status || 'pending',
         metadata: meta
       });
@@ -246,8 +246,10 @@ export default function AdminEditListingPage() {
         status: formData.status,
         photoUrls: formData.photoUrls,
         products: formData.products,
-        faq: formData.faq,
-        metadata: updatedMetadata
+        metadata: {
+          ...updatedMetadata,
+          faq: formData.faq
+        }
       });
       toast({ title: "Uspjeh", description: "Objekt i SEO podaci uspješno ažurirani." });
       router.refresh();
