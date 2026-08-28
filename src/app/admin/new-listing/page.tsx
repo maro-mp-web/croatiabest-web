@@ -225,14 +225,15 @@ export default function AdminNewListingPage() {
         if (fieldErrors) errorMsg = `${errorMsg} — Detalji: ${fieldErrors}`;
       }
       toast({ title: "Greška", description: `Spremanje nije uspjelo: ${errorMsg}`, variant: "destructive" });
-      setErrorDebugInfo(JSON.stringify({
-        payloadData,
-        error: {
-          message: error?.message,
-          status: error?.status,
-          data: error?.response?.data || error?.data
-        }
-      }, null, 2));
+      const debugStr = JSON.stringify({
+        message: error?.message,
+        status: error?.status,
+        data: error?.response?.data || error?.data
+      }, null, 2);
+      
+      alert(`GREŠKA OD POCKETBASE-a:\n\n${debugStr}\n\nMolim vas, kopirajte ili uslikajte ovaj prozor i pošaljite ga asistentu!`);
+      
+      setErrorDebugInfo(debugStr);
     }
   };
 
