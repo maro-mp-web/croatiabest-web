@@ -248,6 +248,12 @@ export default function AdminEditListingPage() {
         status: formData.status,
         photoUrls: formData.photoUrls,
         products: formData.products,
+        seoTitle: updatedMetadata.seoTitle,
+        seoDescription: updatedMetadata.seoDescription,
+        seoKeywords: updatedMetadata.seoKeywords,
+        seoTitleEn: updatedMetadata.seoTitleEn,
+        seoDescriptionEn: updatedMetadata.seoDescriptionEn,
+        seoKeywordsEn: updatedMetadata.seoKeywordsEn,
         metadata: {
           ...updatedMetadata,
           faq: formData.faq

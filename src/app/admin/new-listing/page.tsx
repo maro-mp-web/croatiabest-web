@@ -166,14 +166,6 @@ export default function AdminNewListingPage() {
       slug: finalSlug,
       seoTitle: formData.seoTitle || `${formData.name} - CroatiaBest`,
       seoDescription: formData.seoDescription,
-      seoKeywords: formData.seoKeywords,
-      nameEn: formData.nameEn,
-      descriptionEn: formData.descriptionEn,
-      seoTitleEn: formData.seoTitleEn,
-      seoDescriptionEn: formData.seoDescriptionEn,
-      seoKeywordsEn: formData.seoKeywordsEn
-    };
-
     const payloadData = {
         name: formData.name,
         locationCategoryId: formData.locationCategoryId,
@@ -183,6 +175,14 @@ export default function AdminNewListingPage() {
         latitude: parseFloat(formData.latitude) || (knownLoc?.lat || 45.8150),
         longitude: parseFloat(formData.longitude) || (knownLoc?.lng || 15.9819),
         description: formData.description,
+        nameEn: formData.nameEn,
+        descriptionEn: formData.descriptionEn,
+        seoTitle: formData.seoTitle,
+        seoDescription: formData.seoDescription,
+        seoKeywords: formData.seoKeywords,
+        seoTitleEn: formData.seoTitleEn,
+        seoDescriptionEn: formData.seoDescriptionEn,
+        seoKeywordsEn: formData.seoKeywordsEn,
         contactPhone: formData.contactPhone,
         contactEmail: formData.contactEmail || null,
         webAddress: formData.webAddress || null,
@@ -193,7 +193,8 @@ export default function AdminNewListingPage() {
         photoUrls: formData.photoUrls,
         products: formData.products,
         metadata: {
-          ...updatedMetadata,
+          slug: finalSlug,
+          ...formData.metadata,
           faq: formData.faq
         }
       };
