@@ -41,12 +41,15 @@ export const CATEGORIES: Category[] = [
   { id: 'homeland_war', name: 'Spomenici', type: 'free', color: '#4338CA', icon: 'Shield' },
   { id: 'bus_stations', name: 'Međugradski autobusi', type: 'free', color: '#F59E0B', icon: 'BusFront' },
   { id: 'train_stations', name: 'Željeznički kolodvori', type: 'free', color: '#64748B', icon: 'Train' },
+  { id: 'national_parks', name: 'Nacionalni parkovi i Parkovi prirode', type: 'free', color: '#059669', icon: 'Trees' },
   { id: 'ferry_ports', name: 'Trajektne luke', type: 'free', color: '#0284C7', icon: 'Ship' },
   { id: 'marinas', name: 'Marine i lučice', type: 'free', color: '#0D9488', icon: 'Anchor' },
   
   // Plaćene (Poslovne) Kategorije
   { id: 'restaurants', name: 'Restorani', type: 'paid', color: '#E11D48', icon: 'Utensils', price: '99€' },
   { id: 'hotels', name: 'Hoteli i Smještaj', type: 'paid', color: '#4338CA', icon: 'Hotel', price: '149€' },
+  { id: 'apartments', name: 'Apartmani i Vile', type: 'paid', color: '#0284C7', icon: 'Home', price: '99€' },
+  { id: 'camps', name: 'Kampovi i Glamping', type: 'paid', color: '#16A34A', icon: 'Tent', price: '99€' },
   { id: 'bars', name: 'Kafići i Barovi', type: 'paid', color: '#D97706', icon: 'Coffee', price: '99€' },
   { id: 'nightclubs', name: 'Noćni Klubovi', type: 'paid', color: '#9333EA', icon: 'Music', price: '149€' },
   { id: 'boat_rentals', name: 'Nautika i Najam Brodova', type: 'paid', color: '#0284C7', icon: 'Anchor', price: '149€' },
