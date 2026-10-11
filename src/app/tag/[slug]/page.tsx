@@ -20,7 +20,7 @@ export default async function TagPage({ params }: { params: Promise<{ slug: stri
   if (!tag) return notFound();
 
   const pb = await getPocketBase();
-  let articles = [];
+  let articles: any[] = [];
   try {
     // Filter blogs where the tags array contains the tag
     // Since PocketBase JSON fields can be tricky to query with `~`, 

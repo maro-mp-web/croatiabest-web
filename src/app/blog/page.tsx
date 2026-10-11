@@ -8,10 +8,17 @@ export default async function BlogPage() {
   
   let articles: any[] = [];
   try {
-    articles = await pb.collection('blogs').getFullList({
-      sort: '-publishDate',
-      requestKey: null
-    });
+    try {
+      articles = await pb.collection('blogs').getFullList({
+        sort: '-publishDate',
+        requestKey: null
+      });
+    } catch {
+      articles = await pb.collection('blogs').getFullList({
+        sort: '-created',
+        requestKey: null
+      });
+    }
   } catch (e) {
     console.error('Failed to fetch blogs', e);
   }

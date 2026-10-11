@@ -80,6 +80,10 @@ const nextConfig: NextConfig = {
         destination: '/islands/:slug*',
       },
       {
+        source: '/magazin',
+        destination: '/blog',
+      },
+      {
         source: '/magazin/:slug*',
         destination: '/blog/:slug*',
       },
