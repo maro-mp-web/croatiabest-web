@@ -331,20 +331,57 @@ function AdminNewBlogPage() {
                 <div className="space-y-3">
                   <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Kategorija</Label>
                   <select 
-                    value={category} 
-                    onChange={(e) => setCategory(e.target.value)} 
+                    value={
+                      [
+                        'Putovanja', 'Gastronomija', 'Kultura', 'Povijest', 'Priroda', 'Savjeti', 'Blog',
+                        'Vijesti iz Hrvatske', 'Vijesti iz Svijeta', 'Poznati Hrvati', 'Slavni u Hrvatskoj',
+                        'Zanimljivosti', 'Iz Povijesti', 'Iz geografije', 'Domovinski rat'
+                      ].includes(category)
+                        ? category
+                        : 'custom'
+                    } 
+                    onChange={(e) => {
+                      if (e.target.value !== 'custom') {
+                        setCategory(e.target.value);
+                      } else {
+                        setCategory('');
+                      }
+                    }} 
                     className="flex h-12 w-full rounded-xl border-none bg-secondary/5 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary font-medium"
                   >
-                    <option value="Blog">Blog</option>
-                    <option value="Vijesti iz Hrvatske">Vijesti iz Hrvatske</option>
-                    <option value="Vijesti iz Svijeta">Vijesti iz Svijeta</option>
-                    <option value="Poznati Hrvati">Poznati Hrvati</option>
-                    <option value="Slavni u Hrvatskoj">Slavni u Hrvatskoj</option>
-                    <option value="Zanimljivosti">Zanimljivosti</option>
-                    <option value="Iz Povijesti">Iz Povijesti</option>
-                    <option value="Iz geografije">Iz geografije</option>
-                    <option value="Domovinski rat">Domovinski rat</option>
+                    <optgroup label="Magazin">
+                      <option value="Putovanja">Putovanja</option>
+                      <option value="Gastronomija">Gastronomija</option>
+                      <option value="Kultura">Kultura</option>
+                      <option value="Povijest">Povijest</option>
+                      <option value="Priroda">Priroda</option>
+                      <option value="Savjeti">Savjeti</option>
+                      <option value="Blog">Blog</option>
+                    </optgroup>
+                    <optgroup label="Vijesti">
+                      <option value="Vijesti iz Hrvatske">Vijesti iz Hrvatske</option>
+                      <option value="Vijesti iz Svijeta">Vijesti iz Svijeta</option>
+                      <option value="Poznati Hrvati">Poznati Hrvati</option>
+                      <option value="Slavni u Hrvatskoj">Slavni u Hrvatskoj</option>
+                      <option value="Zanimljivosti">Zanimljivosti</option>
+                      <option value="Iz Povijesti">Iz Povijesti</option>
+                      <option value="Iz geografije">Iz geografije</option>
+                      <option value="Domovinski rat">Domovinski rat</option>
+                    </optgroup>
+                    <option value="custom">Druga kategorija (upiši ručno)...</option>
                   </select>
+                  {(![
+                    'Putovanja', 'Gastronomija', 'Kultura', 'Povijest', 'Priroda', 'Savjeti', 'Blog',
+                    'Vijesti iz Hrvatske', 'Vijesti iz Svijeta', 'Poznati Hrvati', 'Slavni u Hrvatskoj',
+                    'Zanimljivosti', 'Iz Povijesti', 'Iz geografije', 'Domovinski rat'
+                  ].includes(category)) && (
+                    <Input 
+                      value={category} 
+                      onChange={(e) => setCategory(e.target.value)} 
+                      placeholder="Upišite vlastitu kategoriju..." 
+                      className="h-11 rounded-xl bg-secondary/5 border-none text-sm mt-2" 
+                    />
+                  )}
                 </div>
                 <div className="flex items-center justify-between space-x-2 rounded-xl bg-secondary/5 p-4 border border-black/5">
                   <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground cursor-pointer" onClick={() => setShowOnHomepage(!showOnHomepage)}>Prikaži na naslovnici (Vijesti)</Label>

@@ -29,6 +29,12 @@ export default function BlogClient({ articles }: { articles: any[] }) {
 
   const featuredArticle = articles[0];
 
+  const baseCategories = ['Putovanja', 'Gastronomija', 'Kultura', 'Povijest'];
+  const extraCategories = Array.from(
+    new Set(articles.map(a => a.category).filter(c => c && !baseCategories.includes(c) && c !== 'all'))
+  );
+  const displayCategories = [...baseCategories, ...extraCategories];
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -66,11 +72,13 @@ export default function BlogClient({ articles }: { articles: any[] }) {
         {/* Filters */}
         <div className="flex flex-col md:flex-row gap-6 justify-between items-center mb-12">
           <Tabs value={category} onValueChange={setCategory} className="bg-secondary/50 p-1 rounded-2xl">
-            <TabsList className="bg-transparent">
-              <TabsTrigger value="all" className="rounded-xl px-6 font-bold">Sve</TabsTrigger>
-              <TabsTrigger value="Putovanja" className="rounded-xl px-6 font-bold">Putovanja</TabsTrigger>
-              <TabsTrigger value="Gastronomija" className="rounded-xl px-6 font-bold">Gastronomija</TabsTrigger>
-              <TabsTrigger value="Kultura" className="rounded-xl px-6 font-bold">Kultura</TabsTrigger>
+            <TabsList className="bg-transparent flex flex-wrap h-auto gap-1">
+              <TabsTrigger value="all" className="rounded-xl px-6 py-2.5 font-bold">Sve</TabsTrigger>
+              {displayCategories.map(cat => (
+                <TabsTrigger key={String(cat)} value={String(cat)} className="rounded-xl px-6 py-2.5 font-bold">
+                  {String(cat)}
+                </TabsTrigger>
+              ))}
             </TabsList>
           </Tabs>
 
