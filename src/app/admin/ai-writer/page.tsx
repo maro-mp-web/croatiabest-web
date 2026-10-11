@@ -14,7 +14,6 @@ import { Sparkles, Loader2, Copy, RotateCcw, Save, ShieldAlert } from 'lucide-re
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/pocketbase';
 import { useRouter } from 'next/navigation';
-import { CATEGORIES } from '@/app/lib/constants';
 
 export default function AIWriterPage() {
   const { user, isUserLoading } = useUser();
@@ -110,42 +109,13 @@ export default function AIWriterPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Kategorija</Label>
-                  {contentType === 'article' ? (
-                    <Select value={category} onValueChange={setCategory}>
-                      <SelectTrigger className="h-12 rounded-xl">
-                        <SelectValue placeholder="Odaberite kategoriju članka" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Putovanja">Putovanja (Magazin)</SelectItem>
-                        <SelectItem value="Gastronomija">Gastronomija (Magazin)</SelectItem>
-                        <SelectItem value="Kultura">Kultura (Magazin)</SelectItem>
-                        <SelectItem value="Povijest">Povijest (Magazin)</SelectItem>
-                        <SelectItem value="Priroda">Priroda (Magazin)</SelectItem>
-                        <SelectItem value="Savjeti">Savjeti (Magazin)</SelectItem>
-                        <SelectItem value="Blog">Blog (Magazin)</SelectItem>
-                        <SelectItem value="Vijesti iz Hrvatske">Vijesti iz Hrvatske</SelectItem>
-                        <SelectItem value="Vijesti iz Svijeta">Vijesti iz Svijeta</SelectItem>
-                        <SelectItem value="Poznati Hrvati">Poznati Hrvati</SelectItem>
-                        <SelectItem value="Slavni u Hrvatskoj">Slavni u Hrvatskoj</SelectItem>
-                        <SelectItem value="Zanimljivosti">Zanimljivosti</SelectItem>
-                        <SelectItem value="Iz Povijesti">Iz Povijesti</SelectItem>
-                        <SelectItem value="Iz geografije">Iz geografije</SelectItem>
-                        <SelectItem value="Domovinski rat">Domovinski rat</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Select value={category} onValueChange={setCategory}>
-                      <SelectTrigger className="h-12 rounded-xl">
-                        <SelectValue placeholder="Odaberite kategoriju objekta" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CATEGORIES.map(c => (
-                          <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+                  <Label>Kategorija (Opcionalno)</Label>
+                  <Input 
+                    placeholder="npr. Restorani, Povijest, Putovanja" 
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="h-12 rounded-xl"
+                  />
                 </div>
 
                 <div className="space-y-2">
