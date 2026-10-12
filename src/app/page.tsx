@@ -167,7 +167,9 @@ export default function Home() {
 
   // National Parks Setup (from listings DB)
   const nationalParks = (allListings || []).filter(l => (l.locationCategoryId || l.categoryId) === 'national_parks').slice(0, 3);
-  const articlesList = blogArticles || [];
+  const articlesList = (blogArticles || []).filter(
+    a => !Array.isArray(a.tags) || !a.tags.includes('pending_approval')
+  );
 
   // Paid Premium categories
   const premiumCategories = [

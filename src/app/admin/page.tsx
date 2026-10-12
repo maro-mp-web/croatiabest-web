@@ -40,6 +40,7 @@ import { WikiSectionsEditor } from '@/components/ui/WikiSectionsEditor';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { CATEGORIES } from '@/app/lib/constants';
 import { generateListingUrl } from '@/app/lib/utils/slug';
+import { NewsBotManager } from '@/components/admin/NewsBotManager';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser, useCollection, usePB } from '@/pocketbase';
@@ -110,8 +111,8 @@ export default function AdminDashboard() {
   // Section items state
   const [sectionItems, setSectionItems] = useState<any[]>([]);
 
-  // Tab State: "listings" | "blogs" | "cities" | "islands" | "parks"
-  const [activeTab, setActiveTab] = useState<'listings' | 'blogs' | 'cities' | 'islands' | 'parks' | 'sections'>('listings');
+  // Tab State: "listings" | "blogs" | "cities" | "islands" | "parks" | "sections" | "bot"
+  const [activeTab, setActiveTab] = useState<'listings' | 'blogs' | 'cities' | 'islands' | 'parks' | 'sections' | 'bot'>('listings');
 
   // Edit Panel State
   const [isEditing, setIsEditing] = useState(false);
@@ -1280,6 +1281,7 @@ export default function AdminDashboard() {
           {[
             { id: 'listings', name: 'Objekti / Prijave', icon: <CreditCard className="size-4" /> },
             { id: 'blogs', name: 'Magazin (Blog)', icon: <BookOpen className="size-4" /> },
+            { id: 'bot', name: 'Vijesti Bot', icon: <Sparkles className="size-4 text-primary" /> },
             { id: 'cities', name: 'Gradovi', icon: <Building2 className="size-4" /> },
             { id: 'islands', name: 'Otoci', icon: <Anchor className="size-4" /> },
             { id: 'parks', name: 'Nacionalni parkovi', icon: <Trees className="size-4" /> },
@@ -1728,6 +1730,11 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* TAB: VIJESTI BOT */}
+        {activeTab === 'bot' && (
+          <NewsBotManager blogs={blogs || []} onBlogsUpdate={() => window.location.reload()} />
         )}
 
       </main>

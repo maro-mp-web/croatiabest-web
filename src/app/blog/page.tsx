@@ -23,13 +23,15 @@ export default async function BlogPage() {
     console.error('Failed to fetch blogs', e);
   }
 
-  const safeArticles = articles.map(article => {
-    const safe = JSON.parse(JSON.stringify(article));
-    if (article.created && !safe.created) {
-      safe.created = article.created;
-    }
-    return safe;
-  });
+  const safeArticles = articles
+    .filter(article => !Array.isArray(article.tags) || !article.tags.includes('pending_approval'))
+    .map(article => {
+      const safe = JSON.parse(JSON.stringify(article));
+      if (article.created && !safe.created) {
+        safe.created = article.created;
+      }
+      return safe;
+    });
 
   return <BlogClient articles={safeArticles} />;
 }

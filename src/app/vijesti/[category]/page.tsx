@@ -50,5 +50,9 @@ export default async function VijestiCategoryPage({ params }: { params: Promise<
     console.error(e);
   }
 
-  return <VijestiClient articles={articles} category={actualCategory} />;
+  const publishedArticles = articles.filter(
+    a => !Array.isArray(a.tags) || !a.tags.includes('pending_approval')
+  );
+
+  return <VijestiClient articles={publishedArticles} category={actualCategory} />;
 }
