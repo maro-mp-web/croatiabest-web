@@ -34,13 +34,15 @@ import {
   Settings,
   X,
   ExternalLink,
-  LogOut
+  LogOut,
+  Image as ImageIcon
 } from 'lucide-react';
 import { WikiSectionsEditor } from '@/components/ui/WikiSectionsEditor';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { CATEGORIES } from '@/app/lib/constants';
 import { generateListingUrl } from '@/app/lib/utils/slug';
 import { NewsBotManager } from '@/components/admin/NewsBotManager';
+import { MediaManager } from '@/components/media/MediaManager';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser, useCollection, usePB } from '@/pocketbase';
@@ -111,8 +113,8 @@ export default function AdminDashboard() {
   // Section items state
   const [sectionItems, setSectionItems] = useState<any[]>([]);
 
-  // Tab State: "listings" | "blogs" | "cities" | "islands" | "parks" | "sections" | "bot"
-  const [activeTab, setActiveTab] = useState<'listings' | 'blogs' | 'cities' | 'islands' | 'parks' | 'sections' | 'bot'>('listings');
+  // Tab State: "listings" | "blogs" | "cities" | "islands" | "parks" | "sections" | "bot" | "media"
+  const [activeTab, setActiveTab] = useState<'listings' | 'blogs' | 'cities' | 'islands' | 'parks' | 'sections' | 'bot' | 'media'>('listings');
 
   // Edit Panel State
   const [isEditing, setIsEditing] = useState(false);
@@ -1280,10 +1282,11 @@ export default function AdminDashboard() {
         <div className="flex border-b border-black/5 gap-6 mb-8 overflow-x-auto pb-1 text-slate-600">
           {[
             { id: 'listings', name: 'Objekti / Prijave', icon: <CreditCard className="size-4" /> },
-            { id: 'blogs', name: 'Magazin (Blog)', icon: <BookOpen className="size-4" /> },
-            { id: 'bot', name: 'Vijesti Bot', icon: <Sparkles className="size-4 text-primary" /> },
+            { id: 'media', name: 'Medijska zbirka', icon: <ImageIcon className="size-4 text-primary" /> },
             { id: 'cities', name: 'Gradovi', icon: <Building2 className="size-4" /> },
             { id: 'islands', name: 'Otoci', icon: <Anchor className="size-4" /> },
+            { id: 'blogs', name: 'Magazin (Blog)', icon: <BookOpen className="size-4" /> },
+            { id: 'bot', name: 'Vijesti Bot', icon: <Sparkles className="size-4 text-amber-500" /> },
             { id: 'parks', name: 'Nacionalni parkovi', icon: <Trees className="size-4" /> },
             { id: 'sections', name: 'Naslovnica', icon: <LayoutTemplate className="size-4" /> }
           ].map(tab => (
@@ -1730,6 +1733,11 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* TAB: MEDIJSKA ZBIRKA */}
+        {activeTab === 'media' && (
+          <MediaManager />
         )}
 
         {/* TAB: VIJESTI BOT */}

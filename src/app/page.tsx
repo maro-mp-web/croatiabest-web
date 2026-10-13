@@ -155,14 +155,13 @@ export default function Home() {
   const featuredCities = featuredCitiesSlugs.map((slug, idx) => {
     const dbCity = (cities || []).find(c => c.slug === slug);
     const regions = ['Središnja Hrvatska', 'Južna Dalmacija', 'Srednja Dalmacija', 'Istra', 'Sjeverna Hrvatska'];
-    // Povlači isključivo pravu sliku iz PocketBase baze, ignorirajući sve stare testne/statičke fotografije
-    const rawImage = dbCity ? (dbCity.image || getFirstPhoto(dbCity, 'image')) : '';
-    const image = (!isDummyPlaceholderPhoto(rawImage)) ? rawImage : '';
+    // Povlači točno sliku iz PocketBase baze
+    const image = dbCity ? (dbCity.image || getFirstPhoto(dbCity, 'image')) : '';
     return {
       name: dbCity?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
       slug,
       region: dbCity?.region || regions[idx % regions.length],
-      image,
+      image: image || DEFAULT_LISTING_IMAGE,
       colSpan: colSpansCities[idx % colSpansCities.length],
       indexStr: `0${idx + 1}`,
     };
@@ -184,14 +183,13 @@ export default function Home() {
       i.name.toLowerCase().includes(slug)
     );
     const regions = ['Južna Dalmacija', 'Srednja Dalmacija', 'Kvarner', 'Kvarner', 'Južna Dalmacija'];
-    // Povlači isključivo pravu sliku iz PocketBase baze, ignorirajući sve stare testne/statičke fotografije
-    const rawImage = dbIsland ? (dbIsland.image || getFirstPhoto(dbIsland, 'image')) : '';
-    const image = (!isDummyPlaceholderPhoto(rawImage)) ? rawImage : '';
+    // Povlači točno sliku iz PocketBase baze
+    const image = dbIsland ? (dbIsland.image || getFirstPhoto(dbIsland, 'image')) : '';
     return {
       name: dbIsland?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
       slug: dbIsland?.slug || slug,
       region: dbIsland?.region || regions[idx % regions.length],
-      image,
+      image: image || DEFAULT_LISTING_IMAGE,
       colSpan: colSpansIslands[idx % colSpansIslands.length],
     };
   });

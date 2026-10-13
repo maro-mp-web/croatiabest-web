@@ -2,21 +2,6 @@ import { POCKETBASE_URL } from '@/pocketbase/config';
 
 export const isDummyPlaceholderPhoto = (url: string | null | undefined): boolean => {
   if (!url || typeof url !== 'string' || !url.trim()) return true;
-  // Statičke placeholder slike iz javnih foldera
-  if (url.startsWith('/cities/') || url.startsWith('/islands/')) return true;
-  // Poznate zamjenske/testne fotografije (odijelo, buldog, tropski bungalov, yosemite...)
-  if (
-    url.includes('split_nlvc5gl6vg') ||
-    url.includes('rovinj_5zf8u5llsi') ||
-    url.includes('varazdin_ye6xvp9z2k') ||
-    url.includes('hvar_yjgpnluhiv') ||
-    url.includes('cres_swkm9fkk8d') ||
-    url.includes('krk_5wat5fshmt') ||
-    url.includes('mljet_yaq2teuiv2') ||
-    url.includes('picsum.photos')
-  ) {
-    return true;
-  }
   return false;
 };
 
@@ -43,7 +28,7 @@ export const getFirstPhoto = (record: any, fieldName: string = 'photoUrls') => {
   } catch (e) {}
 
   // If it's a blocked Google Maps Street View URL, ignore it so the fallback image shows
-  if (filename.includes('maps.googleapis.com') || isDummyPlaceholderPhoto(filename)) {
+  if (filename.includes('maps.googleapis.com')) {
     return '';
   }
 
