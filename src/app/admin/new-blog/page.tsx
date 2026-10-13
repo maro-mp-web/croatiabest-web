@@ -74,6 +74,10 @@ function AdminNewBlogPage() {
     }
   };
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
   // Load existing blog for editing
   useEffect(() => {
     if (editId && pb) {
@@ -148,7 +152,8 @@ function AdminNewBlogPage() {
         await pb.collection('blogs').create(blogData);
         toast({ title: "Uspješno", description: "Blog članak je spremljen." });
       }
-      router.push('/admin');
+      router.refresh();
+      router.push('/admin?tab=blogs');
     } catch (error: any) {
       console.error('Error saving blog:', error);
       // Extract detailed PocketBase validation errors
@@ -452,6 +457,30 @@ function AdminNewBlogPage() {
             <Button onClick={handleSave} disabled={isSaving} className="w-full h-16 rounded-[1.5rem] font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform">
               {isSaving ? <Loader2 className="animate-spin size-6" /> : <><Save className="size-6 mr-3" /> {editId ? 'AŽURIRAJ ČLANAK' : 'OBJAVI ČLANAK'}</>}
             </Button>
+          </div>
+        </div>
+
+        {/* STICKY FLOATING ACTION BAR */}
+        <div className="fixed bottom-6 left-0 right-0 z-50 px-4 pointer-events-none">
+          <div className="container mx-auto max-w-6xl flex justify-end">
+            <div className="pointer-events-auto bg-white/95 backdrop-blur-md border border-black/10 shadow-2xl rounded-2xl p-3 flex items-center gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push('/admin?tab=blogs')}
+                className="rounded-xl font-bold h-11 px-5 border-black/10 hover:bg-slate-100"
+              >
+                Odustani
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="bg-primary hover:bg-primary/90 text-white rounded-xl font-black h-11 px-8 shadow-lg shadow-primary/20 flex items-center gap-2"
+              >
+                {isSaving ? <Loader2 className="animate-spin size-4 mr-2" /> : <Save className="size-4 mr-2" />} {editId ? 'Ažuriraj članak' : 'Objavi članak'}
+              </Button>
+            </div>
           </div>
         </div>
       </main>

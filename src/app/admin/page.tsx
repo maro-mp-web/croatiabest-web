@@ -36,7 +36,11 @@ import {
   X,
   ExternalLink,
   LogOut,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Check
 } from 'lucide-react';
 import { WikiSectionsEditor } from '@/components/ui/WikiSectionsEditor';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
@@ -81,11 +85,11 @@ export default function AdminDashboard() {
   const { data: blogs, isLoading: blogsLoading } = useCollection('blogs', { sort: '-publishDate' });
 
   const { data: cities, isLoading: citiesLoading } = useCollection('cities', {
-    sort: 'name',
+    sort: '-created',
   });
 
   const { data: islands, isLoading: islandsLoading } = useCollection('islands', {
-    sort: 'name',
+    sort: '-created',
   });
 
   const { data: homepageSections, isLoading: sectionsLoading } = useCollection('homepage_sections', {
@@ -117,6 +121,48 @@ export default function AdminDashboard() {
   // Tab State: "listings" | "blogs" | "cities" | "islands" | "parks" | "sections" | "bot" | "media"
   const [activeTab, setActiveTab] = useState<'listings' | 'blogs' | 'cities' | 'islands' | 'parks' | 'sections' | 'bot' | 'media'>('listings');
 
+  // Sync tab with URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab && ['listings', 'blogs', 'cities', 'islands', 'parks', 'sections', 'bot', 'media'].includes(tab)) {
+      setActiveTab(tab as any);
+    }
+  }, []);
+
+  const switchTab = (tabId: string) => {
+    setActiveTab(tabId as any);
+    setIsEditing(false);
+    setIsEditingSection(false);
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tabId);
+    window.history.replaceState({}, '', url.toString());
+  };
+
+  const refreshTab = (tabId?: string) => {
+    const target = tabId || activeTab;
+    window.location.href = `/admin?tab=${target}`;
+  };
+
+  // Search and Pagination States
+  const [searchListings, setSearchListings] = useState('');
+  const [statusFilterListings, setStatusFilterListings] = useState<'all' | 'pending' | 'active' | 'rejected'>('all');
+  const [pageListings, setPageListings] = useState(1);
+
+  const [searchCities, setSearchCities] = useState('');
+  const [pageCities, setPageCities] = useState(1);
+
+  const [searchIslands, setSearchIslands] = useState('');
+  const [pageIslands, setPageIslands] = useState(1);
+
+  const [searchParks, setSearchParks] = useState('');
+  const [pageParks, setPageParks] = useState(1);
+
+  const [searchBlogs, setSearchBlogs] = useState('');
+  const [pageBlogs, setPageBlogs] = useState(1);
+
+  const ITEMS_PER_PAGE = 10;
+
   // Edit Panel State
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingSection, setIsEditingSection] = useState(false);
@@ -145,11 +191,18 @@ export default function AdminDashboard() {
     wikiSections: [],
   });
 
+  // Auto-scroll to top when editor opens so it never jumps to the bottom
+  useEffect(() => {
+    if (isEditing || isEditingSection) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [isEditing, isEditingSection]);
+
   const handleApprove = async (id: string) => {
     if (!pb) return;
     try {
       await pb.collection('listings').update(id, { status: 'active' });
-      window.location.reload();
+      refreshTab('listings');
     } catch (error) {
       console.error('Approve error:', error);
     }
@@ -159,7 +212,7 @@ export default function AdminDashboard() {
     if (!pb) return;
     try {
       await pb.collection('listings').update(id, { status: 'rejected' });
-      window.location.reload();
+      refreshTab('listings');
     } catch (error) {
       console.error('Reject error:', error);
     }
@@ -169,7 +222,7 @@ export default function AdminDashboard() {
     if (!pb) return;
     try {
       await pb.collection('listings').update(id, { status: 'pending' });
-      window.location.reload();
+      refreshTab('listings');
     } catch (error) {
       console.error('Reset error:', error);
     }
@@ -180,7 +233,7 @@ export default function AdminDashboard() {
     if (confirm('Jeste li sigurni da želite obrisati ovaj objekt?')) {
       try {
         await pb.collection('listings').delete(id);
-        window.location.reload();
+        refreshTab('listings');
       } catch (error) {
         console.error('Delete error:', error);
       }
@@ -192,7 +245,7 @@ export default function AdminDashboard() {
     if (confirm('Jeste li sigurni da želite obrisati ovaj članak?')) {
       try {
         await pb.collection('blogs').delete(id);
-        window.location.reload();
+        refreshTab('blogs');
       } catch (error) {
         console.error('Delete error:', error);
       }
@@ -204,7 +257,7 @@ export default function AdminDashboard() {
     if (confirm('Jeste li sigurni da želite obrisati ovaj grad?')) {
       try {
         await pb.collection('cities').delete(id);
-        window.location.reload();
+        refreshTab('cities');
       } catch (error) {
         console.error('City delete error:', error);
       }
@@ -216,7 +269,7 @@ export default function AdminDashboard() {
     if (confirm('Jeste li sigurni da želite obrisati ovaj otok?')) {
       try {
         await pb.collection('islands').delete(id);
-        window.location.reload();
+        refreshTab('islands');
       } catch (error) {
         console.error('Island delete error:', error);
       }
@@ -225,7 +278,7 @@ export default function AdminDashboard() {
 
   // Edit action triggers
   const startEditCity = (cityItem?: any) => {
-    setActiveTab('cities');
+    switchTab('cities');
     setEditType('city');
     if (cityItem) {
       setEditId(cityItem.id);
@@ -280,7 +333,7 @@ export default function AdminDashboard() {
   };
 
   const startEditIsland = (islandItem?: any) => {
-    setActiveTab('islands');
+    switchTab('islands');
     setEditType('island');
     if (islandItem) {
       setEditId(islandItem.id);
@@ -318,8 +371,8 @@ export default function AdminDashboard() {
         areaCode: '',
         region: 'Dalmacija',
         image: '',
-        lat: 43.508,
-        lng: 16.439,
+        lat: 43.17,
+        lng: 16.44,
         seoTitle: '',
         seoDescription: '',
         seoKeywords: '',
@@ -334,7 +387,7 @@ export default function AdminDashboard() {
 
 
   const startEditSection = (sectionItem?: any) => {
-    setActiveTab('sections');
+    switchTab('sections');
     setEditType('section');
     if (sectionItem) {
       setEditId(sectionItem.id);
@@ -376,7 +429,7 @@ export default function AdminDashboard() {
     if (confirm('Jeste li sigurni da želite obrisati ovu sekciju?')) {
       try {
         await pb.collection('homepage_sections').delete(id);
-        window.location.reload();
+        refreshTab('sections');
       } catch (error) {
         console.error('Section delete error:', error);
       }
@@ -384,7 +437,7 @@ export default function AdminDashboard() {
   };
 
   const startEditPark = (parkItem?: any) => {
-    setActiveTab('parks');
+    switchTab('parks');
     setEditType('park');
     if (parkItem) {
       setEditId(parkItem.id);
@@ -443,7 +496,7 @@ export default function AdminDashboard() {
         await pb.collection('homepage_sections').create(data);
       }
       setIsEditingSection(false);
-      window.location.reload();
+      refreshTab('sections');
     } catch(err) {
       console.error(err);
       alert('Greška pri spremanju sekcije!');
@@ -612,7 +665,7 @@ export default function AdminDashboard() {
         }
       }
       setIsEditing(false);
-      window.location.reload();
+      refreshTab(activeTab);
     } catch (err) {
       console.error('Save error:', err);
       alert('Spremanje nije uspjelo. Provjerite konzolu za detalje.');
@@ -653,6 +706,162 @@ export default function AdminDashboard() {
     }
     return sum;
   }, 0) || 0;
+
+  // Filtered & Paginated: Listings
+  const filteredListings = (listings || [])
+    .filter(l => (l.locationCategoryId || l.categoryId) !== 'national_parks')
+    .filter(l => {
+      if (statusFilterListings === 'pending') return l.status === 'pending';
+      if (statusFilterListings === 'active') return l.status === 'active' || l.status === 'approved';
+      if (statusFilterListings === 'rejected') return l.status === 'rejected';
+      return true;
+    })
+    .filter(l => {
+      if (!searchListings.trim()) return true;
+      const q = searchListings.toLowerCase();
+      const name = (l.name || l.objectName || '').toLowerCase();
+      const city = (l.city || '').toLowerCase();
+      const cat = (CATEGORIES.find(c => c.id === (l.locationCategoryId || l.categoryId))?.name || '').toLowerCase();
+      return name.includes(q) || city.includes(q) || cat.includes(q);
+    });
+  const totalPagesListings = Math.ceil(filteredListings.length / ITEMS_PER_PAGE) || 1;
+  const paginatedListings = filteredListings.slice((pageListings - 1) * ITEMS_PER_PAGE, pageListings * ITEMS_PER_PAGE);
+
+  // Filtered & Paginated: Cities
+  const filteredCities = (cities || []).filter(c => {
+    if (!searchCities.trim()) return true;
+    const q = searchCities.toLowerCase();
+    return (
+      (c.name || '').toLowerCase().includes(q) ||
+      (c.slug || '').toLowerCase().includes(q) ||
+      (c.region || '').toLowerCase().includes(q) ||
+      (c.areaCode || '').toLowerCase().includes(q)
+    );
+  });
+  const totalPagesCities = Math.ceil(filteredCities.length / ITEMS_PER_PAGE) || 1;
+  const paginatedCities = filteredCities.slice((pageCities - 1) * ITEMS_PER_PAGE, pageCities * ITEMS_PER_PAGE);
+
+  // Filtered & Paginated: Islands
+  const filteredIslands = (islands || []).filter(i => {
+    if (!searchIslands.trim()) return true;
+    const q = searchIslands.toLowerCase();
+    return (
+      (i.name || '').toLowerCase().includes(q) ||
+      (i.slug || '').toLowerCase().includes(q) ||
+      (i.region || '').toLowerCase().includes(q)
+    );
+  });
+  const totalPagesIslands = Math.ceil(filteredIslands.length / ITEMS_PER_PAGE) || 1;
+  const paginatedIslands = filteredIslands.slice((pageIslands - 1) * ITEMS_PER_PAGE, pageIslands * ITEMS_PER_PAGE);
+
+  // Filtered & Paginated: Parks
+  const filteredParks = nationalParks.filter(p => {
+    if (!searchParks.trim()) return true;
+    const q = searchParks.toLowerCase();
+    return (
+      (p.name || '').toLowerCase().includes(q) ||
+      (p.city || '').toLowerCase().includes(q) ||
+      (p.region || '').toLowerCase().includes(q)
+    );
+  });
+  const totalPagesParks = Math.ceil(filteredParks.length / ITEMS_PER_PAGE) || 1;
+  const paginatedParks = filteredParks.slice((pageParks - 1) * ITEMS_PER_PAGE, pageParks * ITEMS_PER_PAGE);
+
+  // Filtered & Paginated: Blogs
+  const filteredBlogs = (blogs || []).filter(b => {
+    if (!searchBlogs.trim()) return true;
+    const q = searchBlogs.toLowerCase();
+    return (
+      (b.title || '').toLowerCase().includes(q) ||
+      (b.category || '').toLowerCase().includes(q) ||
+      (b.author || '').toLowerCase().includes(q)
+    );
+  });
+  const totalPagesBlogs = Math.ceil(filteredBlogs.length / ITEMS_PER_PAGE) || 1;
+  const paginatedBlogs = filteredBlogs.slice((pageBlogs - 1) * ITEMS_PER_PAGE, pageBlogs * ITEMS_PER_PAGE);
+
+  // Helper: Search Bar
+  const renderSearchBar = (
+    placeholder: string,
+    value: string,
+    onChange: (val: string) => void,
+    totalCount: number,
+    filteredCount: number,
+    extraControls?: React.ReactNode
+  ) => (
+    <div className="p-6 border-b bg-slate-50/50 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+      <div className="relative flex-1 max-w-md">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+        <Input
+          type="text"
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="pl-10 pr-9 bg-white rounded-xl border-black/10 h-11 text-sm font-medium shadow-sm focus:border-primary"
+        />
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            title="Očisti pretragu"
+          >
+            <X className="size-4" />
+          </button>
+        )}
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        {extraControls}
+        <div className="text-xs font-bold text-slate-500 bg-white px-3 py-2 rounded-xl border border-black/5 shadow-sm">
+          Prikazano: <span className="text-primary font-black">{Math.min(filteredCount, ITEMS_PER_PAGE)}</span> od <span className="text-slate-900 font-black">{filteredCount}</span>
+          {filteredCount !== totalCount && (
+            <span className="text-slate-400 ml-1 font-normal">(ukupno {totalCount})</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Helper: Pagination
+  const renderPagination = (currentPage: number, totalPages: number, setPage: React.Dispatch<React.SetStateAction<number>>) => {
+    if (totalPages <= 1) return null;
+    return (
+      <div className="p-6 border-t bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p className="text-xs text-muted-foreground font-medium">
+          Stranica <strong className="text-foreground">{currentPage}</strong> od <strong className="text-foreground">{totalPages}</strong>
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={currentPage <= 1}
+            onClick={() => {
+              setPage(p => Math.max(1, p - 1));
+            }}
+            className="rounded-xl h-9 px-4 font-bold"
+          >
+            <ChevronLeft className="size-4 mr-1" /> Prethodna
+          </Button>
+          <span className="text-xs font-bold text-slate-400 px-2">
+            {currentPage} / {totalPages}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={currentPage >= totalPages}
+            onClick={() => {
+              setPage(p => Math.min(totalPages, p + 1));
+            }}
+            className="rounded-xl h-9 px-4 font-bold"
+          >
+            Sljedeća <ChevronRight className="size-4 ml-1" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
   const renderEntityEditor = () => (
     <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white mb-8">
@@ -912,13 +1121,40 @@ export default function AdminDashboard() {
             />
           )}
 
-          <div className="flex gap-4 pt-4 border-t">
-            <Button type="submit" className="bg-primary hover:bg-primary/90 text-white rounded-xl font-bold h-12 px-8 flex-1">
-              Spremi promjene
-            </Button>
-            <Button type="button" variant="outline" onClick={() => setIsEditing(false)} className="rounded-xl h-12 px-8">
-              Odustani
-            </Button>
+          {/* STICKY FLOATING ACTION BAR */}
+          <div className="sticky bottom-6 z-30 pt-4">
+            <div className="bg-white/95 backdrop-blur-md border border-black/10 shadow-2xl rounded-2xl p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setIsEditing(false)} 
+                  className="text-slate-500 hover:text-slate-900 font-bold"
+                >
+                  <ArrowLeft className="size-4 mr-2" /> Odustani
+                </Button>
+                <span className="text-xs text-muted-foreground hidden sm:inline">
+                  {formData.name ? `Uređivanje: ${formData.name}` : `Novi ${editType === 'city' ? 'grad' : editType === 'island' ? 'otok' : 'park'}`}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsEditing(false)} 
+                  className="rounded-xl font-bold h-11 px-6"
+                >
+                  Odustani
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-primary hover:bg-primary/90 text-white rounded-xl font-black h-11 px-8 shadow-lg shadow-primary/20 flex items-center gap-2"
+                >
+                  <Check className="size-4" /> Spremi promjene
+                </Button>
+              </div>
+            </div>
           </div>
         </form>
       </CardContent>
@@ -1099,9 +1335,40 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-6 border-t">
-            <Button type="button" variant="ghost" onClick={() => setIsEditingSection(false)}>Odustani</Button>
-            <Button type="submit" className="bg-primary text-white font-bold h-10 px-8 rounded-xl shadow-lg">Spremi Sekciju</Button>
+          {/* STICKY FLOATING ACTION BAR */}
+          <div className="sticky bottom-6 z-30 pt-4">
+            <div className="bg-white/95 backdrop-blur-md border border-black/10 shadow-2xl rounded-2xl p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setIsEditingSection(false)} 
+                  className="text-slate-500 hover:text-slate-900 font-bold"
+                >
+                  <ArrowLeft className="size-4 mr-2" /> Odustani
+                </Button>
+                <span className="text-xs text-muted-foreground hidden sm:inline">
+                  {formData.title ? `Sekcija: ${formData.title}` : 'Nova sekcija'}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsEditingSection(false)} 
+                  className="rounded-xl font-bold h-11 px-6"
+                >
+                  Odustani
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-primary hover:bg-primary/90 text-white rounded-xl font-black h-11 px-8 shadow-lg shadow-primary/20 flex items-center gap-2"
+                >
+                  <Check className="size-4" /> Spremi Sekciju
+                </Button>
+              </div>
+            </div>
           </div>
         </form>
       </CardContent>
@@ -1239,9 +1506,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-        {/* NAVIGATION TABS */}
-        <div className="flex border-b border-black/5 gap-6 mb-8 overflow-x-auto pb-1 text-slate-600">
-          {[
+        {/* NAVIGATION           {[
             { id: 'listings', name: 'Objekti / Prijave', icon: <CreditCard className="size-4" /> },
             { id: 'media', name: 'Medijska zbirka', icon: <ImageIcon className="size-4 text-primary" /> },
             { id: 'cities', name: 'Gradovi', icon: <Building2 className="size-4" /> },
@@ -1253,11 +1518,7 @@ export default function AdminDashboard() {
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id as any);
-                setIsEditing(false);
-                setIsEditingSection(false);
-              }}
+              onClick={() => switchTab(tab.id)}
               className={`flex items-center gap-2 pb-4 font-black uppercase text-xs tracking-wider transition-all border-b-2 outline-none ${activeTab === tab.id ? 'border-primary text-primary font-black' : 'border-transparent text-slate-400 hover:text-slate-700'}`}
             >
               {tab.icon} {tab.name}
@@ -1270,21 +1531,55 @@ export default function AdminDashboard() {
           <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
             <CardHeader className="flex flex-row items-center justify-between border-b p-8 bg-secondary/5">
               <div>
-                <CardTitle className="text-2xl font-black uppercase tracking-tight">Upravljanje Prijavama</CardTitle>
-                <CardDescription>Odobrite nove objekte i provjerite status naplate.</CardDescription>
+                <CardTitle className="text-2xl font-black uppercase tracking-tight">Upravljanje Prijavama i Objektima</CardTitle>
+                <CardDescription>Odobrite nove objekte, pretražujte bazu i provjerite status naplate.</CardDescription>
               </div>
+              <Link href="/admin/new-listing">
+                <Button className="bg-primary text-white rounded-xl font-bold h-10 px-4">
+                  <PlusCircle className="size-4 mr-2" /> Dodaj Objekt
+                </Button>
+              </Link>
             </CardHeader>
+            {renderSearchBar(
+              'Pretraži objekte po nazivu, gradu ili kategoriji...',
+              searchListings,
+              (v) => { setSearchListings(v); setPageListings(1); },
+              listings?.filter(l => (l.locationCategoryId || l.categoryId) !== 'national_parks').length || 0,
+              filteredListings.length,
+              (
+                <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-black/5">
+                  {(['all', 'pending', 'active', 'rejected'] as const).map(st => (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() => { setStatusFilterListings(st); setPageListings(1); }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        statusFilterListings === st
+                          ? 'bg-primary text-white shadow-sm'
+                          : 'text-slate-500 hover:text-slate-900'
+                      }`}
+                    >
+                      {st === 'all' && 'Svi'}
+                      {st === 'pending' && 'Na čekanju'}
+                      {st === 'active' && 'Aktivni'}
+                      {st === 'rejected' && 'Odbijeni'}
+                    </button>
+                  ))}
+                </div>
+              )
+            )}
             <CardContent className="p-0">
               {listingsLoading ? (
                 <div className="p-24 flex justify-center"><Loader2 className="animate-spin size-8 text-primary" /></div>
               ) : (
-                <div className="divide-y divide-black/5 text-left">
-                  {(!listings || listings.filter(l => (l.locationCategoryId || l.categoryId) !== 'national_parks').length === 0) ? (
-                    <div className="p-24 text-center text-muted-foreground italic">Nema prijava u sustavu.</div>
-                  ) : (
-                    listings
-                      .filter(l => (l.locationCategoryId || l.categoryId) !== 'national_parks')
-                      .map((listing) => {
+                <>
+                  <div className="divide-y divide-black/5 text-left">
+                    {paginatedListings.length === 0 ? (
+                      <div className="p-24 text-center text-muted-foreground italic">
+                        {searchListings ? 'Nema pronađenih objekata za traženi pojam.' : 'Nema prijava u sustavu.'}
+                      </div>
+                    ) : (
+                      paginatedListings.map((listing) => {
                         const categoryId = listing.locationCategoryId || listing.categoryId;
                         const category = CATEGORIES.find(c => c.id === categoryId);
                         const name = listing.name || listing.objectName || 'Bez naziva';
@@ -1374,8 +1669,10 @@ export default function AdminDashboard() {
                           </div>
                         );
                       })
-                  )}
-                </div>
+                    )}
+                  </div>
+                  {renderPagination(pageListings, totalPagesListings, setPageListings)}
+                </>
               )}
             </CardContent>
           </Card>
@@ -1389,48 +1686,65 @@ export default function AdminDashboard() {
                 <CardTitle className="text-2xl font-black uppercase tracking-tight">Magazin (Blog)</CardTitle>
                 <CardDescription>Upravljajte postojećim člancima u Magazinu.</CardDescription>
               </div>
+              <Link href="/admin/new-blog">
+                <Button className="bg-primary text-white rounded-xl font-bold h-10 px-4">
+                  <PlusCircle className="size-4 mr-2" /> Novi Članak
+                </Button>
+              </Link>
             </CardHeader>
+            {renderSearchBar(
+              'Pretraži članke po naslovu, kategoriji ili autoru...',
+              searchBlogs,
+              (v) => { setSearchBlogs(v); setPageBlogs(1); },
+              blogs?.length || 0,
+              filteredBlogs.length
+            )}
             <CardContent className="p-0">
               {blogsLoading ? (
                 <div className="p-24 flex justify-center"><Loader2 className="animate-spin size-8 text-primary" /></div>
               ) : (
-                <div className="divide-y divide-black/5 text-left">
-                  {!blogs || blogs.length === 0 ? (
-                    <div className="p-24 text-center text-muted-foreground italic">Nema objavljenih članaka.</div>
-                  ) : (
-                    blogs.map((blog) => (
-                      <div key={blog.id} className="flex flex-col md:flex-row items-center justify-between p-8 hover:bg-secondary/5 transition-colors gap-6">
-                        <div className="flex items-center gap-6 w-full md:w-auto">
-                          <div className="relative size-16 rounded-2xl overflow-hidden shadow-inner border border-black/5 bg-muted flex-shrink-0">
-                            {blog.image && <img src={blog.image} alt={blog.title} className="absolute inset-0 w-full h-full object-cover" />}
-                          </div>
-                          <div>
-                            <p className="font-black text-xl mb-1">{blog.title}</p>
-                            <p className="text-xs text-muted-foreground flex items-center gap-2 font-medium">
-                              {blog.category || 'Nema kategorije'} <span className="opacity-30">•</span> Autor: {blog.author || 'Nepoznato'}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                          <Link href={`/blog/${blog.slug || blog.id}`}>
-                            <Button variant="outline" size="icon" className="text-primary hover:bg-primary/10 rounded-xl size-10 border-primary/20 bg-primary/5">
-                              <Sparkles className="size-4" />
-                            </Button>
-                          </Link>
-                          <Link href={`/admin/new-blog?edit=${blog.id}`}>
-                            <Button variant="outline" size="icon" className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
-                              <Edit2 className="size-4" />
-                            </Button>
-                          </Link>
-                          <Button variant="outline" size="icon" onClick={() => handleDeleteBlog(blog.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
-                            <Trash2 className="size-4" />
-                          </Button>
-                        </div>
+                <>
+                  <div className="divide-y divide-black/5 text-left">
+                    {paginatedBlogs.length === 0 ? (
+                      <div className="p-24 text-center text-muted-foreground italic">
+                        {searchBlogs ? 'Nema članaka za traženi pojam.' : 'Nema objavljenih članaka.'}
                       </div>
-                    ))
-                  )}
-                </div>
+                    ) : (
+                      paginatedBlogs.map((blog) => (
+                        <div key={blog.id} className="flex flex-col md:flex-row items-center justify-between p-8 hover:bg-secondary/5 transition-colors gap-6">
+                          <div className="flex items-center gap-6 w-full md:w-auto">
+                            <div className="relative size-16 rounded-2xl overflow-hidden shadow-inner border border-black/5 bg-muted flex-shrink-0">
+                              {blog.image && <img src={blog.image} alt={blog.title} className="absolute inset-0 w-full h-full object-cover" />}
+                            </div>
+                            <div>
+                              <p className="font-black text-xl mb-1">{blog.title}</p>
+                              <p className="text-xs text-muted-foreground flex items-center gap-2 font-medium">
+                                {blog.category || 'Nema kategorije'} <span className="opacity-30">•</span> Autor: {blog.author || 'Nepoznato'}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <Link href={`/blog/${blog.slug || blog.id}`}>
+                              <Button variant="outline" size="icon" className="text-primary hover:bg-primary/10 rounded-xl size-10 border-primary/20 bg-primary/5">
+                                <Sparkles className="size-4" />
+                              </Button>
+                            </Link>
+                            <Link href={`/admin/new-blog?edit=${blog.id}`}>
+                              <Button variant="outline" size="icon" className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
+                                <Edit2 className="size-4" />
+                              </Button>
+                            </Link>
+                            <Button variant="outline" size="icon" onClick={() => handleDeleteBlog(blog.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  {renderPagination(pageBlogs, totalPagesBlogs, setPageBlogs)}
+                </>
               )}
             </CardContent>
           </Card>
@@ -1451,40 +1765,52 @@ export default function AdminDashboard() {
                   <PlusCircle className="size-4 mr-2" /> Dodaj Grad
                 </Button>
               </CardHeader>
+              {renderSearchBar(
+                'Pretraži gradove po nazivu, slugu, regiji ili pozivnom broju...',
+                searchCities,
+                (v) => { setSearchCities(v); setPageCities(1); },
+                cities?.length || 0,
+                filteredCities.length
+              )}
               <CardContent className="p-0">
                 {citiesLoading ? (
                   <div className="p-24 flex justify-center"><Loader2 className="animate-spin size-8 text-primary" /></div>
                 ) : (
-                  <div className="divide-y divide-black/5 text-left">
-                    {!cities || cities.length === 0 ? (
-                      <div className="p-24 text-center text-muted-foreground italic">Nema upisanih gradova.</div>
-                    ) : (
-                      cities.map((city) => (
-                        <div key={city.id} className="flex flex-col md:flex-row items-center justify-between p-8 hover:bg-secondary/5 transition-colors gap-6">
-                          <div className="flex items-center gap-6 w-full md:w-auto">
-                            <div className="relative size-16 rounded-2xl overflow-hidden shadow-inner border border-black/5 bg-muted flex-shrink-0">
-                              {city.image && <img src={city.image} alt={city.name} className="absolute inset-0 w-full h-full object-cover" />}
-                            </div>
-                            <div>
-                              <p className="font-black text-xl mb-1">{city.name} <span className="text-xs font-normal text-muted-foreground italic">({city.slug})</span></p>
-                              <p className="text-xs text-muted-foreground flex items-center gap-2 font-medium">
-                                {city.region} <span className="opacity-30">•</span> Stanovnika: {city.population || 'N/A'} <span className="opacity-30">•</span> Pozivni: {city.areaCode || 'N/A'}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="icon" onClick={() => startEditCity(city)} className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
-                              <Edit2 className="size-4" />
-                            </Button>
-                            <Button variant="outline" size="icon" onClick={() => handleDeleteCity(city.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
-                              <Trash2 className="size-4" />
-                            </Button>
-                          </div>
+                  <>
+                    <div className="divide-y divide-black/5 text-left">
+                      {paginatedCities.length === 0 ? (
+                        <div className="p-24 text-center text-muted-foreground italic">
+                          {searchCities ? 'Nema pronađenih gradova za traženi pojam.' : 'Nema upisanih gradova.'}
                         </div>
-                      ))
-                    )}
-                  </div>
+                      ) : (
+                        paginatedCities.map((city) => (
+                          <div key={city.id} className="flex flex-col md:flex-row items-center justify-between p-8 hover:bg-secondary/5 transition-colors gap-6">
+                            <div className="flex items-center gap-6 w-full md:w-auto">
+                              <div className="relative size-16 rounded-2xl overflow-hidden shadow-inner border border-black/5 bg-muted flex-shrink-0">
+                                {city.image && <img src={city.image} alt={city.name} className="absolute inset-0 w-full h-full object-cover" />}
+                              </div>
+                              <div>
+                                <p className="font-black text-xl mb-1">{city.name} <span className="text-xs font-normal text-muted-foreground italic">({city.slug})</span></p>
+                                <p className="text-xs text-muted-foreground flex items-center gap-2 font-medium">
+                                  {city.region} <span className="opacity-30">•</span> Stanovnika: {city.population || 'N/A'} <span className="opacity-30">•</span> Pozivni: {city.areaCode || 'N/A'}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="icon" onClick={() => startEditCity(city)} className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
+                                <Edit2 className="size-4" />
+                              </Button>
+                              <Button variant="outline" size="icon" onClick={() => handleDeleteCity(city.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
+                                <Trash2 className="size-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    {renderPagination(pageCities, totalPagesCities, setPageCities)}
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -1506,40 +1832,52 @@ export default function AdminDashboard() {
                   <PlusCircle className="size-4 mr-2" /> Dodaj Otok
                 </Button>
               </CardHeader>
+              {renderSearchBar(
+                'Pretraži otoke po nazivu, slugu ili regiji...',
+                searchIslands,
+                (v) => { setSearchIslands(v); setPageIslands(1); },
+                islands?.length || 0,
+                filteredIslands.length
+              )}
               <CardContent className="p-0">
                 {islandsLoading ? (
                   <div className="p-24 flex justify-center"><Loader2 className="animate-spin size-8 text-primary" /></div>
                 ) : (
-                  <div className="divide-y divide-black/5 text-left">
-                    {!islands || islands.length === 0 ? (
-                      <div className="p-24 text-center text-muted-foreground italic">Nema upisanih otoka.</div>
-                    ) : (
-                      islands.map((island) => (
-                        <div key={island.id} className="flex flex-col md:flex-row items-center justify-between p-8 hover:bg-secondary/5 transition-colors gap-6">
-                          <div className="flex items-center gap-6 w-full md:w-auto">
-                            <div className="relative size-16 rounded-2xl overflow-hidden shadow-inner border border-black/5 bg-muted flex-shrink-0">
-                              {island.image && <img src={island.image} alt={island.name} className="absolute inset-0 w-full h-full object-cover" />}
-                            </div>
-                            <div>
-                              <p className="font-black text-xl mb-1">{island.name} <span className="text-xs font-normal text-muted-foreground italic">({island.slug})</span></p>
-                              <p className="text-xs text-muted-foreground flex items-center gap-2 font-medium">
-                                {island.region} <span className="opacity-30">•</span> Stanovnika: {island.population || 'N/A'} <span className="opacity-30">•</span> Općina: {island.mayor || 'N/A'}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="icon" onClick={() => startEditIsland(island)} className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
-                              <Edit2 className="size-4" />
-                            </Button>
-                            <Button variant="outline" size="icon" onClick={() => handleDeleteIsland(island.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
-                              <Trash2 className="size-4" />
-                            </Button>
-                          </div>
+                  <>
+                    <div className="divide-y divide-black/5 text-left">
+                      {paginatedIslands.length === 0 ? (
+                        <div className="p-24 text-center text-muted-foreground italic">
+                          {searchIslands ? 'Nema pronađenih otoka za traženi pojam.' : 'Nema upisanih otoka.'}
                         </div>
-                      ))
-                    )}
-                  </div>
+                      ) : (
+                        paginatedIslands.map((island) => (
+                          <div key={island.id} className="flex flex-col md:flex-row items-center justify-between p-8 hover:bg-secondary/5 transition-colors gap-6">
+                            <div className="flex items-center gap-6 w-full md:w-auto">
+                              <div className="relative size-16 rounded-2xl overflow-hidden shadow-inner border border-black/5 bg-muted flex-shrink-0">
+                                {island.image && <img src={island.image} alt={island.name} className="absolute inset-0 w-full h-full object-cover" />}
+                              </div>
+                              <div>
+                                <p className="font-black text-xl mb-1">{island.name} <span className="text-xs font-normal text-muted-foreground italic">({island.slug})</span></p>
+                                <p className="text-xs text-muted-foreground flex items-center gap-2 font-medium">
+                                  {island.region} <span className="opacity-30">•</span> Stanovnika: {island.population || 'N/A'} <span className="opacity-30">•</span> Općina: {island.mayor || 'N/A'}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="icon" onClick={() => startEditIsland(island)} className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
+                                <Edit2 className="size-4" />
+                              </Button>
+                              <Button variant="outline" size="icon" onClick={() => handleDeleteIsland(island.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
+                                <Trash2 className="size-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    {renderPagination(pageIslands, totalPagesIslands, setPageIslands)}
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -1563,45 +1901,57 @@ export default function AdminDashboard() {
                   </Button>
                 </Link>
               </CardHeader>
+              {renderSearchBar(
+                'Pretraži nacionalne parkove...',
+                searchParks,
+                (v) => { setSearchParks(v); setPageParks(1); },
+                nationalParks.length,
+                filteredParks.length
+              )}
               <CardContent className="p-0">
                 {listingsLoading ? (
                   <div className="p-24 flex justify-center"><Loader2 className="animate-spin size-8 text-primary" /></div>
                 ) : (
-                  <div className="divide-y divide-black/5 text-left">
-                    {nationalParks.length === 0 ? (
-                      <div className="p-24 text-center text-muted-foreground italic">Nema upisanih nacionalnih parkova.</div>
-                    ) : (
-                      nationalParks.map((park) => {
-                        const image = getFirstPhoto(park);
-                        return (
-                          <div key={park.id} className="flex flex-col md:flex-row items-center justify-between p-8 hover:bg-secondary/5 transition-colors gap-6">
-                            <div className="flex items-center gap-6 w-full md:w-auto">
-                              <div className="relative size-16 rounded-2xl overflow-hidden shadow-inner border border-black/5 bg-muted flex-shrink-0">
-                                {image && <img src={image} alt={park.name} className="absolute inset-0 w-full h-full object-cover" />}
+                  <>
+                    <div className="divide-y divide-black/5 text-left">
+                      {paginatedParks.length === 0 ? (
+                        <div className="p-24 text-center text-muted-foreground italic">
+                          {searchParks ? 'Nema pronađenih parkova za traženi pojam.' : 'Nema upisanih nacionalnih parkova.'}
+                        </div>
+                      ) : (
+                        paginatedParks.map((park) => {
+                          const image = getFirstPhoto(park);
+                          return (
+                            <div key={park.id} className="flex flex-col md:flex-row items-center justify-between p-8 hover:bg-secondary/5 transition-colors gap-6">
+                              <div className="flex items-center gap-6 w-full md:w-auto">
+                                <div className="relative size-16 rounded-2xl overflow-hidden shadow-inner border border-black/5 bg-muted flex-shrink-0">
+                                  {image && <img src={image} alt={park.name} className="absolute inset-0 w-full h-full object-cover" />}
+                                </div>
+                                <div>
+                                  <p className="font-black text-xl mb-1">{park.name}</p>
+                                  <p className="text-xs text-muted-foreground flex items-center gap-2 font-medium">
+                                    {park.region} <span className="opacity-30">•</span> Lokacija: {park.city} <span className="opacity-30">•</span> Koordinate: {park.latitude}, {park.longitude}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="font-black text-xl mb-1">{park.name}</p>
-                                <p className="text-xs text-muted-foreground flex items-center gap-2 font-medium">
-                                  {park.region} <span className="opacity-30">•</span> Lokacija: {park.city} <span className="opacity-30">•</span> Koordinate: {park.latitude}, {park.longitude}
-                                </p>
-                              </div>
-                            </div>
-                            
-                            <div className="flex gap-2">
-                              <Link href={`/admin/edit-listing/${park.id}`}>
-                                <Button variant="outline" size="icon" title="Uredi objekt i SEO" className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
-                                  <Edit2 className="size-4" />
+                              
+                              <div className="flex gap-2">
+                                <Link href={`/admin/edit-listing/${park.id}`}>
+                                  <Button variant="outline" size="icon" title="Uredi objekt i SEO" className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
+                                    <Edit2 className="size-4" />
+                                  </Button>
+                                </Link>
+                                <Button variant="outline" size="icon" onClick={() => handleDelete(park.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
+                                  <Trash2 className="size-4" />
                                 </Button>
-                              </Link>
-                              <Button variant="outline" size="icon" onClick={() => handleDelete(park.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
-                                <Trash2 className="size-4" />
-                              </Button>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
+                          );
+                        })
+                      )}
+                    </div>
+                    {renderPagination(pageParks, totalPagesParks, setPageParks)}
+                  </>
                 )}
               </CardContent>
             </Card>

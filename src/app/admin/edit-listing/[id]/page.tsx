@@ -98,6 +98,10 @@ export default function AdminEditListingPage() {
   };
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
+  useEffect(() => {
     if (!id || !pb) return;
     pb.collection('listings').getOne(id).then(record => {
       const meta = record.metadata || {};
@@ -263,8 +267,9 @@ export default function AdminEditListingPage() {
     try {
       await pb.collection('listings').update(id, payloadData);
       toast({ title: "Uspjeh", description: "Objekt i SEO podaci uspješno ažurirani." });
+      const returnTab = formData.locationCategoryId === 'national_parks' ? 'parks' : 'listings';
       router.refresh();
-      router.push('/admin');
+      router.push(`/admin?tab=${returnTab}`);
     } catch (error: any) {
       setIsSaving(false);
       console.error("Save error:", error);
@@ -793,6 +798,30 @@ export default function AdminEditListingPage() {
             <pre>{errorDebugInfo}</pre>
           </div>
         )}
+
+        {/* STICKY FLOATING ACTION BAR */}
+        <div className="fixed bottom-6 left-0 right-0 z-50 px-4 pointer-events-none">
+          <div className="container mx-auto max-w-5xl flex justify-end">
+            <div className="pointer-events-auto bg-white/95 backdrop-blur-md border border-black/10 shadow-2xl rounded-2xl p-3 flex items-center gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push(`/admin?tab=${formData.locationCategoryId === 'national_parks' ? 'parks' : 'listings'}`)}
+                className="rounded-xl font-bold h-11 px-5 border-black/10 hover:bg-slate-100"
+              >
+                Odustani
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="bg-primary hover:bg-primary/90 text-white rounded-xl font-black h-11 px-8 shadow-lg shadow-primary/20 flex items-center gap-2"
+              >
+                {isSaving ? <Loader2 className="animate-spin size-4 mr-2" /> : <Save className="size-4 mr-2" />} Spremi promjene
+              </Button>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   );
