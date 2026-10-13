@@ -51,8 +51,9 @@ export default function MiniMap({ latitude, longitude, className = 'h-[300px] w-
         style={{ height: '100%', width: '100%', zIndex: 10 }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
         />
         <Marker position={[latitude, longitude]} icon={customIcon} />
         <MapUpdater center={[latitude, longitude]} />
