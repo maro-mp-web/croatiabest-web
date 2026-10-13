@@ -31,9 +31,6 @@ import {
 } from 'lucide-react';
 import { useUser, usePB } from '@/pocketbase';
 import { useRouter } from 'next/navigation';
-import { loadStripe } from '@stripe/stripe-js';
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
 export default function SubmitListingPage() {
   const { user } = useUser();

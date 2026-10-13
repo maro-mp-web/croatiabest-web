@@ -57,8 +57,8 @@ export default function Home() {
     sort: '-created',
   });
 
-  const { data: cities } = useCollection('cities');
-  const { data: islands } = useCollection('islands');
+  const { data: cities } = useCollection('cities', { sort: 'name' });
+  const { data: islands } = useCollection('islands', { sort: 'name' });
   const { data: homepageSections } = useCollection('homepage_sections', { sort: 'order' });
 
   const { data: blogArticles } = useCollection('blogs', {
