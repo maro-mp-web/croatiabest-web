@@ -20,6 +20,10 @@ export function ImageUpload({ onUploadComplete, folder = 'media', defaultImage }
   const [previewUrl, setPreviewUrl] = useState<string | null>(defaultImage || null);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
 
+  React.useEffect(() => {
+    setPreviewUrl(defaultImage || null);
+  }, [defaultImage]);
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -10,6 +10,7 @@ import {
   Bold, Italic, Heading2, Heading3, List, ListOrdered, 
   Quote, LinkIcon, ImageIcon, Undo, Redo, Minus 
 } from 'lucide-react';
+import { MediaLibraryModal } from '@/components/media/MediaLibraryModal';
 
 interface RichTextEditorProps {
   value: string;
@@ -48,6 +49,8 @@ function ToolbarButton({
 }
 
 export function RichTextEditor({ value, onChange, placeholder = 'Počnite pisati...', className }: RichTextEditorProps) {
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -88,12 +91,8 @@ export function RichTextEditor({ value, onChange, placeholder = 'Počnite pisati
   }, [value]);
 
   const addImage = useCallback(() => {
-    if (!editor) return;
-    const url = window.prompt('Unesite URL slike:');
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
-    }
-  }, [editor]);
+    setIsMediaModalOpen(true);
+  }, []);
 
   const addLink = useCallback(() => {
     if (!editor) return;
@@ -219,6 +218,16 @@ export function RichTextEditor({ value, onChange, placeholder = 'Počnite pisati
 
       {/* Editor Content */}
       <EditorContent editor={editor} />
+
+      {/* Media Library Selector Modal */}
+      <MediaLibraryModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        onSelect={(url) => {
+          editor?.chain().focus().setImage({ src: url }).run();
+        }}
+        title="Odaberi sliku iz medijske zbirke"
+      />
     </div>
   );
 }

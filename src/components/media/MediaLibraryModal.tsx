@@ -66,7 +66,7 @@ export function MediaLibraryModal({
       });
 
       const formatted: MediaItem[] = records
-        .map((r: any) => {
+        .map((r: any): MediaItem | null => {
           const fileName = r.file || '';
           if (!fileName) return null;
           
@@ -169,7 +169,10 @@ export function MediaLibraryModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[88vh] flex flex-col p-0 gap-0 overflow-hidden rounded-3xl bg-white border border-slate-200 shadow-2xl">
+      <DialogContent 
+        style={{ zIndex: 99999 }}
+        className="max-w-4xl max-h-[88vh] flex flex-col p-0 gap-0 overflow-hidden rounded-3xl bg-white border border-slate-200 shadow-2xl z-[99999]"
+      >
         <DialogHeader className="p-6 pb-4 border-b border-slate-100 flex flex-row items-center justify-between space-y-0">
           <div>
             <DialogTitle className="text-xl font-headline font-black italic tracking-tight text-slate-900 flex items-center gap-2">

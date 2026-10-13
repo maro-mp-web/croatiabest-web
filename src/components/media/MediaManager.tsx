@@ -48,7 +48,7 @@ export function MediaManager() {
       });
 
       const formatted: MediaRecord[] = records
-        .map((r: any) => {
+        .map((r: any): MediaRecord | null => {
           const fileName = r.file || '';
           if (!fileName) return null;
 
