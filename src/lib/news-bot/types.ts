@@ -13,6 +13,13 @@ export interface BotConfig {
   maxPerCategoryPerDay: number; // npr. 10
   geminiApiKey?: string;
   sources: NewsSource[];
+  lastRun?: {
+    timestamp: string;
+    imported: number;
+    totalFound: number;
+    success: boolean;
+    errors: number;
+  };
 }
 
 export interface ScrapedArticle {

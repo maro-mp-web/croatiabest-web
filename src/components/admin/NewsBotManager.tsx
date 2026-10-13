@@ -260,11 +260,24 @@ export function NewsBotManager({ blogs, onBlogsUpdate }: { blogs: any[]; onBlogs
         </div>
 
         {/* Brzi status indikatori */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-white/10">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mt-8 pt-8 border-t border-white/10">
           <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
-            <span className="text-xs uppercase font-bold text-slate-400 block mb-1">Način rada</span>
+            <span className="text-xs uppercase font-bold text-slate-400 block mb-1">Automatski rad</span>
             <div className="flex items-center gap-2">
-              <span className={`size-2.5 rounded-full ${config?.autoPublish ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              <span className={`size-2.5 rounded-full ${config?.enabled !== false ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
+              <span className="font-black text-sm">{config?.enabled !== false ? 'Svaki sat (Cron)' : 'Isključeno'}</span>
+            </div>
+          </div>
+          <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+            <span className="text-xs uppercase font-bold text-slate-400 block mb-1">Zadnje pokretanje</span>
+            <span className="font-black text-sm text-slate-200">
+              {config?.lastRun ? `${new Date(config.lastRun.timestamp).toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' })} (${config.lastRun.imported} uvezeno)` : 'Spremno'}
+            </span>
+          </div>
+          <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+            <span className="text-xs uppercase font-bold text-slate-400 block mb-1">Način objave</span>
+            <div className="flex items-center gap-2">
+              <span className={`size-2.5 rounded-full ${config?.autoPublish ? 'bg-emerald-400' : 'bg-amber-400'}`} />
               <span className="font-black text-sm">{config?.autoPublish ? 'Auto-objava' : 'Ručno odobrenje'}</span>
             </div>
           </div>
@@ -273,11 +286,7 @@ export function NewsBotManager({ blogs, onBlogsUpdate }: { blogs: any[]; onBlogs
             <span className="font-black text-sm text-primary">{config?.maxPerCategoryPerDay || 10} po rubrici/dan</span>
           </div>
           <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
-            <span className="text-xs uppercase font-bold text-slate-400 block mb-1">Aktivni izvori</span>
-            <span className="font-black text-sm">{config?.sources?.filter(s => s.enabled).length || 0} izvora</span>
-          </div>
-          <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
-            <span className="text-xs uppercase font-bold text-slate-400 block mb-1">Na čekanju za odobrenje</span>
+            <span className="text-xs uppercase font-bold text-slate-400 block mb-1">Na čekanju za pregled</span>
             <span className="font-black text-sm text-amber-300">{pendingArticles.length} vijesti</span>
           </div>
         </div>

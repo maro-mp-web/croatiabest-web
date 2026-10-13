@@ -1,5 +1,5 @@
 import PocketBase from 'pocketbase';
-import { getBotConfig } from './config';
+import { getBotConfig, saveBotConfig } from './config';
 import { scrapeFeed } from './scraper';
 import { processArticleWithAi } from './ai-processor';
 import { SyncResult, SyncLogEntry } from './types';
@@ -28,13 +28,27 @@ export async function runNewsBotSync(adminToken?: string): Promise<SyncResult> {
     logs,
   };
 
+  let config = getBotConfig();
+
   try {
-    const config = getBotConfig();
     log('info', `Pokrećem sinkronizaciju... Automatska objava: ${config.autoPublish ? 'DA' : 'NE (Zahtijeva odobrenje)'}, Dnevni limit: ${config.maxPerCategoryPerDay}/rubrika`);
 
     const pb = new PocketBase(POCKETBASE_URL);
     if (adminToken) {
       pb.authStore.save(adminToken, null);
+    } else {
+      // Automatska pozadinska autentifikacija za cron / zakazani rad
+      const adminEmail = process.env.PB_ADMIN_EMAIL || 'maro.webdeveloper@gmail.com';
+      const adminPassword = process.env.PB_ADMIN_PASSWORD || 'Admin12345!';
+      try {
+        await pb.collection('_superusers').authWithPassword(adminEmail, adminPassword);
+      } catch (err: any) {
+        try {
+          await pb.collection('users').authWithPassword(adminEmail, adminPassword);
+        } catch (err2: any) {
+          log('warn', `Pozadinska autentifikacija bota nije uspjela: ${err2.message || err.message}`);
+        }
+      }
     }
 
     // 1. Dohvaćamo postojeće članke iz PB radi sprečavanja duplikata i brojanja dnevnog limita
@@ -164,6 +178,21 @@ export async function runNewsBotSync(adminToken?: string): Promise<SyncResult> {
     result.success = false;
     result.errors++;
     log('error', `Fatalna greška bota: ${error.message || error}`);
+  }
+
+  // Spremi informacije o zadnjem pokretanju u postavke bota
+  try {
+    const updatedConfig = getBotConfig();
+    updatedConfig.lastRun = {
+      timestamp: new Date().toISOString(),
+      imported: result.imported,
+      totalFound: result.totalFound,
+      success: result.success,
+      errors: result.errors,
+    };
+    saveBotConfig(updatedConfig);
+  } catch (e) {
+    console.warn('[NewsBot] Nije uspjelo ažuriranje lastRun u konfiguraciji:', e);
   }
 
   return result;

@@ -1,0 +1,38 @@
+{
+  "enabled": true,
+  "autoPublish": true,
+  "maxPerCategoryPerDay": 10,
+  "sources": [
+    {
+      "id": "hrturizam",
+      "name": "HRTurizam.hr",
+      "url": "https://hrturizam.hr/feed/",
+      "type": "rss",
+      "category": "Vijesti iz Hrvatske",
+      "enabled": true
+    },
+    {
+      "id": "croatiaweek",
+      "name": "Croatia Week",
+      "url": "https://www.croatiaweek.com/feed/",
+      "type": "rss",
+      "category": "Zanimljivosti",
+      "enabled": true
+    },
+    {
+      "id": "totalcroatianews",
+      "name": "Total Croatia News",
+      "url": "https://www.total-croatia-news.com/feed/",
+      "type": "rss",
+      "category": "Vijesti iz Svijeta",
+      "enabled": true
+    }
+  ],
+  "lastRun": {
+    "timestamp": "2026-10-13T11:54:50.596Z",
+    "imported": 0,
+    "totalFound": 35,
+    "success": true,
+    "errors": 0
+  }
+}
