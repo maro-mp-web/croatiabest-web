@@ -155,9 +155,9 @@ export default function Home() {
   const featuredCities = featuredCitiesSlugs.map((slug, idx) => {
     const dbCity = (cities || []).find(c => c.slug === slug);
     const regions = ['Središnja Hrvatska', 'Južna Dalmacija', 'Srednja Dalmacija', 'Istra', 'Sjeverna Hrvatska'];
-    const image = (dbCity && typeof dbCity.image === 'string' && dbCity.image.trim() !== '') 
-      ? dbCity.image 
-      : `/cities/${slug}.webp`;
+    // Povlači isključivo pravu sliku iz PocketBase baze
+    const dbImage = dbCity ? getFirstPhoto(dbCity, 'image') : '';
+    const image = (dbImage && !dbImage.startsWith('/cities/')) ? dbImage : (dbImage || DEFAULT_LISTING_IMAGE);
     return {
       name: dbCity?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
       slug,
@@ -180,9 +180,9 @@ export default function Home() {
   const featuredIslands = featuredIslandsSlugs.map((slug, idx) => {
     const dbIsland = (islands || []).find(i => i.slug === slug);
     const regions = ['Južna Dalmacija', 'Srednja Dalmacija', 'Kvarner', 'Kvarner', 'Južna Dalmacija'];
-    const image = (dbIsland && typeof dbIsland.image === 'string' && dbIsland.image.trim() !== '') 
-      ? dbIsland.image 
-      : `/islands/${slug}.webp`;
+    // Povlači isključivo pravu sliku iz PocketBase baze
+    const dbImage = dbIsland ? getFirstPhoto(dbIsland, 'image') : '';
+    const image = (dbImage && !dbImage.startsWith('/islands/')) ? dbImage : (dbImage || DEFAULT_LISTING_IMAGE);
     return {
       name: dbIsland?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
       slug,
