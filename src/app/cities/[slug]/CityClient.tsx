@@ -27,7 +27,7 @@ import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { generateListingUrl } from '@/app/lib/utils/slug';
 import { Card, CardContent } from '@/components/ui/card';
-import { getFirstPhoto } from '@/app/lib/image-helpers';
+import { getFirstPhoto, isDummyPlaceholderPhoto } from '@/app/lib/image-helpers';
 import { Badge } from '@/components/ui/badge';
 import { getLocalizedUrl } from '@/lib/i18n-routes';
 import { useCollection } from '@/pocketbase';
@@ -147,8 +147,10 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
       <Navbar />
       <main className="flex-1 pb-24">
         {/* HERO HEADER */}
-        <section className="relative h-[65vh] w-full overflow-hidden">
-          <Image src={city.image} alt={city.name} fill className="object-cover brightness-[0.4]" priority />
+        <section className="relative h-[65vh] w-full overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950">
+          {city.image && !isDummyPlaceholderPhoto(city.image) && (
+            <Image src={city.image} alt={city.name} fill className="object-cover brightness-[0.4]" priority />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/20" />
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 pb-24">
             <Badge className="bg-primary/20 backdrop-blur-md text-white mb-6 px-8 py-2 rounded-full font-black text-xs uppercase tracking-[0.3em]">{city.region}</Badge>

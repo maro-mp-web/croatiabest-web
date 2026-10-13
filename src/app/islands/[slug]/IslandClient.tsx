@@ -30,7 +30,7 @@ import { useCollection } from '@/pocketbase';
 import Map from '@/components/map/Map';
 import WikiView from '@/components/ui/WikiView';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getFirstPhoto } from '@/app/lib/image-helpers';
+import { getFirstPhoto, isDummyPlaceholderPhoto } from '@/app/lib/image-helpers';
 import { getLocalizedUrl } from '@/lib/i18n-routes';
 import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 import AdBanner from '@/components/ads/AdBanner';
@@ -125,8 +125,10 @@ export default function IslandClient({ island, listings = [], articles = [], isl
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       <main className="flex-1 pb-24">
-        <section className="relative h-[60vh] w-full overflow-hidden">
-          <Image src={island.image} alt={island.name} fill className="object-cover brightness-[0.4]" priority />
+        <section className="relative h-[60vh] w-full overflow-hidden bg-gradient-to-br from-slate-900 via-sky-950 to-slate-950">
+          {island.image && !isDummyPlaceholderPhoto(island.image) && (
+            <Image src={island.image} alt={island.name} fill className="object-cover brightness-[0.4]" priority />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/30" />
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 pb-24">
             <div className="size-16 rounded-full border border-white/40 flex items-center justify-center backdrop-blur-md mb-6">

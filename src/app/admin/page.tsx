@@ -1018,7 +1018,7 @@ export default function AdminDashboard() {
                         <Input 
                           value={formData.image} 
                           onChange={e => setFormData({...formData, image: e.target.value})} 
-                          placeholder="npr. /cities/split.webp ili Unsplash URL" 
+                          placeholder="npr. URL slike ili učitajte datoteku ispod" 
                           required 
                         />
                         <ImageUpload 

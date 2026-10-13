@@ -7,7 +7,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getFirstPhoto } from '@/app/lib/image-helpers';
+import { getFirstPhoto, isDummyPlaceholderPhoto } from '@/app/lib/image-helpers';
 import { 
   MapPin, 
   ArrowRight, 
@@ -155,9 +155,9 @@ export default function Home() {
   const featuredCities = featuredCitiesSlugs.map((slug, idx) => {
     const dbCity = (cities || []).find(c => c.slug === slug);
     const regions = ['Središnja Hrvatska', 'Južna Dalmacija', 'Srednja Dalmacija', 'Istra', 'Sjeverna Hrvatska'];
-    // Povlači isključivo pravu sliku iz PocketBase baze
-    const dbImage = dbCity ? getFirstPhoto(dbCity, 'image') : '';
-    const image = (dbImage && !dbImage.startsWith('/cities/')) ? dbImage : (dbImage || DEFAULT_LISTING_IMAGE);
+    // Povlači isključivo pravu sliku iz PocketBase baze, ignorirajući sve stare testne/statičke fotografije
+    const rawImage = dbCity ? (dbCity.image || getFirstPhoto(dbCity, 'image')) : '';
+    const image = (!isDummyPlaceholderPhoto(rawImage)) ? rawImage : '';
     return {
       name: dbCity?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
       slug,
@@ -178,14 +178,18 @@ export default function Home() {
     'md:col-span-3 h-[200px]'
   ];
   const featuredIslands = featuredIslandsSlugs.map((slug, idx) => {
-    const dbIsland = (islands || []).find(i => i.slug === slug);
+    const dbIsland = (islands || []).find(i => 
+      i.slug === slug || 
+      i.slug === `otok-${slug}` || 
+      i.name.toLowerCase().includes(slug)
+    );
     const regions = ['Južna Dalmacija', 'Srednja Dalmacija', 'Kvarner', 'Kvarner', 'Južna Dalmacija'];
-    // Povlači isključivo pravu sliku iz PocketBase baze
-    const dbImage = dbIsland ? getFirstPhoto(dbIsland, 'image') : '';
-    const image = (dbImage && !dbImage.startsWith('/islands/')) ? dbImage : (dbImage || DEFAULT_LISTING_IMAGE);
+    // Povlači isključivo pravu sliku iz PocketBase baze, ignorirajući sve stare testne/statičke fotografije
+    const rawImage = dbIsland ? (dbIsland.image || getFirstPhoto(dbIsland, 'image')) : '';
+    const image = (!isDummyPlaceholderPhoto(rawImage)) ? rawImage : '';
     return {
       name: dbIsland?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
-      slug,
+      slug: dbIsland?.slug || slug,
       region: dbIsland?.region || regions[idx % regions.length],
       image,
       colSpan: colSpansIslands[idx % colSpansIslands.length],
@@ -544,7 +548,14 @@ export default function Home() {
                       </div>
 
                       <div className="relative w-full h-full">
-                        <Image src={city.image} alt={city.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover transition-all duration-1000 group-hover:scale-105" />
+                        {city.image ? (
+                          <Image src={city.image} alt={city.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover transition-all duration-1000 group-hover:scale-105" />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
+                            <Building2 className="w-10 h-10 text-white/20 mb-2" />
+                            <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">Fotografija uskoro</span>
+                          </div>
+                        )}
                       </div>
                       
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent z-10" />
@@ -609,7 +620,14 @@ export default function Home() {
               {featuredIslands.map((island) => (
                 <div key={island.slug} className={`relative group overflow-hidden rounded-[2.5rem] shadow-md hover:shadow-2xl transition-all duration-700 ${island.colSpan}`}>
                   <div className="absolute inset-0 z-0">
-                    <Image src={island.image} alt={island.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover transition-all duration-1000 group-hover:scale-105" />
+                    {island.image ? (
+                      <Image src={island.image} alt={island.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover transition-all duration-1000 group-hover:scale-105" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-slate-900 via-sky-950 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
+                        <Compass className="w-10 h-10 text-white/20 mb-2" />
+                        <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">Fotografija uskoro</span>
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-85 group-hover:opacity-100 transition-opacity duration-500" />
                   </div>
                   <div className="absolute inset-0 p-6 flex flex-col justify-end z-20">
