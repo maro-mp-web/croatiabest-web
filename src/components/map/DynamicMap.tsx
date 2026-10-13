@@ -73,7 +73,7 @@ interface MapProps {
   listings: any[];
   selectedListingId: string | null;
   onSelectListing: (id: string | null) => void;
-  getDirectionsUrl: (lat: number, lng: number) => string;
+  getDirectionsUrl?: (lat: number, lng: number) => string;
   showCenterMarker?: boolean;
   centerMarkerName?: string;
 }
@@ -230,7 +230,7 @@ export default function DynamicMap({ center, zoom, listings, selectedListingId, 
                         </Button>
                       </a>
                       <a 
-                        href={getDirectionsUrl(lat, lng)} 
+                        href={typeof getDirectionsUrl === 'function' ? getDirectionsUrl(lat, lng) : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`} 
                         target="_blank" 
                         rel="noopener noreferrer" 
                         className="w-full block"

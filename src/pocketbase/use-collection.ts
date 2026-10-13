@@ -55,7 +55,7 @@ export function useCollection<T = RecordModel>(
           filter: options?.filter,
           sort: options?.sort !== undefined ? options.sort : '-created',
           expand: options?.expand,
-          requestKey: options?.requestKey,
+          requestKey: options?.requestKey !== undefined ? options.requestKey : null,
         });
         setData(items);
       } catch (e) {

@@ -62,7 +62,7 @@ export default function Home() {
   const { data: homepageSections } = useCollection('homepage_sections', { sort: 'order' });
 
   const { data: blogArticles } = useCollection('blogs', {
-    sort: '-publishDate',
+    sort: '-id',
   });
 
   // Hero Search state
