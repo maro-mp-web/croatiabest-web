@@ -16,7 +16,9 @@ import {
   Image as ImageIcon, 
   RefreshCw, 
   X,
-  FileText
+  Trash2,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -38,6 +40,9 @@ export function MediaManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   const fetchMedia = async () => {
     if (!pb) return;
@@ -135,6 +140,89 @@ export function MediaManager() {
     setTimeout(() => setCopiedId(null), 2500);
   };
 
+  const handleDelete = async (item: MediaRecord) => {
+    if (!pb) return;
+    const confirmed = window.confirm(
+      `Jeste li sigurni da želite trajno obrisati fotografiju "${item.file}"? Ova radnja se ne može poništiti.`
+    );
+    if (!confirmed) return;
+
+    setDeletingId(item.id);
+    try {
+      await pb.collection('media').delete(item.id);
+      setItems((prev) => prev.filter((i) => i.id !== item.id));
+      setSelectedIds((prev) => prev.filter((id) => id !== item.id));
+      toast({
+        title: 'Fotografija obrisana',
+        description: `Slika "${item.file}" je trajno uklonjena iz medijske zbirke.`,
+      });
+    } catch (err: any) {
+      console.error('Error deleting media:', err);
+      toast({
+        title: 'Greška pri brisanju',
+        description: err.message || 'Nije uspjelo brisanje slike. Provjerite administratorske ovlasti.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.length === filteredItems.length && filteredItems.length > 0) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredItems.map((item) => item.id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!pb || selectedIds.length === 0) return;
+    const count = selectedIds.length;
+    const confirmed = window.confirm(
+      `Jeste li sigurni da želite trajno obrisati ${count} odabranih fotografija? Ova radnja se ne može poništiti.`
+    );
+    if (!confirmed) return;
+
+    setIsBulkDeleting(true);
+    let successCount = 0;
+    const failedIds: string[] = [];
+
+    for (const id of selectedIds) {
+      try {
+        await pb.collection('media').delete(id);
+        successCount++;
+      } catch (err) {
+        console.error(`Failed to delete media ${id}:`, err);
+        failedIds.push(id);
+      }
+    }
+
+    setItems((prev) => prev.filter((item) => !selectedIds.includes(item.id) || failedIds.includes(item.id)));
+    setSelectedIds(failedIds);
+    setIsBulkDeleting(false);
+
+    if (successCount > 0) {
+      toast({
+        title: 'Grupno brisanje završeno',
+        description: `Uspješno obrisano ${successCount} fotografija.`,
+      });
+    }
+    if (failedIds.length > 0) {
+      toast({
+        title: 'Neke slike nisu obrisane',
+        description: `${failedIds.length} fotografija nije obrisano. Provjerite ovlasti.`,
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
       <CardHeader className="flex flex-col md:flex-row md:items-center justify-between border-b p-8 bg-secondary/5 gap-4">
@@ -145,10 +233,55 @@ export function MediaManager() {
           </CardTitle>
           <p className="text-xs text-muted-foreground mt-1">
             Ukupno dostupnih datoteka u bazi: <span className="font-bold text-slate-800">{items.length}</span>
+            {selectedIds.length > 0 && (
+              <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-700 font-bold rounded-md">
+                Odabrano za brisanje: {selectedIds.length}
+              </span>
+            )}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {selectedIds.length > 0 && (
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              disabled={isBulkDeleting}
+              onClick={handleBulkDelete}
+              className="rounded-xl h-10 px-4 text-xs font-bold gap-2 shadow-md bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isBulkDeleting ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Trash2 className="size-4" />
+              )}
+              <span>Obriši odabrano ({selectedIds.length})</span>
+            </Button>
+          )}
+
+          {filteredItems.length > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleSelectAll}
+              className="rounded-xl h-10 px-3.5 text-xs font-bold gap-2"
+            >
+              {selectedIds.length === filteredItems.length && filteredItems.length > 0 ? (
+                <>
+                  <CheckSquare className="size-4 text-primary" />
+                  Odznači sve
+                </>
+              ) : (
+                <>
+                  <Square className="size-4 text-slate-400" />
+                  Označi sve
+                </>
+              )}
+            </Button>
+          )}
+
           <Button
             type="button"
             variant="outline"
@@ -216,67 +349,124 @@ export function MediaManager() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-            {filteredItems.map((item) => (
-              <div
-                key={item.id}
-                className="group relative rounded-2xl overflow-hidden border border-slate-200 bg-white hover:border-primary/50 hover:shadow-xl transition-all duration-300 flex flex-col"
-              >
-                <div className="aspect-[4/3] w-full relative overflow-hidden bg-slate-950 flex items-center justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.url}
-                    alt={item.file}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            {filteredItems.map((item) => {
+              const isSelected = selectedIds.includes(item.id);
+              const isDeleting = deletingId === item.id;
 
-                  {/* Actions on hover */}
-                  <div className="absolute inset-0 p-3 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
-                    <div className="flex items-center justify-end gap-1.5 pointer-events-auto">
+              return (
+                <div
+                  key={item.id}
+                  className={`group relative rounded-2xl overflow-hidden border bg-white transition-all duration-300 flex flex-col ${
+                    isSelected
+                      ? 'border-red-500 ring-2 ring-red-400/30 shadow-lg'
+                      : 'border-slate-200 hover:border-primary/50 hover:shadow-xl'
+                  }`}
+                >
+                  <div className="aspect-[4/3] w-full relative overflow-hidden bg-slate-950 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.url}
+                      alt={item.file}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    {/* Multi-select Checkbox in top-left */}
+                    <button
+                      type="button"
+                      onClick={() => handleToggleSelect(item.id)}
+                      className={`absolute top-2.5 left-2.5 z-20 size-6 rounded-lg flex items-center justify-center transition-all ${
+                        isSelected
+                          ? 'bg-red-600 text-white shadow-md'
+                          : 'bg-black/50 text-white/70 hover:bg-black/80 hover:text-white opacity-0 group-hover:opacity-100'
+                      }`}
+                      title={isSelected ? 'Odznači' : 'Označi za grupno brisanje'}
+                    >
+                      {isSelected ? (
+                        <Check className="size-4 stroke-[3]" />
+                      ) : (
+                        <Square className="size-4" />
+                      )}
+                    </button>
+
+                    {/* Top right actions on hover: Open & Delete */}
+                    <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                       <a
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="size-8 rounded-xl bg-black/70 hover:bg-black text-white flex items-center justify-center shadow-md transition-all"
+                        className="size-7 rounded-lg bg-black/70 hover:bg-black text-white flex items-center justify-center shadow-md transition-all"
                         title="Otvori original"
                       >
                         <ExternalLink className="size-3.5" />
                       </a>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(item)}
+                        disabled={isDeleting}
+                        className="size-7 rounded-lg bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-md transition-all"
+                        title="Obriši fotografiju"
+                      >
+                        {isDeleting ? (
+                          <Loader2 className="size-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="size-3.5" />
+                        )}
+                      </button>
                     </div>
 
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => handleCopyUrl(item.url, item.id)}
-                      className="pointer-events-auto w-full h-8 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs shadow-lg flex items-center justify-center gap-1.5"
-                    >
-                      {copiedId === item.id ? (
-                        <>
-                          <Check className="size-3.5 text-emerald-600" /> Kopirano!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="size-3.5" /> Kopiraj URL
-                        </>
-                      )}
-                    </Button>
+                    {/* Bottom action on hover: Copy URL */}
+                    <div className="absolute bottom-2.5 inset-x-2.5 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => handleCopyUrl(item.url, item.id)}
+                        className="w-full h-8 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs shadow-lg flex items-center justify-center gap-1.5"
+                      >
+                        {copiedId === item.id ? (
+                          <>
+                            <Check className="size-3.5 text-emerald-600" /> Kopirano!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="size-3.5" /> Kopiraj URL
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                </div>
 
-                <div className="p-3 space-y-1">
-                  <p className="text-xs font-bold text-slate-900 truncate" title={item.file}>
-                    {item.file}
-                  </p>
-                  <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                    <span className="truncate">ID: {item.id}</span>
+                  {/* Card footer with direct delete button */}
+                  <div className="p-3 border-t border-slate-100 bg-white space-y-1">
+                    <div className="flex items-center justify-between gap-1">
+                      <p className="text-xs font-bold text-slate-900 truncate flex-1" title={item.file}>
+                        {item.file}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(item)}
+                        disabled={isDeleting}
+                        className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors shrink-0"
+                        title="Obriši ovu fotografiju iz medija"
+                      >
+                        {isDeleting ? (
+                          <Loader2 className="size-3.5 animate-spin text-red-600" />
+                        ) : (
+                          <Trash2 className="size-3.5" />
+                        )}
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                      <span className="truncate">ID: {item.id}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardContent>

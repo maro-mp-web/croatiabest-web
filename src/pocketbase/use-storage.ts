@@ -5,13 +5,14 @@ import { usePB } from './provider';
 
 interface UseStorageResult {
   uploadFile: (collectionName: string, recordId: string | undefined, file: File) => Promise<string>;
+  deleteFile: (collectionName: string, recordId: string) => Promise<boolean>;
   isUploading: boolean;
   progress: number;
   error: Error | null;
 }
 
 /**
- * Hook za upload datoteka na PocketBase.
+ * Hook za upload i brisanje datoteka na PocketBase.
  * PocketBase automatski servira uploadane fileove na:
  * /api/files/{collectionName}/{recordId}/{fileName}
  */
@@ -61,5 +62,22 @@ export function useStorage(): UseStorageResult {
     }
   };
 
-  return { uploadFile, isUploading, progress, error };
+  const deleteFile = async (
+    collectionName: string,
+    recordId: string
+  ): Promise<boolean> => {
+    if (!pb) {
+      throw new Error('PocketBase not initialized');
+    }
+    try {
+      await pb.collection(collectionName).delete(recordId);
+      return true;
+    } catch (e) {
+      const err = e instanceof Error ? e : new Error('Delete failed');
+      setError(err);
+      throw err;
+    }
+  };
+
+  return { uploadFile, deleteFile, isUploading, progress, error };
 }

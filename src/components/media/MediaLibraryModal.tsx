@@ -20,7 +20,8 @@ import {
   Copy, 
   Image as ImageIcon, 
   RefreshCw, 
-  X 
+  X,
+  Trash2
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -55,6 +56,7 @@ export function MediaLibraryModal({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Fetch all items from PocketBase 'media' collection
   const fetchMedia = async () => {
@@ -165,6 +167,37 @@ export function MediaLibraryModal({
     setCopiedId(id);
     toast({ title: 'Kopirano', description: 'URL slike kopiran u međuspremnik.' });
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleDeleteItem = async (e: React.MouseEvent, item: MediaItem) => {
+    e.stopPropagation();
+    if (!pb) return;
+    const confirmed = window.confirm(
+      `Jeste li sigurni da želite trajno obrisati fotografiju "${item.file}" iz medijske zbirke? Ova radnja se ne može poništiti.`
+    );
+    if (!confirmed) return;
+
+    setDeletingId(item.id);
+    try {
+      await pb.collection('media').delete(item.id);
+      setItems((prev) => prev.filter((i) => i.id !== item.id));
+      if (selectedUrl === item.url) {
+        setSelectedUrl(null);
+      }
+      toast({
+        title: 'Fotografija obrisana',
+        description: `Slika "${item.file}" je trajno uklonjena iz medija.`,
+      });
+    } catch (err: any) {
+      console.error('Error deleting media:', err);
+      toast({
+        title: 'Greška pri brisanju',
+        description: err.message || 'Nije uspjelo brisanje fotografije. Provjerite administratorske ovlasti.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -305,14 +338,44 @@ export function MediaLibraryModal({
                       )}
                     </button>
 
-                    {/* Filename caption */}
-                    <div className="p-2.5 bg-white border-t border-slate-100">
-                      <p className="text-[11px] font-bold text-slate-800 truncate" title={item.file}>
-                        {item.file}
-                      </p>
-                      <p className="text-[9px] text-slate-400 font-mono mt-0.5 truncate">
-                        ID: {item.id}
-                      </p>
+                    {/* Delete Button on hover */}
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteItem(e, item)}
+                      disabled={deletingId === item.id}
+                      className="absolute top-2 left-10 size-7 rounded-lg bg-red-600/80 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md disabled:opacity-50"
+                      title="Obriši fotografiju iz medija"
+                    >
+                      {deletingId === item.id ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="size-3.5" />
+                      )}
+                    </button>
+
+                    {/* Filename caption with direct delete button */}
+                    <div className="p-2.5 bg-white border-t border-slate-100 flex items-center justify-between gap-1">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-bold text-slate-800 truncate" title={item.file}>
+                          {item.file}
+                        </p>
+                        <p className="text-[9px] text-slate-400 font-mono mt-0.5 truncate">
+                          ID: {item.id}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteItem(e, item)}
+                        disabled={deletingId === item.id}
+                        className="size-7 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors shrink-0"
+                        title="Obriši ovu fotografiju iz medija"
+                      >
+                        {deletingId === item.id ? (
+                          <Loader2 className="size-3 animate-spin text-red-600" />
+                        ) : (
+                          <Trash2 className="size-3.5" />
+                        )}
+                      </button>
                     </div>
                   </div>
                 );
