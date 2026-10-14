@@ -3,12 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Map, Menu, BookOpen, ChevronDown, Building2, Anchor, PlusCircle, LogOut, User, LayoutDashboard } from 'lucide-react';
+import { Map, Menu, BookOpen, ChevronDown, Building2, Anchor, PlusCircle, LogOut, User, LayoutDashboard, CreditCard } from 'lucide-react';
 import { getLocalizedUrl } from '@/lib/i18n-routes';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/brand/Logo';
 import { useUser, useCollection, usePB } from '@/pocketbase';
 
@@ -153,14 +153,35 @@ export function Navbar({ transparent = false }: NavbarProps) {
                   <ChevronDown className="size-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-xl p-2">
+              <DropdownMenuContent align="end" className="w-60 rounded-xl p-2">
                 {isAdmin && (
-                  <DropdownMenuItem 
-                    onSelect={() => router.push('/admin')}
-                    className="cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors gap-2"
-                  >
-                    <LayoutDashboard className="size-4" /> Admin Panel
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem 
+                      onSelect={() => router.push('/admin')}
+                      className="cursor-pointer font-bold hover:bg-primary/5 hover:text-primary rounded-lg transition-colors gap-2"
+                    >
+                      <LayoutDashboard className="size-4 text-primary" /> Admin Panel
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onSelect={() => router.push('/admin?tab=islands')}
+                      className="cursor-pointer font-semibold hover:bg-emerald-50 text-emerald-700 rounded-lg transition-colors gap-2 text-xs"
+                    >
+                      <Anchor className="size-3.5" /> Administracija Otoka
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onSelect={() => router.push('/admin?tab=cities')}
+                      className="cursor-pointer font-semibold hover:bg-blue-50 text-blue-700 rounded-lg transition-colors gap-2 text-xs"
+                    >
+                      <Building2 className="size-3.5" /> Administracija Gradova
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onSelect={() => router.push('/admin?tab=listings')}
+                      className="cursor-pointer font-semibold hover:bg-slate-100 text-slate-700 rounded-lg transition-colors gap-2 text-xs"
+                    >
+                      <CreditCard className="size-3.5" /> Administracija Objekata
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="my-1" />
+                  </>
                 )}
                 <DropdownMenuItem 
                   onSelect={() => router.push('/dashboard')}
@@ -244,9 +265,17 @@ export function Navbar({ transparent = false }: NavbarProps) {
                       <p className="text-xs font-bold text-muted-foreground tracking-widest uppercase">Moj Račun</p>
                       <p className="text-sm text-muted-foreground">{user.email}</p>
                       {isAdmin && (
-                        <Link href="/admin" className="flex items-center gap-2 text-sm font-bold hover:text-primary transition-colors">
-                          <LayoutDashboard className="size-4" /> Admin Panel
-                        </Link>
+                        <div className="space-y-2 pb-2 border-b border-black/5">
+                          <Link href="/admin" className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary transition-colors">
+                            <LayoutDashboard className="size-4" /> Admin Panel
+                          </Link>
+                          <Link href="/admin?tab=islands" className="flex items-center gap-2 text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors pl-6">
+                            <Anchor className="size-3.5" /> Administracija Otoka
+                          </Link>
+                          <Link href="/admin?tab=cities" className="flex items-center gap-2 text-xs font-bold text-blue-700 hover:text-blue-800 transition-colors pl-6">
+                            <Building2 className="size-3.5" /> Administracija Gradova
+                          </Link>
+                        </div>
                       )}
                       <Link href="/dashboard" className="flex items-center gap-2 text-sm font-bold hover:text-primary transition-colors">
                         <User className="size-4" /> Moj Dashboard

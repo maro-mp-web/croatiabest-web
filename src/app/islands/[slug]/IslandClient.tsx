@@ -26,7 +26,7 @@ import { generateListingUrl } from '@/app/lib/utils/slug';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useCollection } from '@/pocketbase';
+import { useCollection, useUser } from '@/pocketbase';
 import Map from '@/components/map/Map';
 import WikiView from '@/components/ui/WikiView';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -45,6 +45,8 @@ interface IslandClientProps {
 export default function IslandClient({ island, listings = [], articles = [], islandCities = [] }: IslandClientProps) {
   const { language } = useLanguage();
   const isEn = language === 'en';
+  const { user } = useUser();
+  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
   
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [wikiData, setWikiData] = useState<{extract: string, thumbnail?: string}>({ extract: '' });
@@ -124,6 +126,22 @@ export default function IslandClient({ island, listings = [], articles = [], isl
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
+      {isAdmin && (
+        <div className="bg-emerald-950/90 text-emerald-100 border-b border-emerald-500/30 px-6 py-2.5 backdrop-blur-md flex flex-wrap items-center justify-between gap-2 text-xs font-semibold z-30 relative">
+          <div className="flex items-center gap-2">
+            <span className="inline-block size-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Prijavljeni ste kao administrator: <strong>Otok {island.name}</strong></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin?tab=islands"
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors flex items-center gap-1.5 shadow font-bold text-xs"
+            >
+              <Anchor className="size-3.5" /> Administracija Otoka
+            </Link>
+          </div>
+        </div>
+      )}
       <main className="flex-1 pb-24">
         <section className="relative h-[60vh] w-full overflow-hidden bg-gradient-to-br from-slate-900 via-sky-950 to-slate-950">
           {island.image && !isDummyPlaceholderPhoto(island.image) && (

@@ -21,7 +21,8 @@ import {
   ArrowRight,
   ChevronRight,
   BookOpen,
-  BedDouble
+  BedDouble,
+  Building2
 } from 'lucide-react';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -30,7 +31,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { getFirstPhoto, isDummyPlaceholderPhoto } from '@/app/lib/image-helpers';
 import { Badge } from '@/components/ui/badge';
 import { getLocalizedUrl } from '@/lib/i18n-routes';
-import { useCollection } from '@/pocketbase';
+import { useCollection, useUser } from '@/pocketbase';
 import Map from '@/components/map/Map';
 import { useLanguage } from '@/contexts/LanguageContext';
 import FAQSection from '@/components/ui/FAQSection';
@@ -48,6 +49,8 @@ interface CityClientProps {
 export default function CityClient({ city, cityListings, globalSpecialListings = [], allBlogs = [] }: CityClientProps) {
   const { language } = useLanguage();
   const isEn = language === 'en';
+  const { user } = useUser();
+  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
 
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [wikiData, setWikiData] = useState<{extract: string, thumbnail?: string}>({ extract: '' });
@@ -145,6 +148,22 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
+      {isAdmin && (
+        <div className="bg-sky-950/90 text-sky-100 border-b border-sky-500/30 px-6 py-2.5 backdrop-blur-md flex flex-wrap items-center justify-between gap-2 text-xs font-semibold z-30 relative">
+          <div className="flex items-center gap-2">
+            <span className="inline-block size-2 rounded-full bg-sky-400 animate-pulse" />
+            <span>Prijavljeni ste kao administrator: <strong>Grad {city.name}</strong></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin?tab=cities"
+              className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg transition-colors flex items-center gap-1.5 shadow font-bold text-xs"
+            >
+              <Building2 className="size-3.5" /> Administracija Gradova
+            </Link>
+          </div>
+        </div>
+      )}
       <main className="flex-1 pb-24">
         {/* HERO HEADER */}
         <section className="relative h-[65vh] w-full overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950">

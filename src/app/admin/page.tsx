@@ -85,11 +85,11 @@ export default function AdminDashboard() {
   const { data: blogs, isLoading: blogsLoading } = useCollection('blogs', { sort: '-publishDate' });
 
   const { data: cities, isLoading: citiesLoading } = useCollection('cities', {
-    sort: '-created',
+    sort: 'name',
   });
 
   const { data: islands, isLoading: islandsLoading } = useCollection('islands', {
-    sort: '-created',
+    sort: 'name',
   });
 
   const { data: homepageSections, isLoading: sectionsLoading } = useCollection('homepage_sections', {
@@ -119,15 +119,29 @@ export default function AdminDashboard() {
   const [sectionItems, setSectionItems] = useState<any[]>([]);
 
   // Tab State: "listings" | "blogs" | "cities" | "islands" | "parks" | "sections" | "bot" | "media"
-  const [activeTab, setActiveTab] = useState<'listings' | 'blogs' | 'cities' | 'islands' | 'parks' | 'sections' | 'bot' | 'media'>('listings');
-
-  // Sync tab with URL on mount
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tab = params.get('tab');
-    if (tab && ['listings', 'blogs', 'cities', 'islands', 'parks', 'sections', 'bot', 'media'].includes(tab)) {
-      setActiveTab(tab as any);
+  const [activeTab, setActiveTab] = useState<'listings' | 'blogs' | 'cities' | 'islands' | 'parks' | 'sections' | 'bot' | 'media'>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab');
+      if (tab && ['listings', 'blogs', 'cities', 'islands', 'parks', 'sections', 'bot', 'media'].includes(tab)) {
+        return tab as any;
+      }
     }
+    return 'listings';
+  });
+
+  // Sync tab with URL on mount & browser navigation (popstate)
+  useEffect(() => {
+    const updateFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab');
+      if (tab && ['listings', 'blogs', 'cities', 'islands', 'parks', 'sections', 'bot', 'media'].includes(tab)) {
+        setActiveTab(tab as any);
+      }
+    };
+    updateFromUrl();
+    window.addEventListener('popstate', updateFromUrl);
+    return () => window.removeEventListener('popstate', updateFromUrl);
   }, []);
 
   const switchTab = (tabId: string) => {
@@ -1400,44 +1414,117 @@ export default function AdminDashboard() {
             <LogOut className="size-5 mr-2" /> Odjavi se
           </Button>
           
-          <div className="flex flex-wrap gap-3">
+          {/* Header Action Buttons */}
+          <div className="flex flex-wrap items-center gap-3">
+            <Button 
+              onClick={() => switchTab('islands')} 
+              variant={activeTab === 'islands' ? 'default' : 'outline'}
+              className="rounded-2xl h-12 px-5 font-bold border-emerald-500/30 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 shadow-sm flex items-center gap-2"
+            >
+              <Anchor className="size-4" /> Administracija Otoka ({islands?.length || 0})
+            </Button>
+            <Button 
+              onClick={() => switchTab('cities')} 
+              variant={activeTab === 'cities' ? 'default' : 'outline'}
+              className="rounded-2xl h-12 px-5 font-bold border-blue-500/30 text-blue-700 bg-blue-50 hover:bg-blue-100 shadow-sm flex items-center gap-2"
+            >
+              <Building2 className="size-4" /> Administracija Gradova ({cities?.length || 0})
+            </Button>
             <Link href="/admin/new-listing">
-              <Button className="bg-foreground text-white hover:bg-foreground/90 rounded-2xl font-black h-14 px-8 shadow-md">
-                <PlusCircle className="size-5 mr-2" /> Dodaj Objekt
+              <Button className="bg-foreground text-white hover:bg-foreground/90 rounded-2xl font-black h-12 px-5 shadow-sm">
+                <PlusCircle className="size-4 mr-1.5" /> Dodaj Objekt
               </Button>
             </Link>
             <Link href="/admin/new-blog">
-              <Button className="bg-primary text-white hover:bg-primary/90 rounded-2xl font-black h-14 px-8 shadow-md">
-                <PlusCircle className="size-5 mr-2" /> Dodaj Članak
+              <Button className="bg-primary text-white hover:bg-primary/90 rounded-2xl font-black h-12 px-5 shadow-sm">
+                <PlusCircle className="size-4 mr-1.5" /> Dodaj Članak
               </Button>
             </Link>
-            <Button onClick={() => startEditCity()} className="bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black h-14 px-8 shadow-md">
-              <PlusCircle className="size-5 mr-2" /> Novi Grad
+            <Button onClick={() => startEditCity()} className="bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black h-12 px-5 shadow-sm">
+              <PlusCircle className="size-4 mr-1.5" /> Novi Grad
             </Button>
-            <Button onClick={() => startEditIsland()} className="bg-emerald-600 text-white hover:bg-emerald-700 rounded-2xl font-black h-14 px-8 shadow-md">
-              <PlusCircle className="size-5 mr-2" /> Novi Otok
+            <Button onClick={() => startEditIsland()} className="bg-emerald-600 text-white hover:bg-emerald-700 rounded-2xl font-black h-12 px-5 shadow-sm">
+              <PlusCircle className="size-4 mr-1.5" /> Novi Otok
+            </Button>
+            <Button 
+              onClick={handleLogout} 
+              variant="outline" 
+              className="rounded-2xl h-12 px-5 font-black border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 shadow-sm ml-auto"
+            >
+              <LogOut className="size-4 mr-1.5" /> Odjavi se
             </Button>
           </div>
-           {/* Stats Grid */}
-        <div className="space-y-8 mb-12">
+        </div>
+
+        {/* PRIMARY NAVIGATION TABS (STICKY & PROMINENT) */}
+        <div className="sticky top-20 z-20 bg-background/95 backdrop-blur-md pt-2 pb-4 border-b border-black/10 mb-8">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+            {[
+              { id: 'listings', name: 'Objekti / Prijave', icon: <CreditCard className="size-4" />, count: listings?.length },
+              { id: 'islands', name: 'Otoci', icon: <Anchor className="size-4" />, count: islands?.length },
+              { id: 'cities', name: 'Gradovi', icon: <Building2 className="size-4" />, count: cities?.length },
+              { id: 'parks', name: 'Nacionalni parkovi', icon: <Trees className="size-4" />, count: nationalParks.length },
+              { id: 'blogs', name: 'Magazin (Blog)', icon: <BookOpen className="size-4" />, count: blogs?.length },
+              { id: 'media', name: 'Medijska zbirka', icon: <ImageIcon className="size-4 text-primary" /> },
+              { id: 'sections', name: 'Naslovnica', icon: <LayoutTemplate className="size-4" /> },
+              { id: 'bot', name: 'Vijesti Bot', icon: <Sparkles className="size-4 text-amber-500" /> },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => switchTab(tab.id)}
+                className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all whitespace-nowrap shadow-sm ${
+                  activeTab === tab.id
+                    ? 'bg-primary text-white shadow-primary/25 shadow-lg scale-[1.02]'
+                    : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-black/5'
+                }`}
+              >
+                {tab.icon}
+                <span>{tab.name}</span>
+                {typeof tab.count === 'number' && (
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                    activeTab === tab.id ? 'bg-white/25 text-white' : 'bg-slate-100 text-slate-700'
+                  }`}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="space-y-8 mb-10">
           <div>
-            <h2 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-3">Statistika Objekata</h2>
+            <h2 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-3">Statistika Objekata (Kliknite za pregled)</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card className="border-none shadow-xl rounded-3xl bg-orange-50/50">
+              <Card 
+                onClick={() => { switchTab('listings'); setStatusFilterListings('pending'); }}
+                className="border-none shadow-xl rounded-3xl bg-orange-50/50 hover:bg-orange-50/80 cursor-pointer hover:scale-[1.02] hover:shadow-2xl transition-all group"
+              >
                 <CardContent className="p-6">
-                  <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-3">U obradi</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest">U obradi</p>
+                    <span className="text-[10px] font-bold text-orange-600 opacity-0 group-hover:opacity-100 transition-opacity">Pregledaj →</span>
+                  </div>
                   <div className="flex items-center justify-between">
                     <p className="text-5xl font-black text-orange-700">{listings?.filter(l => l.status === 'pending').length || 0}</p>
-                    <Clock className="size-10 text-orange-600 opacity-20" />
+                    <Clock className="size-10 text-orange-600 opacity-20 group-hover:opacity-40 transition-opacity" />
                   </div>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-xl rounded-3xl bg-blue-50/50">
+              <Card 
+                onClick={() => { switchTab('listings'); setStatusFilterListings('active'); }}
+                className="border-none shadow-xl rounded-3xl bg-blue-50/50 hover:bg-blue-50/80 cursor-pointer hover:scale-[1.02] hover:shadow-2xl transition-all group"
+              >
                 <CardContent className="p-6">
-                  <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Aktivno</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Aktivno</p>
+                    <span className="text-[10px] font-bold text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">Pregledaj →</span>
+                  </div>
                   <div className="flex items-center justify-between">
                     <p className="text-5xl font-black text-blue-700">{listings?.filter(l => (l.status === 'active' || l.status === 'approved') && (l.locationCategoryId || l.categoryId) !== 'national_parks').length || 0}</p>
-                    <MapPin className="size-10 text-blue-600 opacity-20" />
+                    <MapPin className="size-10 text-blue-600 opacity-20 group-hover:opacity-40 transition-opacity" />
                   </div>
                 </CardContent>
               </Card>
@@ -1450,12 +1537,18 @@ export default function AdminDashboard() {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-xl rounded-3xl bg-primary/5">
+              <Card 
+                onClick={() => { switchTab('listings'); setStatusFilterListings('all'); }}
+                className="border-none shadow-xl rounded-3xl bg-primary/5 hover:bg-primary/10 cursor-pointer hover:scale-[1.02] hover:shadow-2xl transition-all group"
+              >
                 <CardContent className="p-6">
-                  <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-3">Premium</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest">Premium</p>
+                    <span className="text-[10px] font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">Pregledaj →</span>
+                  </div>
                   <div className="flex items-center justify-between">
                     <p className="text-5xl font-black text-primary">{listings?.filter(l => l.locationCategoryType === 'Paid' || l.locationCategoryType === 'paid').length || 0}</p>
-                    <CreditCard className="size-10 text-primary opacity-20" />
+                    <CreditCard className="size-10 text-primary opacity-20 group-hover:opacity-40 transition-opacity" />
                   </div>
                 </CardContent>
               </Card>
@@ -1463,35 +1556,68 @@ export default function AdminDashboard() {
           </div>
 
           <div>
-            <h2 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-3">Statistika Lokacija i Atrakcija</h2>
+            <h2 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-3">Statistika Lokacija i Atrakcija (Kliknite za upravljanje)</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card className="border-none shadow-xl rounded-3xl bg-blue-50/30">
+              <Card 
+                onClick={() => switchTab('islands')}
+                className={`border-2 shadow-xl rounded-3xl cursor-pointer hover:scale-[1.02] hover:shadow-2xl transition-all group ${
+                  activeTab === 'islands' ? 'border-emerald-500 bg-emerald-50/80 shadow-emerald-500/10' : 'border-transparent bg-emerald-50/40 hover:bg-emerald-50/70'
+                }`}
+              >
                 <CardContent className="p-6">
-                  <p className="text-[10px] font-black text-blue-700 uppercase tracking-widest mb-3">Gradovi</p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-5xl font-black text-blue-800">{cities?.length || 0}</p>
-                    <Building2 className="size-10 text-blue-700 opacity-20" />
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest flex items-center gap-1.5">
+                      <Anchor className="size-3 text-emerald-600" /> Otoci
+                    </p>
+                    <span className="text-[10px] font-bold text-emerald-700 group-hover:underline">Upravljaj otocima →</span>
                   </div>
-                </CardContent>
-              </Card>
-              <Card className="border-none shadow-xl rounded-3xl bg-emerald-50/30">
-                <CardContent className="p-6">
-                  <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-3">Otoci</p>
                   <div className="flex items-center justify-between">
                     <p className="text-5xl font-black text-emerald-800">{islands?.length || 0}</p>
-                    <Anchor className="size-10 text-emerald-700 opacity-20" />
+                    <Anchor className="size-10 text-emerald-700 opacity-20 group-hover:opacity-40 transition-opacity" />
                   </div>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-xl rounded-3xl bg-red-50/30">
+
+              <Card 
+                onClick={() => switchTab('cities')}
+                className={`border-2 shadow-xl rounded-3xl cursor-pointer hover:scale-[1.02] hover:shadow-2xl transition-all group ${
+                  activeTab === 'cities' ? 'border-blue-500 bg-blue-50/80 shadow-blue-500/10' : 'border-transparent bg-blue-50/40 hover:bg-blue-50/70'
+                }`}
+              >
                 <CardContent className="p-6">
-                  <p className="text-[10px] font-black text-red-700 uppercase tracking-widest mb-3">Nacionalni Parkovi</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[10px] font-black text-blue-700 uppercase tracking-widest flex items-center gap-1.5">
+                      <Building2 className="size-3 text-blue-600" /> Gradovi
+                    </p>
+                    <span className="text-[10px] font-bold text-blue-700 group-hover:underline">Upravljaj gradovima →</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-5xl font-black text-blue-800">{cities?.length || 0}</p>
+                    <Building2 className="size-10 text-blue-700 opacity-20 group-hover:opacity-40 transition-opacity" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card 
+                onClick={() => switchTab('parks')}
+                className={`border-2 shadow-xl rounded-3xl cursor-pointer hover:scale-[1.02] hover:shadow-2xl transition-all group ${
+                  activeTab === 'parks' ? 'border-red-500 bg-red-50/80 shadow-red-500/10' : 'border-transparent bg-red-50/40 hover:bg-red-50/70'
+                }`}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[10px] font-black text-red-700 uppercase tracking-widest flex items-center gap-1.5">
+                      <Trees className="size-3 text-red-600" /> Nac. Parkovi
+                    </p>
+                    <span className="text-[10px] font-bold text-red-700 group-hover:underline">Upravljaj parkovima →</span>
+                  </div>
                   <div className="flex items-center justify-between">
                     <p className="text-5xl font-black text-red-800">{nationalParks.length || 0}</p>
-                    <Trees className="size-10 text-red-700 opacity-20" />
+                    <Trees className="size-10 text-red-700 opacity-20 group-hover:opacity-40 transition-opacity" />
                   </div>
                 </CardContent>
               </Card>
+
               <Card className="border-none shadow-xl rounded-3xl bg-indigo-50/30">
                 <CardContent className="p-6">
                   <p className="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-3">Spomenici</p>
@@ -1503,27 +1629,6 @@ export default function AdminDashboard() {
               </Card>
             </div>
           </div>
-        </div>
-      </div>
-
-        {/* NAVIGATION           {[
-            { id: 'listings', name: 'Objekti / Prijave', icon: <CreditCard className="size-4" /> },
-            { id: 'media', name: 'Medijska zbirka', icon: <ImageIcon className="size-4 text-primary" /> },
-            { id: 'cities', name: 'Gradovi', icon: <Building2 className="size-4" /> },
-            { id: 'islands', name: 'Otoci', icon: <Anchor className="size-4" /> },
-            { id: 'blogs', name: 'Magazin (Blog)', icon: <BookOpen className="size-4" /> },
-            { id: 'bot', name: 'Vijesti Bot', icon: <Sparkles className="size-4 text-amber-500" /> },
-            { id: 'parks', name: 'Nacionalni parkovi', icon: <Trees className="size-4" /> },
-            { id: 'sections', name: 'Naslovnica', icon: <LayoutTemplate className="size-4" /> }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => switchTab(tab.id)}
-              className={`flex items-center gap-2 pb-4 font-black uppercase text-xs tracking-wider transition-all border-b-2 outline-none ${activeTab === tab.id ? 'border-primary text-primary font-black' : 'border-transparent text-slate-400 hover:text-slate-700'}`}
-            >
-              {tab.icon} {tab.name}
-            </button>
-          ))}
         </div>
 
         {/* TAB 1: LISTINGS */}
@@ -1798,10 +1903,15 @@ export default function AdminDashboard() {
                             </div>
                             
                             <div className="flex gap-2">
-                              <Button variant="outline" size="icon" onClick={() => startEditCity(city)} className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
+                              <a href={`/cities/${city.slug}`} target="_blank" rel="noreferrer">
+                                <Button variant="outline" size="icon" title="Otvori javnu stranicu grada" className="text-emerald-600 hover:bg-emerald-50 rounded-xl size-10 border-emerald-500/20 bg-emerald-500/5">
+                                  <ExternalLink className="size-4" />
+                                </Button>
+                              </a>
+                              <Button variant="outline" size="icon" title="Uredi grad" onClick={() => startEditCity(city)} className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
                                 <Edit2 className="size-4" />
                               </Button>
-                              <Button variant="outline" size="icon" onClick={() => handleDeleteCity(city.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
+                              <Button variant="outline" size="icon" title="Obriši grad" onClick={() => handleDeleteCity(city.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
                                 <Trash2 className="size-4" />
                               </Button>
                             </div>
@@ -1865,10 +1975,15 @@ export default function AdminDashboard() {
                             </div>
                             
                             <div className="flex gap-2">
-                              <Button variant="outline" size="icon" onClick={() => startEditIsland(island)} className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
+                              <a href={`/islands/${island.slug}`} target="_blank" rel="noreferrer">
+                                <Button variant="outline" size="icon" title="Otvori javnu stranicu otoka" className="text-emerald-600 hover:bg-emerald-50 rounded-xl size-10 border-emerald-500/20 bg-emerald-500/5">
+                                  <ExternalLink className="size-4" />
+                                </Button>
+                              </a>
+                              <Button variant="outline" size="icon" title="Uredi otok" onClick={() => startEditIsland(island)} className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
                                 <Edit2 className="size-4" />
                               </Button>
-                              <Button variant="outline" size="icon" onClick={() => handleDeleteIsland(island.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
+                              <Button variant="outline" size="icon" title="Obriši otok" onClick={() => handleDeleteIsland(island.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
                                 <Trash2 className="size-4" />
                               </Button>
                             </div>
