@@ -120,11 +120,18 @@ export default function Home() {
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newsletterEmail.trim() || !newsletterEmail.includes('@')) {
-      toast({ title: 'Greška', description: 'Unesite ispravnu e-mail adresu.', variant: 'destructive' });
+      toast({ 
+        title: isEn ? 'Error' : 'Greška', 
+        description: isEn ? 'Please enter a valid email address.' : 'Unesite ispravnu e-mail adresu.', 
+        variant: 'destructive' 
+      });
       return;
     }
     setNewsletterSubscribed(true);
-    toast({ title: 'Hvala na prijavi!', description: 'Uspješno ste prijavljeni na naš newsletter.' });
+    toast({ 
+      title: isEn ? 'Thank you for subscribing!' : 'Hvala na prijavi!', 
+      description: isEn ? 'You have successfully subscribed to our newsletter.' : 'Uspješno ste prijavljeni na naš newsletter.' 
+    });
     setNewsletterEmail('');
   };
 
@@ -145,6 +152,49 @@ export default function Home() {
     };
   }, []);
 
+  // Translation helper for article & listing categories
+  const formatCategory = (cat: string) => {
+    if (!isEn) return cat;
+    const catMap: Record<string, string> = {
+      'Vijesti iz Hrvatske': 'Croatia',
+      'Vijesti iz Svijeta': 'World',
+      'Poznati Hrvati': 'Famous Croats',
+      'Slavni u Hrvatskoj': 'Celebrities in Croatia',
+      'Zanimljivosti': 'Curiosities',
+      'Iz Povijesti': 'History',
+      'Iz geografije': 'Geography',
+      'Domovinski rat': 'Homeland War',
+      'Putovanja': 'Travel',
+      'Gastronomija': 'Gastronomy',
+      'Vodiči': 'Guides',
+      'Kultura': 'Culture',
+      'Magazin': 'Magazine',
+      'MAGAZIN': 'MAGAZINE',
+      'VIJESTI': 'NEWS',
+      'Restorani': 'Restaurants',
+      'Smještaj': 'Stays',
+      'Plaže': 'Beaches',
+      'Vinarije & OPG': 'Wineries & Farms',
+    };
+    return catMap[cat] || cat;
+  };
+
+  // Translation helper for geographical regions
+  const formatRegion = (reg: string) => {
+    if (!isEn) return reg;
+    const regMap: Record<string, string> = {
+      'Središnja Hrvatska': 'Central Croatia',
+      'Južna Dalmacija': 'Southern Dalmatia',
+      'Srednja Dalmacija': 'Central Dalmatia',
+      'Istra': 'Istria',
+      'Sjeverna Hrvatska': 'Northern Croatia',
+      'Kvarner': 'Kvarner',
+      'Slavonija': 'Slavonia',
+      'Lika i Gorski kotar': 'Lika & Gorski Kotar',
+    };
+    return regMap[reg] || reg;
+  };
+
   // Cities Setup — predefined list for consistent high quality visual cards
   const featuredCitiesSlugs = ['zagreb', 'dubrovnik', 'split', 'rovinj', 'varazdin'];
   const colSpansCities = [
@@ -156,13 +206,16 @@ export default function Home() {
   ];
   const featuredCities = featuredCitiesSlugs.map((slug, idx) => {
     const dbCity = (cities || []).find(c => c.slug === slug);
-    const regions = ['Središnja Hrvatska', 'Južna Dalmacija', 'Srednja Dalmacija', 'Istra', 'Sjeverna Hrvatska'];
-    // Povlači točno sliku iz PocketBase baze
+    const regions = isEn
+      ? ['Central Croatia', 'Southern Dalmatia', 'Central Dalmatia', 'Istria', 'Northern Croatia']
+      : ['Središnja Hrvatska', 'Južna Dalmacija', 'Srednja Dalmacija', 'Istra', 'Sjeverna Hrvatska'];
+    const rawRegion = dbCity?.region || regions[idx % regions.length];
     const image = dbCity ? (dbCity.image || getFirstPhoto(dbCity, 'image')) : '';
+    const cityName = (isEn && (dbCity as any)?.nameEn) || dbCity?.name || slug.charAt(0).toUpperCase() + slug.slice(1);
     return {
-      name: dbCity?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
+      name: cityName,
       slug,
-      region: dbCity?.region || regions[idx % regions.length],
+      region: formatRegion(rawRegion),
       image: image || DEFAULT_LISTING_IMAGE,
       colSpan: colSpansCities[idx % colSpansCities.length],
       indexStr: `0${idx + 1}`,
@@ -184,13 +237,16 @@ export default function Home() {
       i.slug === `otok-${slug}` || 
       i.name.toLowerCase().includes(slug)
     );
-    const regions = ['Južna Dalmacija', 'Srednja Dalmacija', 'Kvarner', 'Kvarner', 'Južna Dalmacija'];
-    // Povlači točno sliku iz PocketBase baze
+    const regions = isEn
+      ? ['Southern Dalmatia', 'Central Dalmatia', 'Kvarner', 'Kvarner', 'Southern Dalmatia']
+      : ['Južna Dalmacija', 'Srednja Dalmacija', 'Kvarner', 'Kvarner', 'Južna Dalmacija'];
+    const rawRegion = dbIsland?.region || regions[idx % regions.length];
     const image = dbIsland ? (dbIsland.image || getFirstPhoto(dbIsland, 'image')) : '';
+    const islandName = (isEn && (dbIsland as any)?.nameEn) || dbIsland?.name || slug.charAt(0).toUpperCase() + slug.slice(1);
     return {
-      name: dbIsland?.name || slug.charAt(0).toUpperCase() + slug.slice(1),
+      name: islandName,
       slug: dbIsland?.slug || slug,
-      region: dbIsland?.region || regions[idx % regions.length],
+      region: formatRegion(rawRegion),
       image: image || DEFAULT_LISTING_IMAGE,
       colSpan: colSpansIslands[idx % colSpansIslands.length],
     };
@@ -311,14 +367,14 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-3">
                 <div className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white/10 backdrop-blur-xl border border-white/15 rounded-full text-white text-[11px] font-black tracking-[0.25em] uppercase shadow-lg shadow-black/20">
                   <Sparkles className="size-3.5 text-amber-400 fill-amber-400" />
-                  OTKRIJTE TAJNE I LJEPOTE HRVATSKE
+                  {isEn ? 'DISCOVER THE SECRETS & BEAUTY OF CROATIA' : 'OTKRIJTE TAJNE I LJEPOTE HRVATSKE'}
                 </div>
 
                 {allValidNewsArticles.length > 0 && (
                   <div className="inline-flex items-center gap-2.5 py-1.5 px-4 bg-black/50 hover:bg-black/70 backdrop-blur-xl border border-rose-500/30 rounded-full text-white text-xs transition-all shadow-lg group">
                     <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-red-600 to-rose-600 text-white font-black text-[10px] tracking-wider uppercase rounded-full shadow-sm shrink-0">
                       <span className="size-2 rounded-full bg-white animate-ping" />
-                      UŽIVO VIJESTI
+                      {isEn ? 'LIVE NEWS' : 'UŽIVO VIJESTI'}
                     </span>
                     {(() => {
                       const curNews = allValidNewsArticles[activeNewsIndex];
@@ -342,12 +398,22 @@ export default function Home() {
               
               {/* Heading matching screenshot styling */}
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[0.95] tracking-tight font-headline">
-                Otkrij dušu <span className="font-serif italic font-normal text-amber-300 drop-shadow-[0_4px_16px_rgba(251,191,36,0.3)]">Hrvatske</span>
+                {isEn ? (
+                  <>
+                    Discover the soul of <span className="font-serif italic font-normal text-amber-300 drop-shadow-[0_4px_16px_rgba(251,191,36,0.3)]">Croatia</span>
+                  </>
+                ) : (
+                  <>
+                    Otkrij dušu <span className="font-serif italic font-normal text-amber-300 drop-shadow-[0_4px_16px_rgba(251,191,36,0.3)]">Hrvatske</span>
+                  </>
+                )}
               </h1>
               
               {/* Subtitle */}
               <p className="text-lg md:text-xl text-white/90 font-body max-w-2xl leading-relaxed">
-                Od jadranskih otoka do povijesnih gradova i vrhunske gastronomske ponude. Otkrijte jedinstvena iskustva i rezervirajte najbolje lokacije.
+                {isEn
+                  ? 'From Adriatic islands to historic cities and world-class gastronomy. Discover unique experiences and book the best locations.'
+                  : 'Od jadranskih otoka do povijesnih gradova i vrhunske gastronomske ponude. Otkrijte jedinstvena iskustva i rezervirajte najbolje lokacije.'}
               </p>
 
               {/* Rich Multi-filter Search Bar (as shown in reference screenshot) */}
@@ -361,7 +427,7 @@ export default function Home() {
                       value={searchQuery}
                       onChange={handleSearchChange}
                       onKeyDown={handleKeyDown}
-                      placeholder="Pretraži gradove, restorane, plaže..."
+                      placeholder={isEn ? "Search cities, restaurants, beaches..." : "Pretraži gradove, restorane, plaže..."}
                       className="w-full bg-transparent text-white placeholder-white/50 outline-none text-sm md:text-base font-semibold"
                     />
                   </div>
@@ -373,13 +439,13 @@ export default function Home() {
                       onChange={(e) => setSelectedCategory(e.target.value)}
                       className="w-full md:w-36 bg-transparent text-white/90 text-xs md:text-sm font-bold outline-none py-2 px-2 cursor-pointer focus:text-white"
                     >
-                      <option value="all" className="bg-slate-900 text-white">Kategorija (Sve)</option>
-                      <option value="restaurants" className="bg-slate-900 text-white">Restorani & Gastro</option>
-                      <option value="hotels" className="bg-slate-900 text-white">Hoteli & Smještaj</option>
-                      <option value="beaches" className="bg-slate-900 text-white">Plaže</option>
-                      <option value="wineries" className="bg-slate-900 text-white">Vinarije & OPG</option>
-                      <option value="landmarks" className="bg-slate-900 text-white">Znamenitosti</option>
-                      <option value="national_parks" className="bg-slate-900 text-white">Nacionalni parkovi</option>
+                      <option value="all" className="bg-slate-900 text-white">{isEn ? "Category (All)" : "Kategorija (Sve)"}</option>
+                      <option value="restaurants" className="bg-slate-900 text-white">{isEn ? "Restaurants & Gastro" : "Restorani & Gastro"}</option>
+                      <option value="hotels" className="bg-slate-900 text-white">{isEn ? "Hotels & Stays" : "Hoteli & Smještaj"}</option>
+                      <option value="beaches" className="bg-slate-900 text-white">{isEn ? "Beaches" : "Plaže"}</option>
+                      <option value="wineries" className="bg-slate-900 text-white">{isEn ? "Wineries & Farms" : "Vinarije & OPG"}</option>
+                      <option value="landmarks" className="bg-slate-900 text-white">{isEn ? "Landmarks" : "Znamenitosti"}</option>
+                      <option value="national_parks" className="bg-slate-900 text-white">{isEn ? "National Parks" : "Nacionalni parkovi"}</option>
                     </select>
                   </div>
 
@@ -390,7 +456,7 @@ export default function Home() {
                       onChange={(e) => setSelectedCity(e.target.value)}
                       className="w-full md:w-36 bg-transparent text-white/90 text-xs md:text-sm font-bold outline-none py-2 px-2 cursor-pointer focus:text-white"
                     >
-                      <option value="all" className="bg-slate-900 text-white">Grad / Regija</option>
+                      <option value="all" className="bg-slate-900 text-white">{isEn ? "City / Region" : "Grad / Regija"}</option>
                       <option value="Dubrovnik" className="bg-slate-900 text-white">Dubrovnik</option>
                       <option value="Split" className="bg-slate-900 text-white">Split</option>
                       <option value="Zagreb" className="bg-slate-900 text-white">Zagreb</option>
@@ -406,7 +472,7 @@ export default function Home() {
                     onClick={handleExecuteSearch}
                     className="w-full md:w-auto rounded-2xl h-12 px-8 bg-gradient-to-r from-orange-500 to-rose-600 hover:from-orange-600 hover:to-rose-700 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-rose-900/40 shrink-0"
                   >
-                    <Search className="size-4 mr-2" /> Pretraži
+                    <Search className="size-4 mr-2" /> {isEn ? "Search" : "Pretraži"}
                   </Button>
                 </div>
 
@@ -436,14 +502,14 @@ export default function Home() {
 
               {/* Quick filter pills */}
               <div className="flex flex-wrap items-center gap-2 pt-2">
-                <span className="text-xs text-white/60 font-semibold mr-1">Popularno:</span>
+                <span className="text-xs text-white/60 font-semibold mr-1">{isEn ? 'Popular:' : 'Popularno:'}</span>
                 {[
                   { label: 'Dubrovnik', href: '/cities/dubrovnik' },
                   { label: 'Plitvice', href: '/explore?q=plitvice' },
                   { label: 'Hvar', href: '/islands/hvar' },
-                  { label: 'Restorani', href: '/explore?category=restaurants' },
-                  { label: 'Nacionalni parkovi', href: '/explore?category=national_parks' },
-                  { label: 'Vinarije', href: '/explore?category=wineries' },
+                  { label: isEn ? 'Restaurants' : 'Restorani', href: '/explore?category=restaurants' },
+                  { label: isEn ? 'National Parks' : 'Nacionalni parkovi', href: '/explore?category=national_parks' },
+                  { label: isEn ? 'Wineries' : 'Vinarije', href: '/explore?category=wineries' },
                 ].map((chip) => (
                   <Link
                     key={chip.label}
@@ -458,10 +524,10 @@ export default function Home() {
               {/* 4 Glassmorphic Counter Badges (matching bottom of screenshot) */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-6">
                 {[
-                  { value: '1.000+', label: 'Provjerenih lokacija' },
-                  { value: '10+', label: 'Nacionalnih parkova' },
-                  { value: '4.9 / 5', label: 'Prosječna ocjena' },
-                  { value: '100%', label: 'Autentično iskustvo' },
+                  { value: '1.000+', label: isEn ? 'Verified Locations' : 'Provjerenih lokacija' },
+                  { value: '10+', label: isEn ? 'National Parks' : 'Nacionalnih parkova' },
+                  { value: '4.9 / 5', label: isEn ? 'Average Rating' : 'Prosječna ocjena' },
+                  { value: '100%', label: isEn ? 'Authentic Experience' : 'Autentično iskustvo' },
                 ].map((stat, i) => (
                   <div key={i} className="bg-white/10 backdrop-blur-xl border border-white/15 rounded-2xl p-4 flex flex-col justify-center">
                     <span className="text-2xl font-black text-white leading-tight font-headline">{stat.value}</span>
@@ -480,19 +546,21 @@ export default function Home() {
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
               <div>
                 <Badge className="bg-primary/10 text-primary border-none font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-widest mb-3">
-                  INTERAKTIVNA KARTA HRVATSKE
+                  {isEn ? 'INTERACTIVE MAP OF CROATIA' : 'INTERAKTIVNA KARTA HRVATSKE'}
                 </Badge>
                 <h2 className="text-3xl md:text-5xl font-black italic tracking-tight font-headline text-slate-900">
-                  Istražite Hrvatsku na interaktivnoj karti
+                  {isEn ? 'Explore Croatia on the interactive map' : 'Istražite Hrvatsku na interaktivnoj karti'}
                 </h2>
                 <p className="text-slate-600 text-sm md:text-base max-w-2xl mt-2 font-medium">
-                  Otkrijte najbolje lokacije u svim regijama: restorane s Michelinovom zvjezdicom, skrivene uvale, povijesne znamenitosti i prirodne ljepote diljem Jadrana.
+                  {isEn
+                    ? 'Discover top locations across all regions: Michelin-starred restaurants, hidden coves, historic landmarks, and natural wonders across the Adriatic.'
+                    : 'Otkrijte najbolje lokacije u svim regijama: restorane s Michelinovom zvjezdicom, skrivene uvale, povijesne znamenitosti i prirodne ljepote diljem Jadrana.'}
                 </p>
               </div>
 
               <Link href="/explore">
                 <Button variant="outline" className="rounded-2xl h-11 px-6 font-bold text-xs uppercase tracking-wider text-primary border-primary/30 hover:bg-primary/5">
-                  Otvori kartu u cijelom zaslonu <ArrowRight className="size-4 ml-2" />
+                  {isEn ? 'Open full-screen map' : 'Otvori kartu u cijelom zaslonu'} <ArrowRight className="size-4 ml-2" />
                 </Button>
               </Link>
             </div>
@@ -504,10 +572,10 @@ export default function Home() {
                 {/* Category filter pills for map */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-1">
                   {[
-                    { id: 'all', label: 'Sve lokacije' },
-                    { id: 'beaches', label: 'Plaže' },
-                    { id: 'restaurants', label: 'Gastronomija' },
-                    { id: 'hotels', label: 'Smještaj' },
+                    { id: 'all', label: isEn ? 'All locations' : 'Sve lokacije' },
+                    { id: 'beaches', label: isEn ? 'Beaches' : 'Plaže' },
+                    { id: 'restaurants', label: isEn ? 'Gastronomy' : 'Gastronomija' },
+                    { id: 'hotels', label: isEn ? 'Accommodation' : 'Smještaj' },
                   ].map((cat) => (
                     <button
                       key={cat.id}
@@ -539,8 +607,12 @@ export default function Home() {
               <div className="lg:col-span-4 flex flex-col justify-between space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
                 <div>
                   <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-3">
-                    <h3 className="font-black text-sm uppercase tracking-wider text-slate-800">Uživo istaknute lokacije</h3>
-                    <Badge variant="outline" className="text-[10px] bg-white font-bold">{mapListings.length} dostupno</Badge>
+                    <h3 className="font-black text-sm uppercase tracking-wider text-slate-800">
+                      {isEn ? 'Live Featured Locations' : 'Uživo istaknute lokacije'}
+                    </h3>
+                    <Badge variant="outline" className="text-[10px] bg-white font-bold">
+                      {mapListings.length} {isEn ? 'available' : 'dostupno'}
+                    </Badge>
                   </div>
 
                   <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
@@ -548,6 +620,7 @@ export default function Home() {
                       const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
                       const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id);
                       const isSelected = selectedMapListingId === l.id;
+                      const lFeedName = isEn && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
                       return (
                         <div
                           key={l.id}
@@ -559,10 +632,10 @@ export default function Home() {
                           }`}
                         >
                           <div className="relative size-14 rounded-lg overflow-hidden shrink-0 bg-slate-200">
-                            <Image src={image} alt={l.name} fill className="object-cover" />
+                            <Image src={image} alt={lFeedName} fill className="object-cover" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-black text-xs text-slate-900 truncate">{l.name}</h4>
+                            <h4 className="font-black text-xs text-slate-900 truncate">{lFeedName}</h4>
                             <p className="text-[10px] text-slate-500 font-semibold truncate mt-0.5">{l.city || l.address}</p>
                             <div className="flex items-center gap-1 mt-1 text-amber-500 text-[10px] font-bold">
                               <Star className="size-3 fill-amber-400 text-amber-400" /> 4.9
@@ -581,7 +654,7 @@ export default function Home() {
 
                 <Link href="/explore" className="w-full">
                   <Button className="w-full rounded-xl h-11 bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase tracking-wider shadow-md">
-                    Pogledaj svih {allListings?.length || 24} lokacija →
+                    {isEn ? `View all ${allListings?.length || 24} locations →` : `Pogledaj svih ${allListings?.length || 24} lokacija →`}
                   </Button>
                 </Link>
               </div>
@@ -596,23 +669,25 @@ export default function Home() {
               <div>
                 <Badge className="bg-rose-500/10 text-rose-600 border border-rose-500/20 font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-widest mb-2 flex items-center gap-1.5 w-fit">
                   <Flame className="size-3.5 fill-rose-500 text-rose-500" />
-                  AKTUALNOSTI & VIJESTI
+                  {isEn ? 'NEWS & UPDATES' : 'AKTUALNOSTI & VIJESTI'}
                 </Badge>
                 <h2 className="text-3xl md:text-5xl font-black italic tracking-tight font-headline text-slate-900">
-                  Turističke Vijesti & Događanja
+                  {isEn ? 'Tourism News & Events' : 'Turističke Vijesti & Događanja'}
                 </h2>
                 <p className="text-slate-600 text-sm md:text-base max-w-xl mt-1 font-medium">
-                  Sve novosti iz turizma, aktualna događanja i zanimljivosti iz Hrvatske u stvarnom vremenu.
+                  {isEn
+                    ? 'All tourism news, current events and curiosities from Croatia in real time.'
+                    : 'Sve novosti iz turizma, aktualna događanja i zanimljivosti iz Hrvatske u stvarnom vremenu.'}
                 </p>
               </div>
 
               {/* Filter tabs for news */}
               <div className="flex flex-wrap items-center gap-2">
                 {[
-                  { id: 'all', label: 'Sve vijesti' },
-                  { id: 'Vijesti iz Hrvatske', label: 'Hrvatska' },
-                  { id: 'Vijesti iz Svijeta', label: 'Svijet' },
-                  { id: 'Zanimljivosti', label: 'Zanimljivosti' },
+                  { id: 'all', label: isEn ? 'All news' : 'Sve vijesti' },
+                  { id: 'Vijesti iz Hrvatske', label: isEn ? 'Croatia' : 'Hrvatska' },
+                  { id: 'Vijesti iz Svijeta', label: isEn ? 'World' : 'Svijet' },
+                  { id: 'Zanimljivosti', label: isEn ? 'Curiosities' : 'Zanimljivosti' },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -628,7 +703,7 @@ export default function Home() {
                 ))}
                 <Link href="/vijesti">
                   <Button variant="outline" className="rounded-xl font-bold text-xs uppercase tracking-wider h-9 px-4 text-primary border-primary/30 hover:bg-primary/5">
-                    Sve vijesti ({allValidNewsArticles.length}) →
+                    {isEn ? `All news (${allValidNewsArticles.length}) →` : `Sve vijesti (${allValidNewsArticles.length}) →`}
                   </Button>
                 </Link>
               </div>
@@ -646,7 +721,7 @@ export default function Home() {
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
                       <Badge className="absolute top-4 left-4 bg-rose-600 text-white font-black text-[11px] uppercase px-3 py-1 shadow-md">
-                        {featuredNewsArticle.category}
+                        {formatCategory(featuredNewsArticle.category)}
                       </Badge>
                       <div className="absolute bottom-4 left-4 right-4 text-white">
                         <div className="flex items-center gap-2 text-xs text-white/70 mb-1.5 font-medium">
@@ -690,7 +765,7 @@ export default function Home() {
                               <Image src={article.image} alt={displayTitle} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                             )}
                             <Badge className="absolute top-2 left-2 bg-black/75 text-white font-bold text-[9px] uppercase">
-                              {article.category}
+                              {formatCategory(article.category)}
                             </Badge>
                           </div>
                           <div>
@@ -723,13 +798,15 @@ export default function Home() {
           <div className="container mx-auto px-6">
             <div className="text-center mb-16 space-y-3">
               <Badge className="bg-primary/10 text-primary border-none font-black px-6 py-2 rounded-full text-xs uppercase tracking-widest">
-                DESTINACIJE U FOKUSU
+                {isEn ? 'DESTINATIONS IN FOCUS' : 'DESTINACIJE U FOKUSU'}
               </Badge>
               <h2 className="text-4xl md:text-6xl font-headline font-black italic tracking-tight text-slate-900">
-                Istražite gradove
+                {isEn ? 'Explore Cities' : 'Istražite gradove'}
               </h2>
               <p className="text-slate-600 max-w-2xl mx-auto text-sm md:text-base font-medium">
-                Od tisućljetne kulturne baštine do modernog mediteranskog života - svaki grad priča jedinstvenu priču.
+                {isEn
+                  ? 'From millennial cultural heritage to modern Mediterranean life – every city tells a unique story.'
+                  : 'Od tisućljetne kulturne baštine do modernog mediteranskog života - svaki grad priča jedinstvenu priču.'}
               </p>
             </div>
 
@@ -750,7 +827,7 @@ export default function Home() {
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
                             <Building2 className="w-10 h-10 text-white/20 mb-2" />
-                            <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">Fotografija uskoro</span>
+                            <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">{isEn ? 'Photo coming soon' : 'Fotografija uskoro'}</span>
                           </div>
                         )}
                       </div>
@@ -763,7 +840,7 @@ export default function Home() {
                         
                         <div className="overflow-hidden h-0 group-hover:h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out flex items-center">
                           <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                            VODIČ KROZ GRAD <Compass className="size-4 animate-spin-slow text-primary" />
+                            {isEn ? 'CITY GUIDE' : 'VODIČ KROZ GRAD'} <Compass className="size-4 animate-spin-slow text-primary" />
                           </span>
                         </div>
                       </div>
@@ -777,18 +854,20 @@ export default function Home() {
                 <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-8 rounded-[2.5rem] shadow-xl border border-white/10 flex flex-col justify-between h-[420px]">
                   <div>
                     <Badge className="bg-primary text-white font-black text-[10px] uppercase tracking-widest px-3 py-1 mb-4">
-                      PARTNERSTVO
+                      {isEn ? 'PARTNERSHIP' : 'PARTNERSTVO'}
                     </Badge>
                     <h3 className="text-2xl font-black italic font-headline leading-tight mb-3">
-                      Dođite kao partner
+                      {isEn ? 'Join as a partner' : 'Dođite kao partner'}
                     </h3>
                     <p className="text-slate-300 text-xs leading-relaxed">
-                      Povežite vaš restoran, hotel, vilu ili turističku agenciju s tisućama posjetitelja koji svakodnevno pretražuju CroatiaBest.
+                      {isEn
+                        ? 'Connect your restaurant, hotel, villa or agency with thousands of travelers visiting CroatiaBest daily.'
+                        : 'Povežite vaš restoran, hotel, vilu ili turističku agenciju s tisućama posjetitelja koji svakodnevno pretražuju CroatiaBest.'}
                     </p>
                   </div>
                   <Link href="/submit">
                     <Button className="w-full rounded-2xl h-12 bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase tracking-wider shadow-lg">
-                      Dodajte vaš objekt →
+                      {isEn ? 'Add your listing →' : 'Dodajte vaš objekt →'}
                     </Button>
                   </Link>
                 </div>
@@ -803,13 +882,15 @@ export default function Home() {
           <div className="container mx-auto px-6">
             <div className="text-center mb-16 space-y-3">
               <Badge className="bg-secondary/10 text-secondary border-none font-black px-6 py-2 rounded-full text-xs uppercase tracking-widest">
-                OTOCI JADRANSKOG MORA
+                {isEn ? 'ADRIATIC SEA ISLANDS' : 'OTOCI JADRANSKOG MORA'}
               </Badge>
               <h2 className="text-4xl md:text-6xl font-headline font-black italic tracking-tight text-slate-900">
-                Istražite otoke
+                {isEn ? 'Explore Islands' : 'Istražite otoke'}
               </h2>
               <p className="text-slate-600 max-w-2xl mx-auto text-sm md:text-base font-medium">
-                Otkrijte kristalno more, skrivene uvale, autentičnu hranu i mir na više od tisuću jadranskih otoka.
+                {isEn
+                  ? 'Discover crystal-clear waters, secluded bays, authentic food, and peace across more than a thousand Adriatic islands.'
+                  : 'Otkrijte kristalno more, skrivene uvale, autentičnu hranu i mir na više od tisuću jadranskih otoka.'}
               </p>
             </div>
 
@@ -822,7 +903,7 @@ export default function Home() {
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-slate-900 via-sky-950 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
                         <Compass className="w-10 h-10 text-white/20 mb-2" />
-                        <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">Fotografija uskoro</span>
+                        <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">{isEn ? 'Photo coming soon' : 'Fotografija uskoro'}</span>
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-85 group-hover:opacity-100 transition-opacity duration-500" />
@@ -846,23 +927,25 @@ export default function Home() {
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
               <div>
                 <Badge className="bg-primary/10 text-primary border-none font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-widest mb-3">
-                  POPULARNO
+                  {isEn ? 'POPULAR' : 'POPULARNO'}
                 </Badge>
                 <h2 className="text-3xl md:text-5xl font-black italic tracking-tight font-headline text-slate-900">
-                  Najpopularnije lokacije
+                  {isEn ? 'Most Popular Locations' : 'Najpopularnije lokacije'}
                 </h2>
                 <p className="text-slate-600 text-sm md:text-base max-w-xl mt-2 font-medium">
-                  Provjereni favoriti prema ocjenama posjetitelja i lokalnih stručnjaka.
+                  {isEn
+                    ? 'Verified favorites according to visitor reviews and local experts.'
+                    : 'Provjereni favoriti prema ocjenama posjetitelja i lokalnih stručnjaka.'}
                 </p>
               </div>
 
               {/* Tabs for categories */}
               <div className="flex items-center gap-2 overflow-x-auto pb-1">
                 {[
-                  { id: 'restaurants', label: 'Restorani', icon: <Utensils className="size-4" /> },
-                  { id: 'hotels', label: 'Smještaj', icon: <Hotel className="size-4" /> },
-                  { id: 'beaches', label: 'Plaže', icon: <Umbrella className="size-4" /> },
-                  { id: 'wineries', label: 'Vinarije & OPG', icon: <GlassWater className="size-4" /> },
+                  { id: 'restaurants', label: isEn ? 'Restaurants' : 'Restorani', icon: <Utensils className="size-4" /> },
+                  { id: 'hotels', label: isEn ? 'Accommodation' : 'Smještaj', icon: <Hotel className="size-4" /> },
+                  { id: 'beaches', label: isEn ? 'Beaches' : 'Plaže', icon: <Umbrella className="size-4" /> },
+                  { id: 'wineries', label: isEn ? 'Wineries & Farms' : 'Vinarije & OPG', icon: <GlassWater className="size-4" /> },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -885,6 +968,7 @@ export default function Home() {
                 const name = isEn && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
                 const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
                 const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id);
+                const desc = (isEn ? (l.metadata?.descriptionEn || l.descriptionEn || l.description) : l.description) || (isEn ? 'Recommended location in Croatia.' : 'Preporučena lokacija u Hrvatskoj.');
                 return (
                   <Link key={l.id} href={path} className="group">
                     <Card className="rounded-[2rem] border border-slate-200/80 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white flex flex-col h-full">
@@ -900,7 +984,7 @@ export default function Home() {
                             {name}
                           </h4>
                           <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                            {l.address || l.description || 'Preporučena lokacija u Hrvatskoj.'}
+                            {l.address || desc}
                           </p>
                         </div>
                         <div className="flex items-center justify-between pt-4 mt-3 border-t border-slate-100 text-xs">
@@ -908,7 +992,7 @@ export default function Home() {
                             <Star className="size-3.5 fill-amber-400 text-amber-400" /> 4.9
                           </div>
                           <span className="text-primary font-bold text-xs uppercase tracking-wider group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
-                            Detalji →
+                            {isEn ? 'Details →' : 'Detalji →'}
                           </span>
                         </div>
                       </CardContent>
@@ -930,42 +1014,48 @@ export default function Home() {
             <div className="flex justify-between items-end mb-10">
               <div>
                 <Badge className="bg-primary/10 text-primary border-none font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-widest mb-3">
-                  KULTURNA BAŠTINA
+                  {isEn ? 'CULTURAL HERITAGE' : 'KULTURNA BAŠTINA'}
                 </Badge>
                 <h2 className="text-3xl md:text-5xl font-black italic tracking-tight font-headline text-slate-900">
-                  Kultura i Znamenitosti
+                  {isEn ? 'Culture & Landmarks' : 'Kultura i Znamenitosti'}
                 </h2>
                 <p className="text-slate-600 text-sm md:text-base max-w-xl mt-2 font-medium">
-                  Povijesne utvrde, spomenici i UNESCO baština koja svjedoči o bogatoj prošlosti Hrvatske.
+                  {isEn
+                    ? 'Historic fortresses, monuments, and UNESCO heritage that bear witness to Croatia\'s rich past.'
+                    : 'Povijesne utvrde, spomenici i UNESCO baština koja svjedoči o bogatoj prošlosti Hrvatske.'}
                 </p>
               </div>
               <Link href="/explore?category=landmarks">
                 <Button variant="link" className="text-primary font-black uppercase text-xs tracking-wider">
-                  Istraži više →
+                  {isEn ? 'Explore more →' : 'Istraži više →'}
                 </Button>
               </Link>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {cultureListings.map((l: any) => (
-                <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id)} className="group">
-                  <div className="relative h-72 md:h-80 rounded-[2.5rem] overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500">
-                    <Image src={getFirstPhoto(l) || DEFAULT_LISTING_IMAGE} alt={l.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                    <div className="absolute inset-0 p-8 flex flex-col justify-end text-white">
-                      <Badge className="w-fit bg-amber-400 text-slate-950 font-black text-[10px] uppercase mb-2">
-                        {l.city}
-                      </Badge>
-                      <h3 className="text-2xl md:text-3xl font-black italic font-headline leading-tight group-hover:text-primary transition-colors">
-                        {l.name}
-                      </h3>
-                      <p className="text-xs text-white/80 line-clamp-2 mt-2 leading-relaxed">
-                        {l.description || 'Povijesna znamenitost i kulturna atrakcija.'}
-                      </p>
+              {cultureListings.map((l: any) => {
+                const cName = isEn && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
+                const cDesc = (isEn ? (l.metadata?.descriptionEn || l.descriptionEn || l.description) : l.description) || (isEn ? 'Historic landmark and cultural attraction.' : 'Povijesna znamenitost i kulturna atrakcija.');
+                return (
+                  <Link key={l.id} href={generateListingUrl(l.locationCategoryId || l.categoryId, l.name, l.id)} className="group">
+                    <div className="relative h-72 md:h-80 rounded-[2.5rem] overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500">
+                      <Image src={getFirstPhoto(l) || DEFAULT_LISTING_IMAGE} alt={cName} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                      <div className="absolute inset-0 p-8 flex flex-col justify-end text-white">
+                        <Badge className="w-fit bg-amber-400 text-slate-950 font-black text-[10px] uppercase mb-2">
+                          {l.city}
+                        </Badge>
+                        <h3 className="text-2xl md:text-3xl font-black italic font-headline leading-tight group-hover:text-primary transition-colors">
+                          {cName}
+                        </h3>
+                        <p className="text-xs text-white/80 line-clamp-2 mt-2 leading-relaxed">
+                          {cDesc}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -977,24 +1067,26 @@ export default function Home() {
               <div>
                 <Badge className="bg-primary/10 text-primary border-none font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-widest mb-3 flex items-center gap-1.5 w-fit">
                   <BookOpen className="size-3.5 text-primary" />
-                  CROATIABEST MAGAZIN
+                  {isEn ? 'CROATIABEST MAGAZINE' : 'CROATIABEST MAGAZIN'}
                 </Badge>
                 <h2 className="text-4xl md:text-5xl font-black italic tracking-tight font-headline text-slate-900">
-                  Priče, Vodiči i Gastro Doživljaji
+                  {isEn ? 'Stories, Guides & Gastro Experiences' : 'Priče, Vodiči i Gastro Doživljaji'}
                 </h2>
                 <p className="text-slate-600 text-sm md:text-base max-w-xl mt-2 font-medium">
-                  Inspirirajte se za sljedeće putovanje: autentični putopisi, preporuke vrhunskih konoba i skriveni jadranski biseri.
+                  {isEn
+                    ? 'Get inspired for your next journey: authentic travelogues, top tavern recommendations, and hidden Adriatic gems.'
+                    : 'Inspirirajte se za sljedeće putovanje: autentični putopisi, preporuke vrhunskih konoba i skriveni jadranski biseri.'}
                 </p>
               </div>
 
               {/* Filter tabs for magazine */}
               <div className="flex flex-wrap items-center gap-2">
                 {[
-                  { id: 'all', label: 'Sve teme' },
-                  { id: 'Putovanja', label: 'Putovanja' },
-                  { id: 'Gastronomija', label: 'Gastronomija' },
-                  { id: 'Vodiči', label: 'Vodiči' },
-                  { id: 'Kultura', label: 'Kultura' },
+                  { id: 'all', label: isEn ? 'All topics' : 'Sve teme' },
+                  { id: 'Putovanja', label: isEn ? 'Travel' : 'Putovanja' },
+                  { id: 'Gastronomija', label: isEn ? 'Gastronomy' : 'Gastronomija' },
+                  { id: 'Vodiči', label: isEn ? 'Guides' : 'Vodiči' },
+                  { id: 'Kultura', label: isEn ? 'Culture' : 'Kultura' },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -1010,7 +1102,7 @@ export default function Home() {
                 ))}
                 <Link href="/blog">
                   <Button variant="ghost" className="text-primary font-bold text-xs uppercase tracking-wider h-10 px-3">
-                    Cijeli magazin →
+                    {isEn ? 'All magazine stories →' : 'Cijeli magazin →'}
                   </Button>
                 </Link>
               </div>
@@ -1025,17 +1117,17 @@ export default function Home() {
                   <Link href={`/blog/${featuredBlogArticle.slug || featuredBlogArticle.id}`} className="group h-full flex flex-col">
                     <div className="relative h-72 md:h-80 w-full rounded-[2.5rem] overflow-hidden bg-slate-900 shadow-xl border border-black/5">
                       {featuredBlogArticle.image && (
-                        <Image src={featuredBlogArticle.image} alt={featuredBlogArticle.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                        <Image src={featuredBlogArticle.image} alt={isEn ? (featuredBlogArticle.titleEn || featuredBlogArticle.title) : featuredBlogArticle.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                       <Badge className="absolute top-5 left-5 bg-primary text-white font-black text-xs uppercase px-3.5 py-1">
-                        {featuredBlogArticle.category || 'MAGAZIN'}
+                        {formatCategory(featuredBlogArticle.category || 'MAGAZIN')}
                       </Badge>
                       <div className="absolute bottom-5 left-5 right-5 text-white">
                         <div className="flex items-center gap-3 text-xs text-white/70 mb-2 font-medium">
-                          <span>{featuredBlogArticle.author || 'CroatiaBest Redakcija'}</span>
+                          <span>{featuredBlogArticle.author || (isEn ? 'CroatiaBest Editorial' : 'CroatiaBest Redakcija')}</span>
                           <span>•</span>
-                          <span>{featuredBlogArticle.readTime || '5 min'} čitanja</span>
+                          <span>{featuredBlogArticle.readTime || '5 min'} {isEn ? 'read' : 'čitanja'}</span>
                         </div>
                         <h3 className="text-2xl md:text-3xl font-black italic font-headline leading-tight group-hover:text-primary transition-colors line-clamp-2">
                           {isEn ? (featuredBlogArticle.titleEn || featuredBlogArticle.title) : (featuredBlogArticle.title || featuredBlogArticle.titleEn)}
@@ -1072,7 +1164,7 @@ export default function Home() {
                               <Image src={article.image} alt={displayTitle} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                             )}
                             <Badge className="absolute top-2.5 left-2.5 bg-black/75 text-white font-bold text-[10px] uppercase">
-                              {article.category || 'MAGAZIN'}
+                              {formatCategory(article.category || 'MAGAZIN')}
                             </Badge>
                           </div>
                           <div>
@@ -1110,13 +1202,15 @@ export default function Home() {
               <div className="p-8 md:p-12 rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 border border-white/10 flex flex-col justify-between space-y-6 shadow-2xl">
                 <div className="space-y-3">
                   <Badge className="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-black uppercase tracking-widest px-3 py-1">
-                    EKSKLUZIVNI VODIČ KROZ HRVATSKU
+                    {isEn ? 'EXCLUSIVE CROATIA GUIDE' : 'EKSKLUZIVNI VODIČ KROZ HRVATSKU'}
                   </Badge>
                   <h3 className="text-3xl md:text-4xl font-black italic font-headline leading-tight">
-                    Planirate putovanje po Hrvatskoj?
+                    {isEn ? 'Planning a trip to Croatia?' : 'Planirate putovanje po Hrvatskoj?'}
                   </h3>
                   <p className="text-slate-300 text-sm leading-relaxed max-w-md">
-                    Prijavite se na naš newsletter i primajte tjedne preporuke, skrivene bisere i ekskluzivne gastro priče izravno u vaš inbox.
+                    {isEn
+                      ? 'Subscribe to our newsletter and receive weekly recommendations, hidden gems, and exclusive gastro stories directly to your inbox.'
+                      : 'Prijavite se na naš newsletter i primajte tjedne preporuke, skrivene bisere i ekskluzivne gastro priče izravno u vaš inbox.'}
                   </p>
                 </div>
 
@@ -1126,18 +1220,20 @@ export default function Home() {
                       type="email"
                       value={newsletterEmail}
                       onChange={(e) => setNewsletterEmail(e.target.value)}
-                      placeholder="Unesite vašu e-mail adresu..."
+                      placeholder={isEn ? "Enter your email address..." : "Unesite vašu e-mail adresu..."}
                       className="flex-1 h-12 rounded-2xl bg-white/10 border border-white/20 px-5 text-sm text-white placeholder-white/50 outline-none focus:border-primary transition-all font-medium"
                     />
                     <Button 
                       type="submit"
                       className="h-12 px-8 rounded-2xl bg-gradient-to-r from-orange-500 to-rose-600 hover:from-orange-600 hover:to-rose-700 text-white font-black text-xs uppercase tracking-wider shrink-0 shadow-lg shadow-rose-950"
                     >
-                      Prijavi me <ArrowRight className="size-4 ml-1.5" />
+                      {isEn ? 'Subscribe' : 'Prijavi me'} <ArrowRight className="size-4 ml-1.5" />
                     </Button>
                   </div>
                   <p className="text-[11px] text-slate-400">
-                    Bez spama. Možete se odjaviti u bilo kojem trenutku jednim klikom.
+                    {isEn
+                      ? 'No spam. You can unsubscribe at any time with one click.'
+                      : 'Bez spama. Možete se odjaviti u bilo kojem trenutku jednim klikom.'}
                   </p>
                 </form>
               </div>
@@ -1146,24 +1242,28 @@ export default function Home() {
               <div className="p-8 md:p-12 rounded-[2.5rem] bg-white text-slate-900 flex flex-col justify-between space-y-6 shadow-2xl">
                 <div className="space-y-3">
                   <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-widest px-3 py-1">
-                    ZA VLASNIKE OBJEKATA
+                    {isEn ? 'FOR PROPERTY OWNERS' : 'ZA VLASNIKE OBJEKATA'}
                   </Badge>
                   <h3 className="text-3xl md:text-4xl font-black italic font-headline leading-tight">
-                    Posjedujete vilu, hotel ili vrhunski restoran?
+                    {isEn ? 'Do you own a villa, hotel, or top restaurant?' : 'Posjedujete vilu, hotel ili vrhunski restoran?'}
                   </h3>
                   <p className="text-slate-600 text-sm leading-relaxed max-w-md">
-                    Povežite svoj objekt s tisućama posjetitelja koji svakodnevno istražuju najbolja mjesta, plaže i gastronomiju na CroatiaBest.
+                    {isEn
+                      ? 'Connect your property with thousands of travelers exploring the best destinations, beaches, and gastronomy on CroatiaBest every day.'
+                      : 'Povežite svoj objekt s tisućama posjetitelja koji svakodnevno istražuju najbolja mjesta, plaže i gastronomiju na CroatiaBest.'}
                   </p>
                 </div>
 
                 <div className="space-y-3">
                   <Link href="/submit">
                     <Button className="w-full sm:w-auto h-12 px-8 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs uppercase tracking-wider shadow-lg">
-                      + Prijavite vaš objekt
+                      {isEn ? '+ List your property' : '+ Prijavite vaš objekt'}
                     </Button>
                   </Link>
                   <p className="text-[11px] text-slate-500">
-                    Jednostavna i brza prijava za sve verificirane ugostitelje i iznajmljivače.
+                    {isEn
+                      ? 'Quick and easy registration for verified hosts and hospitality businesses.'
+                      : 'Jednostavna i brza prijava za sve verificirane ugostitelje i iznajmljivače.'}
                   </p>
                 </div>
               </div>
