@@ -11,9 +11,10 @@ import { ImageUpload } from '@/components/ui/image-upload';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
-import { Save, ArrowLeft, Loader2, BookOpen, Globe, Flag, ImageIcon } from 'lucide-react';
+import { Save, ArrowLeft, Loader2, BookOpen, Globe, Flag, ImageIcon, ExternalLink } from 'lucide-react';
 import { useUser, usePB } from '@/pocketbase';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 export default function AdminNewBlogPageWrapper() {
   return (
@@ -61,7 +62,13 @@ function AdminNewBlogPage() {
   // Language tab
   const [langTab, setLangTab] = useState<'hr' | 'en'>('hr');
 
-  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
+  const isAdmin = Boolean(
+    user?.email === 'maro.webdeveloper@gmail.com' || 
+    user?.email === 'admin@croatiabest.hr' || 
+    (user as any)?.role === 'admin' || 
+    (user as any)?.isAdmin === true || 
+    (pb?.authStore?.isSuperuser ?? false)
+  );
 
   const generateSlug = (text: string) => {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -186,9 +193,17 @@ function AdminNewBlogPage() {
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <main className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center">
-            <h1 className="text-4xl font-black italic mb-4">Pristup Odbijen</h1>
-            <Button onClick={() => router.push('/')}>Povratak na Naslovnicu</Button>
+          <div className="text-center max-w-md p-8 bg-white rounded-3xl shadow-xl border border-black/5 space-y-4">
+            <h1 className="text-3xl font-black italic">Potrebna administratorska prijava</h1>
+            <p className="text-sm text-muted-foreground">Morate biti prijavljeni kao administrator kako biste uređivali ili pisali članke.</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+              <Button onClick={() => router.push('/login')} className="bg-primary text-white font-bold rounded-xl">
+                Prijava za administratora
+              </Button>
+              <Button variant="outline" onClick={() => router.push('/')} className="rounded-xl">
+                Povratak na Naslovnicu
+              </Button>
+            </div>
           </div>
         </main>
       </div>
@@ -206,9 +221,18 @@ function AdminNewBlogPage() {
           </Button>
           <div>
             <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter">
-              {editId ? 'Uredi Članak' : 'Novi Članak'} (Magazin)
+              {editId ? 'Uredi Članak' : 'Novi Članak'}
             </h1>
-            {editId && <p className="text-sm text-muted-foreground mt-1">Uređivanje ID: {editId}</p>}
+            {editId && (
+              <div className="flex flex-wrap items-center gap-3 mt-2">
+                <span className="text-xs font-mono bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md">ID: {editId}</span>
+                <Link href={`/blog/${slug || editId}`} target="_blank">
+                  <Button variant="outline" size="sm" className="rounded-xl h-8 px-3 text-xs font-bold gap-1.5 border-black/10 hover:bg-black/5">
+                    <ExternalLink className="size-3.5 text-primary" /> Pogledaj članak uživo
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
@@ -464,6 +488,17 @@ function AdminNewBlogPage() {
         <div className="fixed bottom-6 left-0 right-0 z-50 px-4 pointer-events-none">
           <div className="container mx-auto max-w-6xl flex justify-end">
             <div className="pointer-events-auto bg-white/95 backdrop-blur-md border border-black/10 shadow-2xl rounded-2xl p-3 flex items-center gap-3">
+              {editId && (
+                <Link href={`/blog/${slug || editId}`} target="_blank">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-xl font-bold h-11 px-4 border-black/10 hover:bg-slate-100 text-xs gap-1.5 hidden sm:flex"
+                  >
+                    <ExternalLink className="size-3.5 text-primary" /> Pogledaj uživo
+                  </Button>
+                </Link>
+              )}
               <Button
                 type="button"
                 variant="outline"

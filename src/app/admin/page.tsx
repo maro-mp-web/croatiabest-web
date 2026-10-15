@@ -40,7 +40,8 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-  Check
+  Check,
+  Eye
 } from 'lucide-react';
 import { WikiSectionsEditor } from '@/components/ui/WikiSectionsEditor';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
@@ -174,6 +175,13 @@ export default function AdminDashboard() {
 
   const [searchBlogs, setSearchBlogs] = useState('');
   const [pageBlogs, setPageBlogs] = useState(1);
+  const [blogTypeFilter, setBlogTypeFilter] = useState<'all' | 'news' | 'magazin'>('all');
+
+  const NEWS_CATEGORIES_LIST = [
+    'Vijesti iz Hrvatske', 'Vijesti iz Svijeta', 'Poznati Hrvati',
+    'Slavni u Hrvatskoj', 'Zanimljivosti', 'Iz Povijesti',
+    'Iz geografije', 'Domovinski rat'
+  ];
 
   const ITEMS_PER_PAGE = 10;
 
@@ -783,10 +791,15 @@ export default function AdminDashboard() {
 
   // Filtered & Paginated: Blogs
   const filteredBlogs = (blogs || []).filter(b => {
+    const isNews = NEWS_CATEGORIES_LIST.includes(b.category) || (Array.isArray(b.tags) && (b.tags.includes('news_bot') || b.tags.includes('vijesti')));
+    if (blogTypeFilter === 'news' && !isNews) return false;
+    if (blogTypeFilter === 'magazin' && isNews) return false;
+
     if (!searchBlogs.trim()) return true;
     const q = searchBlogs.toLowerCase();
     return (
       (b.title || '').toLowerCase().includes(q) ||
+      (b.titleEn || '').toLowerCase().includes(q) ||
       (b.category || '').toLowerCase().includes(q) ||
       (b.author || '').toLowerCase().includes(q)
     );
@@ -1788,15 +1801,53 @@ export default function AdminDashboard() {
           <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
             <CardHeader className="flex flex-row items-center justify-between border-b p-8 bg-secondary/5">
               <div>
-                <CardTitle className="text-2xl font-black uppercase tracking-tight">Magazin (Blog)</CardTitle>
-                <CardDescription>Upravljajte postojećim člancima u Magazinu.</CardDescription>
+                <CardTitle className="text-2xl font-black uppercase tracking-tight">Magazin i Vijesti</CardTitle>
+                <CardDescription>Upravljajte svim objavljenim člancima, vijestima i reportažama.</CardDescription>
               </div>
               <Link href="/admin/new-blog">
-                <Button className="bg-primary text-white rounded-xl font-bold h-10 px-4">
+                <Button className="bg-primary text-white rounded-xl font-bold h-10 px-4 shadow-sm">
                   <PlusCircle className="size-4 mr-2" /> Novi Članak
                 </Button>
               </Link>
             </CardHeader>
+
+            {/* Filter po vrsti sadržaja */}
+            <div className="flex items-center gap-2 px-8 pt-5 pb-3 bg-slate-50/70 border-b border-black/5 overflow-x-auto scrollbar-none">
+              <button
+                type="button"
+                onClick={() => { setBlogTypeFilter('all'); setPageBlogs(1); }}
+                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                  blogTypeFilter === 'all' 
+                    ? 'bg-primary text-white shadow-md' 
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                Svi članci ({blogs?.length || 0})
+              </button>
+              <button
+                type="button"
+                onClick={() => { setBlogTypeFilter('news'); setPageBlogs(1); }}
+                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                  blogTypeFilter === 'news' 
+                    ? 'bg-primary text-white shadow-md' 
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                📰 Samo Vijesti ({blogs?.filter(b => NEWS_CATEGORIES_LIST.includes(b.category) || (Array.isArray(b.tags) && (b.tags.includes('news_bot') || b.tags.includes('vijesti')))).length || 0})
+              </button>
+              <button
+                type="button"
+                onClick={() => { setBlogTypeFilter('magazin'); setPageBlogs(1); }}
+                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                  blogTypeFilter === 'magazin' 
+                    ? 'bg-primary text-white shadow-md' 
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                📖 Samo Magazin ({blogs?.filter(b => !NEWS_CATEGORIES_LIST.includes(b.category) && (!Array.isArray(b.tags) || (!b.tags.includes('news_bot') && !b.tags.includes('vijesti')))).length || 0})
+              </button>
+            </div>
+
             {renderSearchBar(
               'Pretraži članke po naslovu, kategoriji ili autoru...',
               searchBlogs,
@@ -1812,40 +1863,65 @@ export default function AdminDashboard() {
                   <div className="divide-y divide-black/5 text-left">
                     {paginatedBlogs.length === 0 ? (
                       <div className="p-24 text-center text-muted-foreground italic">
-                        {searchBlogs ? 'Nema članaka za traženi pojam.' : 'Nema objavljenih članaka.'}
+                        {searchBlogs ? 'Nema članaka za traženi pojam.' : 'Nema objavljenih članaka u ovoj kategoriji.'}
                       </div>
                     ) : (
-                      paginatedBlogs.map((blog) => (
-                        <div key={blog.id} className="flex flex-col md:flex-row items-center justify-between p-8 hover:bg-secondary/5 transition-colors gap-6">
-                          <div className="flex items-center gap-6 w-full md:w-auto">
-                            <div className="relative size-16 rounded-2xl overflow-hidden shadow-inner border border-black/5 bg-muted flex-shrink-0">
-                              {blog.image && <img src={blog.image} alt={blog.title} className="absolute inset-0 w-full h-full object-cover" />}
+                      paginatedBlogs.map((blog) => {
+                        const isNews = NEWS_CATEGORIES_LIST.includes(blog.category) || (Array.isArray(blog.tags) && (blog.tags.includes('news_bot') || blog.tags.includes('vijesti')));
+                        return (
+                          <div key={blog.id} className="flex flex-col md:flex-row items-center justify-between p-6 md:p-8 hover:bg-secondary/5 transition-colors gap-6">
+                            <div className="flex items-center gap-6 w-full md:w-auto">
+                              <div className="relative size-16 md:size-20 rounded-2xl overflow-hidden shadow-inner border border-black/5 bg-muted flex-shrink-0">
+                                {blog.image && <img src={blog.image} alt={blog.title} className="absolute inset-0 w-full h-full object-cover" />}
+                              </div>
+                              <div>
+                                <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                                  <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase">
+                                    {blog.category || 'Nema kategorije'}
+                                  </Badge>
+                                  {isNews ? (
+                                    <Badge className="bg-rose-500/10 text-rose-700 border-rose-500/20 text-[10px] font-bold">
+                                      Vijest
+                                    </Badge>
+                                  ) : (
+                                    <Badge className="bg-blue-500/10 text-blue-700 border-blue-500/20 text-[10px] font-bold">
+                                      Magazin
+                                    </Badge>
+                                  )}
+                                  {blog.titleEn && (
+                                    <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/20 text-[10px] font-bold">
+                                      HR + EN
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="font-black text-lg md:text-xl text-slate-900 leading-snug">{blog.title}</p>
+                                {blog.titleEn && (
+                                  <p className="text-xs text-slate-500 italic line-clamp-1 mt-0.5">{blog.titleEn}</p>
+                                )}
+                                <p className="text-xs text-muted-foreground flex items-center gap-2 font-medium mt-1.5">
+                                  Autor: {blog.author || 'CroatiaBest'} <span className="opacity-30">•</span> Datum: {blog.publishDate ? new Date(blog.publishDate).toLocaleDateString('hr-HR') : (blog.created ? new Date(blog.created).toLocaleDateString('hr-HR') : '-')}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-black text-xl mb-1">{blog.title}</p>
-                              <p className="text-xs text-muted-foreground flex items-center gap-2 font-medium">
-                                {blog.category || 'Nema kategorije'} <span className="opacity-30">•</span> Autor: {blog.author || 'Nepoznato'}
-                              </p>
+                            
+                            <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
+                              <Link href={`/blog/${blog.slug || blog.id}`} target="_blank">
+                                <Button variant="outline" size="sm" className="rounded-xl h-10 px-3.5 text-xs font-bold gap-1.5 border-black/10 hover:bg-black/5">
+                                  <Eye className="size-3.5 text-primary" /> Pogledaj
+                                </Button>
+                              </Link>
+                              <Link href={`/admin/new-blog?edit=${blog.id}`}>
+                                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 px-4 text-xs font-black gap-1.5 shadow-sm">
+                                  <Edit2 className="size-3.5" /> Uredi
+                                </Button>
+                              </Link>
+                              <Button variant="outline" size="sm" onClick={() => handleDeleteBlog(blog.id)} className="text-red-500 hover:bg-red-50 rounded-xl h-10 px-3 border-red-200">
+                                <Trash2 className="size-3.5" />
+                              </Button>
                             </div>
                           </div>
-                          
-                          <div className="flex gap-2">
-                            <Link href={`/blog/${blog.slug || blog.id}`}>
-                              <Button variant="outline" size="icon" className="text-primary hover:bg-primary/10 rounded-xl size-10 border-primary/20 bg-primary/5">
-                                <Sparkles className="size-4" />
-                              </Button>
-                            </Link>
-                            <Link href={`/admin/new-blog?edit=${blog.id}`}>
-                              <Button variant="outline" size="icon" className="text-blue-500 hover:bg-blue-50 rounded-xl size-10 border-blue-500/20 bg-blue-500/5">
-                                <Edit2 className="size-4" />
-                              </Button>
-                            </Link>
-                            <Button variant="outline" size="icon" onClick={() => handleDeleteBlog(blog.id)} className="text-red-500 hover:bg-red-50 rounded-xl size-10 border-red-500/20 bg-red-500/5">
-                              <Trash2 className="size-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                   {renderPagination(pageBlogs, totalPagesBlogs, setPageBlogs)}

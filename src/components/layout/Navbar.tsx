@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Map, Menu, BookOpen, ChevronDown, Building2, Anchor, PlusCircle, LogOut, User, LayoutDashboard, CreditCard, Newspaper } from 'lucide-react';
+import { Map, Menu, BookOpen, ChevronDown, Building2, Anchor, PlusCircle, LogOut, User, LayoutDashboard, CreditCard, Newspaper, Sparkles } from 'lucide-react';
 import { getLocalizedUrl } from '@/lib/i18n-routes';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -29,7 +29,13 @@ export function Navbar({ transparent = false }: NavbarProps) {
     router.push('/');
   };
 
-  const isAdmin = user?.email === 'maro.webdeveloper@gmail.com';
+  const isAdmin = Boolean(
+    user?.email === 'maro.webdeveloper@gmail.com' || 
+    user?.email === 'admin@croatiabest.hr' || 
+    (user as any)?.role === 'admin' || 
+    (user as any)?.isAdmin === true || 
+    (pb?.authStore?.isSuperuser ?? false)
+  );
 
   const { data: citiesData } = useCollection('cities', { sort: 'name', requestKey: null });
   const { data: islandsData } = useCollection('islands', { sort: 'name', requestKey: null });
@@ -167,6 +173,18 @@ export function Navbar({ transparent = false }: NavbarProps) {
                       className="cursor-pointer font-bold hover:bg-primary/5 hover:text-primary rounded-lg transition-colors gap-2"
                     >
                       <LayoutDashboard className="size-4 text-primary" /> Admin Panel
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onSelect={() => router.push('/admin?tab=bot')}
+                      className="cursor-pointer font-semibold hover:bg-amber-50 text-amber-700 rounded-lg transition-colors gap-2 text-xs"
+                    >
+                      <Sparkles className="size-3.5 text-amber-500" /> Vijesti Bot (Objave & Uređivanje)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onSelect={() => router.push('/admin?tab=blogs')}
+                      className="cursor-pointer font-semibold hover:bg-rose-50 text-rose-700 rounded-lg transition-colors gap-2 text-xs"
+                    >
+                      <BookOpen className="size-3.5" /> Magazin i Vijesti
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       onSelect={() => router.push('/admin?tab=islands')}

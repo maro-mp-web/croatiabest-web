@@ -24,7 +24,12 @@ import {
   Rss,
   Key,
   ShieldCheck,
-  AlertTriangle
+  AlertTriangle,
+  Eye,
+  Search,
+  Newspaper,
+  ArrowLeft,
+  ArrowRight
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -207,6 +212,52 @@ export function NewsBotManager({ blogs, onBlogsUpdate }: { blogs: any[]; onBlogs
     const tags = Array.isArray(b.tags) ? b.tags : [];
     return tags.includes('pending_approval');
   });
+
+  // Stanje i logika za pregled i uređivanje objavljenih vijesti
+  const [newsSearch, setNewsSearch] = useState('');
+  const [newsCategoryFilter, setNewsCategoryFilter] = useState('all');
+  const [newsPage, setNewsPage] = useState(1);
+  const NEWS_PER_PAGE = 8;
+
+  const publishedArticles = (blogs || []).filter(b => {
+    const tags = Array.isArray(b.tags) ? b.tags : [];
+    if (tags.includes('pending_approval')) return false;
+    const isBotOrNews = NEWS_CATEGORIES.includes(b.category) || tags.includes('news_bot') || tags.includes('vijesti');
+    if (!isBotOrNews) return false;
+    
+    if (newsCategoryFilter !== 'all' && b.category !== newsCategoryFilter) return false;
+    
+    if (newsSearch.trim()) {
+      const q = newsSearch.toLowerCase();
+      const matchTitle = (b.title || '').toLowerCase().includes(q) || (b.titleEn || '').toLowerCase().includes(q);
+      const matchCat = (b.category || '').toLowerCase().includes(q);
+      const matchExcerpt = (b.excerpt || '').toLowerCase().includes(q);
+      if (!matchTitle && !matchCat && !matchExcerpt) return false;
+    }
+    return true;
+  });
+
+  const totalNewsPages = Math.ceil(publishedArticles.length / NEWS_PER_PAGE) || 1;
+  const paginatedNews = publishedArticles.slice((newsPage - 1) * NEWS_PER_PAGE, newsPage * NEWS_PER_PAGE);
+
+  const handleToggleHomepage = async (articleId: string, currentVal: boolean) => {
+    if (!pb) return;
+    try {
+      await pb.collection('blogs').update(articleId, { showOnHomepage: !currentVal });
+      toast({ 
+        title: !currentVal ? 'Prikazuje se na naslovnici' : 'Uklonjeno s naslovnice', 
+        description: 'Status vijesti je uspješno ažuriran.' 
+      });
+      if (onBlogsUpdate) onBlogsUpdate();
+    } catch (e: any) {
+      toast({ title: 'Greška', description: e.message || 'Neuspjelo ažuriranje statusa.', variant: 'destructive' });
+    }
+  };
+
+  const handleDeletePublishedArticle = async (articleId: string, articleTitle: string) => {
+    if (!window.confirm(`Jeste li sigurni da želite obrisati članak "${articleTitle}"?`)) return;
+    await handleArticleAction(articleId, 'delete');
+  };
 
   if (isLoadingConfig) {
     return (
@@ -399,6 +450,205 @@ export function NewsBotManager({ blogs, onBlogsUpdate }: { blogs: any[]; onBlogs
           </CardContent>
         </Card>
       )}
+
+      {/* OBJAVLJENE VIJESTI BOTA */}
+      <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+        <CardHeader className="bg-slate-900 text-white p-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="p-2.5 bg-primary/20 text-primary rounded-xl">
+                <Newspaper className="size-6" />
+              </span>
+              <div>
+                <CardTitle className="text-2xl font-black italic tracking-tight text-white flex items-center gap-3">
+                  Objavljene Vijesti Bota
+                  <Badge className="bg-primary text-white text-xs px-3 py-0.5 rounded-full">
+                    {publishedArticles.length}
+                  </Badge>
+                </CardTitle>
+                <CardDescription className="text-slate-400">
+                  Pregledajte, uređujte i upravljajte svim vijestima koje je bot generirao i objavio na portalu.
+                </CardDescription>
+              </div>
+            </div>
+            <Link href="/admin/new-blog">
+              <Button className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl h-10 px-4 text-xs gap-1.5 shadow-md">
+                <Plus className="size-4" /> Napiši novu vijest
+              </Button>
+            </Link>
+          </div>
+          
+          {/* Pretraga i filteri */}
+          <div className="mt-6 flex flex-col md:flex-row gap-4 items-center justify-between pt-6 border-t border-white/10">
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+              <Input
+                placeholder="Pretraži objavljene vijesti..."
+                value={newsSearch}
+                onChange={(e) => { setNewsSearch(e.target.value); setNewsPage(1); }}
+                className="pl-10 h-10 rounded-xl bg-white/10 border-white/20 text-white placeholder:text-slate-400 text-xs focus:ring-primary"
+              />
+            </div>
+            
+            <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto scrollbar-none pb-1 md:pb-0">
+              <button
+                type="button"
+                onClick={() => { setNewsCategoryFilter('all'); setNewsPage(1); }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  newsCategoryFilter === 'all'
+                    ? 'bg-primary text-white shadow'
+                    : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                }`}
+              >
+                Sve rubrike ({publishedArticles.length})
+              </button>
+              {NEWS_CATEGORIES.map(cat => {
+                const count = (blogs || []).filter(b => b.category === cat && (!Array.isArray(b.tags) || !b.tags.includes('pending_approval'))).length;
+                if (count === 0) return null;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => { setNewsCategoryFilter(cat); setNewsPage(1); }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                      newsCategoryFilter === cat
+                        ? 'bg-primary text-white shadow'
+                        : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                    }`}
+                  >
+                    {cat} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-8">
+          {paginatedNews.length === 0 ? (
+            <div className="text-center py-16 text-slate-400 italic">
+              {newsSearch ? 'Nema objavljenih vijesti koje odgovaraju pretrazi.' : 'Trenutno nema objavljenih vijesti.'}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {paginatedNews.map((article) => (
+                <div 
+                  key={article.id} 
+                  className="group bg-slate-50 hover:bg-white border border-slate-200 hover:border-slate-300 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div className="flex gap-4 items-start">
+                    <div className="relative size-24 rounded-xl overflow-hidden bg-slate-200 shrink-0 border border-black/5">
+                      {article.image ? (
+                        <Image src={article.image} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform" />
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-slate-400 text-[10px]">Nema slike</div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                        <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase">
+                          {article.category}
+                        </Badge>
+                        {article.showOnHomepage && (
+                          <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/20 text-[10px] font-bold">
+                            Naslovnica
+                          </Badge>
+                        )}
+                        {article.titleEn && (
+                          <Badge className="bg-blue-500/10 text-blue-700 border-blue-500/20 text-[10px] font-bold">
+                            HR + EN
+                          </Badge>
+                        )}
+                      </div>
+                      <h4 className="font-black text-sm text-slate-900 line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                        {article.title}
+                      </h4>
+                      {article.titleEn && (
+                        <p className="text-[11px] text-slate-500 italic line-clamp-1 mt-0.5">
+                          {article.titleEn}
+                        </p>
+                      )}
+                      <p className="text-xs text-slate-400 mt-2 flex items-center gap-2">
+                        <Clock className="size-3" />
+                        {article.publishDate ? new Date(article.publishDate).toLocaleDateString('hr-HR') : (article.created ? new Date(article.created).toLocaleDateString('hr-HR') : 'Nedavno')}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Akcije za članak */}
+                  <div className="mt-5 pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleHomepage(article.id, article.showOnHomepage)}
+                        className={`text-[11px] font-bold px-3 py-1.5 rounded-lg border transition-all ${
+                          article.showOnHomepage 
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                            : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+                        }`}
+                        title="Klikni za uključivanje/isključivanje prikaza na naslovnici"
+                      >
+                        {article.showOnHomepage ? '✓ Na naslovnici' : '+ Stavi na naslovnicu'}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Link href={`/blog/${article.slug || article.id}`} target="_blank">
+                        <Button size="sm" variant="outline" className="rounded-xl h-9 px-3 text-xs font-bold gap-1 border-slate-300 hover:bg-slate-100">
+                          <Eye className="size-3.5 text-slate-600" /> Pogledaj
+                        </Button>
+                      </Link>
+                      <Link href={`/admin/new-blog?edit=${article.id}`}>
+                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-9 px-4 text-xs font-black gap-1.5 shadow-sm">
+                          <Edit3 className="size-3.5" /> Uredi
+                        </Button>
+                      </Link>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDeletePublishedArticle(article.id, article.title)}
+                        className="rounded-xl h-9 px-2.5 text-rose-600 hover:bg-rose-50 border-rose-200"
+                        title="Obriši vijest"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Paginacija za vijesti */}
+          {totalNewsPages > 1 && (
+            <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-200">
+              <span className="text-xs text-slate-500 font-medium">
+                Stranica {newsPage} od {totalNewsPages} ({publishedArticles.length} ukupno vijesti)
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={newsPage <= 1}
+                  onClick={() => setNewsPage(p => Math.max(1, p - 1))}
+                  className="rounded-xl h-9 px-3 text-xs font-bold gap-1"
+                >
+                  <ArrowLeft className="size-3.5" /> Prethodna
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={newsPage >= totalNewsPages}
+                  onClick={() => setNewsPage(p => Math.min(totalNewsPages, p + 1))}
+                  className="rounded-xl h-9 px-3 text-xs font-bold gap-1"
+                >
+                  Sljedeća <ArrowRight className="size-3.5" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* POSTAVKE BOTA */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

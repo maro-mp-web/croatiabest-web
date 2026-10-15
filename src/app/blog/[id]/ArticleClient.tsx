@@ -5,10 +5,11 @@ import React from 'react';
 import { useParams } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useUser, usePB } from '@/pocketbase';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, User, Clock, Share2, Facebook, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Clock, Share2, Facebook, Link as LinkIcon, Edit3, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import FAQSection from '@/components/ui/FAQSection';
@@ -19,6 +20,16 @@ import { getLocalizedUrl } from '@/lib/i18n-routes';
 export default function ArticleClient({ article, relatedArticles }: { article: any, relatedArticles: any[] }) {
   const { language } = useLanguage();
   const isEn = language === 'en';
+  const { user } = useUser();
+  const pb = usePB();
+
+  const isAdmin = Boolean(
+    user?.email === 'maro.webdeveloper@gmail.com' ||
+    user?.email === 'admin@croatiabest.hr' ||
+    (user as any)?.role === 'admin' ||
+    (user as any)?.isAdmin === true ||
+    (pb?.authStore?.isSuperuser ?? false)
+  );
 
   const title = isEn && article.titleEn ? article.titleEn : article.title;
   const excerpt = isEn && article.excerptEn ? article.excerptEn : article.excerpt;
@@ -38,9 +49,18 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
           
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="container mx-auto px-4 text-center max-w-4xl space-y-6">
-              <Badge className="bg-primary hover:bg-primary text-white border-none px-6 py-2 text-sm font-black uppercase tracking-widest">
-                {article.category}
-              </Badge>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Badge className="bg-primary hover:bg-primary text-white border-none px-6 py-2 text-sm font-black uppercase tracking-widest">
+                  {article.category}
+                </Badge>
+                {isAdmin && (
+                  <Link href={`/admin/new-blog?edit=${article.id}`}>
+                    <Button size="sm" className="bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-xs rounded-full px-5 h-9 shadow-xl gap-2 border border-amber-300 transition-all hover:scale-105">
+                      <Edit3 className="size-4" /> Uredi ovaj članak
+                    </Button>
+                  </Link>
+                )}
+              </div>
               <h1 className="text-4xl md:text-7xl font-headline font-black text-white leading-[1.1] drop-shadow-2xl">
                 {title}
               </h1>
@@ -96,8 +116,16 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
                       <p className="text-xl font-bold">{article.author}</p>
                     </div>
                   </div>
-                  <div className="flex gap-4">
-                    <Button variant="secondary" className="rounded-xl px-8 font-bold">
+                  <div className="flex flex-wrap items-center gap-4">
+                    {isAdmin && (
+                      <Link href={`/admin/new-blog?edit=${article.id}`}>
+                        <Button className="bg-amber-400 hover:bg-amber-500 text-slate-950 font-black rounded-xl px-6 h-12 shadow-lg gap-2 border border-amber-300">
+                          <Edit3 className="size-4" /> 
+                          {isEn ? 'EDIT ARTICLE' : 'UREDI OVAJ ČLANAK'}
+                        </Button>
+                      </Link>
+                    )}
+                    <Button variant="secondary" className="rounded-xl px-8 font-bold h-12">
                       <Share2 className="size-4 mr-2" /> 
                       {isEn ? 'SHARE ARTICLE' : 'PODIJELI ČLANAK'}
                     </Button>
@@ -169,6 +197,25 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
           </Button>
         </Link>
       </div>
+
+      {/* FLOATING ADMIN QUICK ACTION BAR */}
+      {isAdmin && (
+        <aside aria-label="Admin bar" className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-slate-950/95 text-white p-2.5 pl-4 rounded-2xl shadow-2xl backdrop-blur-md border border-amber-500/40 ring-1 ring-white/10">
+          <span className="text-xs font-black text-amber-400 flex items-center gap-1.5 mr-1">
+            <ShieldCheck className="size-4 text-amber-400" /> Admin
+          </span>
+          <Link href={`/admin/new-blog?edit=${article.id}`}>
+            <Button size="sm" className="bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-xs rounded-xl shadow h-9 gap-1.5 transition-all hover:scale-105">
+              <Edit3 className="size-3.5" /> Uredi ovaj članak
+            </Button>
+          </Link>
+          <Link href="/admin?tab=bot">
+            <Button size="sm" variant="ghost" className="hover:bg-white/10 text-slate-300 text-xs rounded-xl h-9">
+              Vijesti Bot
+            </Button>
+          </Link>
+        </aside>
+      )}
     </div>
   );
 }
