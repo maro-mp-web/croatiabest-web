@@ -52,12 +52,12 @@ const nextConfig: NextConfig = {
         destination: '/listing/:slug*',
       },
       {
-        source: '/vijesti/:slug*',
-        destination: '/vijesti/:slug*', // Already named vijesti, just map for consistency
+        source: '/news',
+        destination: '/vijesti',
       },
       {
         source: '/news/:slug*',
-        destination: '/vijesti/:slug*', // EN mapping to actual file path
+        destination: '/vijesti/:slug*',
       },
       {
         source: '/o-nama',

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Map, Menu, BookOpen, ChevronDown, Building2, Anchor, PlusCircle, LogOut, User, LayoutDashboard, CreditCard } from 'lucide-react';
+import { Map, Menu, BookOpen, ChevronDown, Building2, Anchor, PlusCircle, LogOut, User, LayoutDashboard, CreditCard, Newspaper } from 'lucide-react';
 import { getLocalizedUrl } from '@/lib/i18n-routes';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -110,10 +110,16 @@ export function Navbar({ transparent = false }: NavbarProps) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider hover:text-primary transition-colors outline-none">
-                  <BookOpen className="size-4" /> {language === 'en' ? 'News' : 'Vijesti'} <ChevronDown className="size-3" />
+                  <Newspaper className="size-4" /> {language === 'en' ? 'News' : 'Vijesti'} <ChevronDown className="size-3" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56 rounded-xl p-2 grid grid-cols-1 gap-1">
+                <DropdownMenuItem 
+                  onSelect={() => router.push(getLocalizedUrl('/vijesti', language))}
+                  className="w-full cursor-pointer font-black text-primary hover:bg-primary/5 rounded-lg transition-colors border-b border-slate-100 pb-2 mb-1"
+                >
+                  {language === 'en' ? 'All News →' : 'Sve vijesti →'}
+                </DropdownMenuItem>
                 {[
                   'Vijesti iz Hrvatske', 'Vijesti iz Svijeta', 'Poznati Hrvati',
                   'Slavni u Hrvatskoj', 'Zanimljivosti', 'Iz Povijesti',
@@ -122,7 +128,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
                   <DropdownMenuItem 
                     key={cat} 
                     onSelect={() => router.push(getLocalizedUrl(`/vijesti/${cat.toLowerCase().replace(/ /g, '-')}`, language))}
-                    className="w-full cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                    className="w-full cursor-pointer font-medium hover:bg-primary/5 hover:text-primary rounded-lg transition-colors text-xs"
                   >
                     {cat}
                   </DropdownMenuItem>
@@ -248,7 +254,10 @@ export function Navbar({ transparent = false }: NavbarProps) {
                     </div>
                   </div>
                   <div className="border-t pt-4 pb-2">
-                    <p className="text-xs font-bold text-muted-foreground mb-4 tracking-widest uppercase">{language === 'en' ? 'News' : 'Vijesti'}</p>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs font-bold text-muted-foreground tracking-widest uppercase">{language === 'en' ? 'News' : 'Vijesti'}</p>
+                      <Link href="/vijesti" className="text-xs font-bold text-primary hover:underline">Sve vijesti →</Link>
+                    </div>
                     <div className="grid grid-cols-1 gap-2">
                       {[
                         'Vijesti iz Hrvatske', 'Vijesti iz Svijeta', 'Poznati Hrvati',

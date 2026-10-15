@@ -10,12 +10,11 @@ export default async function BlogPage() {
   try {
     try {
       articles = await pb.collection('blogs').getFullList({
-        sort: '-publishDate',
+        sort: '-id',
         requestKey: null
       });
     } catch {
       articles = await pb.collection('blogs').getFullList({
-        sort: '-created',
         requestKey: null
       });
     }

@@ -81,6 +81,8 @@ export default function Home() {
 
   // News section active category tab
   const [newsCategoryTab, setNewsCategoryTab] = useState('all');
+  const [blogCategoryTab, setBlogCategoryTab] = useState('all');
+  const [activeNewsIndex, setActiveNewsIndex] = useState(0);
 
   // Newsletter state
   const [newsletterEmail, setNewsletterEmail] = useState('');
@@ -222,19 +224,60 @@ export default function Home() {
     return ['homeland_war', 'landmarks', 'culture', 'viewpoints'].includes(cat);
   }).slice(0, 2);
 
-  // News / Vijesti articles (exclude pending_approval)
-  const allValidArticles = (blogArticles || []).filter(
-    a => !Array.isArray(a.tags) || !a.tags.includes('pending_approval')
-  );
+  // Definicija rubrika vijesti
+  const NEWS_CATEGORIES = [
+    'Vijesti iz Hrvatske',
+    'Vijesti iz Svijeta',
+    'Poznati Hrvati',
+    'Slavni u Hrvatskoj',
+    'Zanimljivosti',
+    'Iz Povijesti',
+    'Iz geografije',
+    'Domovinski rat',
+  ];
 
-  const filteredNews = allValidArticles.filter(a => {
+  // 1. Filtriranje isključivo VIJESTI (iz bota ili news rubrika)
+  const allValidNewsArticles = (blogArticles || []).filter(a => {
+    if (Array.isArray(a.tags) && a.tags.includes('pending_approval')) return false;
+    const isTaggedNews = Array.isArray(a.tags) && (a.tags.includes('vijesti') || a.tags.includes('bot'));
+    const isCategoryNews = NEWS_CATEGORIES.includes(a.category);
+    return isTaggedNews || isCategoryNews;
+  });
+
+  const filteredNews = allValidNewsArticles.filter(a => {
     if (newsCategoryTab === 'all') return true;
     return a.category === newsCategoryTab;
   });
 
-  // Featured article and side articles
-  const featuredNewsArticle = filteredNews[0] || allValidArticles[0];
-  const sideNewsArticles = (filteredNews.length > 1 ? filteredNews.slice(1, 5) : allValidArticles.slice(1, 5));
+  const featuredNewsArticle = filteredNews[0] || allValidNewsArticles[0];
+  const sideNewsArticles = (filteredNews.length > 1 ? filteredNews.slice(1, 4) : allValidNewsArticles.slice(1, 4));
+
+  // 2. Filtriranje isključivo BLOG / MAGAZIN članaka (redakcijski putopisi, gastro, vodiči - bez bota)
+  const allEditorialBlogArticles = (blogArticles || []).filter(a => {
+    if (Array.isArray(a.tags) && a.tags.includes('pending_approval')) return false;
+    const isTaggedNews = Array.isArray(a.tags) && (a.tags.includes('vijesti') || a.tags.includes('bot'));
+    const isCategoryNews = NEWS_CATEGORIES.includes(a.category);
+    return !isTaggedNews && !isCategoryNews;
+  });
+
+  const displayBlogArticles = allEditorialBlogArticles.length > 0 ? allEditorialBlogArticles : (blogArticles || []);
+
+  const filteredBlogArticles = displayBlogArticles.filter(a => {
+    if (blogCategoryTab === 'all') return true;
+    return a.category === blogCategoryTab;
+  });
+
+  const featuredBlogArticle = filteredBlogArticles[0] || displayBlogArticles[0];
+  const sideBlogArticles = (filteredBlogArticles.length > 1 ? filteredBlogArticles.slice(1, 5) : displayBlogArticles.slice(1, 5));
+
+  // Hero ticker news rotation
+  useEffect(() => {
+    if (allValidNewsArticles.length === 0) return;
+    const interval = setInterval(() => {
+      setActiveNewsIndex(prev => (prev + 1) % Math.min(allValidNewsArticles.length, 8));
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [allValidNewsArticles.length]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden selection:bg-primary selection:text-white">
@@ -264,10 +307,31 @@ export default function Home() {
 
           <div className="container mx-auto px-6 relative z-20">
             <div className="max-w-4xl space-y-8 text-left">
-              {/* Top Badge */}
-              <div className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white/10 backdrop-blur-xl border border-white/15 rounded-full text-white text-[11px] font-black tracking-[0.25em] uppercase shadow-lg shadow-black/20">
-                <Sparkles className="size-3.5 text-amber-400 fill-amber-400" />
-                OTKRIJTE TAJNE I LJEPOTE HRVATSKE
+              {/* Top Badges & Live News Ticker */}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white/10 backdrop-blur-xl border border-white/15 rounded-full text-white text-[11px] font-black tracking-[0.25em] uppercase shadow-lg shadow-black/20">
+                  <Sparkles className="size-3.5 text-amber-400 fill-amber-400" />
+                  OTKRIJTE TAJNE I LJEPOTE HRVATSKE
+                </div>
+
+                {allValidNewsArticles.length > 0 && (
+                  <div className="inline-flex items-center gap-2.5 py-1.5 px-4 bg-black/50 hover:bg-black/70 backdrop-blur-xl border border-rose-500/30 rounded-full text-white text-xs transition-all shadow-lg group">
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-red-600 to-rose-600 text-white font-black text-[10px] tracking-wider uppercase rounded-full shadow-sm shrink-0">
+                      <span className="size-2 rounded-full bg-white animate-ping" />
+                      UŽIVO VIJESTI
+                    </span>
+                    <Link
+                      href={`/blog/${allValidNewsArticles[activeNewsIndex]?.slug || allValidNewsArticles[activeNewsIndex]?.id}`}
+                      className="hover:text-amber-300 font-bold transition-colors truncate max-w-[220px] sm:max-w-md inline-block"
+                      title={allValidNewsArticles[activeNewsIndex]?.title}
+                    >
+                      {allValidNewsArticles[activeNewsIndex]?.title}
+                    </Link>
+                    <Link href="/vijesti" className="text-amber-400 hover:text-amber-300 font-black text-[11px] shrink-0 border-l border-white/20 pl-2">
+                      Sve →
+                    </Link>
+                  </div>
+                )}
               </div>
               
               {/* Heading matching screenshot styling */}
@@ -514,6 +578,131 @@ export default function Home() {
                     Pogledaj svih {allListings?.length || 24} lokacija →
                   </Button>
                 </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 2.5. MINI SEKCIJA VIJESTI (Tik ispod karte - zatraženo od korisnika) */}
+        <section className="py-16 bg-white relative z-30 border-b border-black/5">
+          <div className="container mx-auto px-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+              <div>
+                <Badge className="bg-rose-500/10 text-rose-600 border border-rose-500/20 font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-widest mb-2 flex items-center gap-1.5 w-fit">
+                  <Flame className="size-3.5 fill-rose-500 text-rose-500" />
+                  AKTUALNOSTI & VIJESTI
+                </Badge>
+                <h2 className="text-3xl md:text-5xl font-black italic tracking-tight font-headline text-slate-900">
+                  Turističke Vijesti & Događanja
+                </h2>
+                <p className="text-slate-600 text-sm md:text-base max-w-xl mt-1 font-medium">
+                  Sve novosti iz turizma, aktualna događanja i zanimljivosti iz Hrvatske u stvarnom vremenu.
+                </p>
+              </div>
+
+              {/* Filter tabs for news */}
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  { id: 'all', label: 'Sve vijesti' },
+                  { id: 'Vijesti iz Hrvatske', label: 'Hrvatska' },
+                  { id: 'Vijesti iz Svijeta', label: 'Svijet' },
+                  { id: 'Zanimljivosti', label: 'Zanimljivosti' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setNewsCategoryTab(tab.id)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                      newsCategoryTab === tab.id
+                        ? 'bg-slate-900 text-white shadow-md'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+                <Link href="/vijesti">
+                  <Button variant="outline" className="rounded-xl font-bold text-xs uppercase tracking-wider h-9 px-4 text-primary border-primary/30 hover:bg-primary/5">
+                    Sve vijesti ({allValidNewsArticles.length}) →
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* News Magazine Compact Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+              {/* Featured Main News Card (5/12) */}
+              {featuredNewsArticle ? (
+                <div className="lg:col-span-5 h-full">
+                  <Link href={`/blog/${featuredNewsArticle.slug || featuredNewsArticle.id}`} className="group h-full flex flex-col">
+                    <div className="relative h-64 md:h-72 w-full rounded-[2rem] overflow-hidden bg-slate-900 shadow-xl border border-black/5">
+                      {featuredNewsArticle.image && (
+                        <Image src={featuredNewsArticle.image} alt={featuredNewsArticle.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
+                      <Badge className="absolute top-4 left-4 bg-rose-600 text-white font-black text-[11px] uppercase px-3 py-1 shadow-md">
+                        {featuredNewsArticle.category}
+                      </Badge>
+                      <div className="absolute bottom-4 left-4 right-4 text-white">
+                        <div className="flex items-center gap-2 text-xs text-white/70 mb-1.5 font-medium">
+                          <Clock className="size-3 text-rose-400" />
+                          <span>{featuredNewsArticle.readTime || '3 min'} čitanja</span>
+                          <span>•</span>
+                          <span>{featuredNewsArticle.author || 'CroatiaBest'}</span>
+                        </div>
+                        <h3 className="text-xl md:text-2xl font-black italic font-headline leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                          {featuredNewsArticle.title}
+                        </h3>
+                      </div>
+                    </div>
+                    <div className="p-3 pt-2.5 flex-1 flex flex-col justify-between">
+                      <p className="text-xs md:text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                        {featuredNewsArticle.excerpt}
+                      </p>
+                      <span className="text-primary font-black text-xs uppercase tracking-wider mt-2.5 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                        Pročitajte cijelu vijest <ArrowRight className="size-3.5" />
+                      </span>
+                    </div>
+                  </Link>
+                </div>
+              ) : (
+                <div className="lg:col-span-5 flex items-center justify-center p-8 bg-slate-50 rounded-[2rem] border border-dashed border-slate-300">
+                  <p className="text-slate-400 font-bold text-sm">Učitavanje najnovijih vijesti...</p>
+                </div>
+              )}
+
+              {/* Side News Grid (7/12) - 3 Compact items */}
+              <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {sideNewsArticles.map((article) => (
+                  <Link key={article.id} href={`/blog/${article.slug || article.id}`} className="group h-full">
+                    <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/60 hover:bg-white hover:shadow-lg hover:border-slate-300 transition-all flex flex-col justify-between h-full">
+                      <div className="space-y-2.5">
+                        <div className="relative h-32 w-full rounded-xl overflow-hidden bg-slate-200">
+                          {article.image && (
+                            <Image src={article.image} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                          )}
+                          <Badge className="absolute top-2 left-2 bg-black/75 text-white font-bold text-[9px] uppercase">
+                            {article.category}
+                          </Badge>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mb-1 font-medium">
+                            <Clock className="size-2.5" /> {article.readTime || '3 min'}
+                          </div>
+                          <h4 className="font-black text-xs md:text-sm text-slate-900 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                            {article.title}
+                          </h4>
+                          <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                            {article.excerpt}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="pt-2 mt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] font-bold text-primary">
+                        <span>Pročitaj</span>
+                        <ChevronRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
@@ -771,37 +960,37 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 7. NOVA SEKCIJA: TURISTIČKE VIJESTI & MAGAZIN (Requested by user) */}
+        {/* 7. SEKCIJA: CROATIABEST MAGAZIN & PUTOPISI (Odvojeno od vijesti) */}
         <section className="py-24 bg-white relative z-30 border-t border-black/5">
           <div className="container mx-auto px-6">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
               <div>
                 <Badge className="bg-primary/10 text-primary border-none font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-widest mb-3 flex items-center gap-1.5 w-fit">
-                  <Newspaper className="size-3.5 text-primary" />
-                  CROATIABEST MAGAZIN & VIJESTI
+                  <BookOpen className="size-3.5 text-primary" />
+                  CROATIABEST MAGAZIN
                 </Badge>
                 <h2 className="text-4xl md:text-5xl font-black italic tracking-tight font-headline text-slate-900">
-                  Najnovije Vijesti & Priče iz Hrvatske
+                  Priče, Vodiči i Gastro Doživljaji
                 </h2>
                 <p className="text-slate-600 text-sm md:text-base max-w-xl mt-2 font-medium">
-                  Aktualnosti iz turizma, gastro vodiči, putopisi i zanimljivosti iz cijele zemlje.
+                  Inspirirajte se za sljedeće putovanje: autentični putopisi, preporuke vrhunskih konoba i skriveni jadranski biseri.
                 </p>
               </div>
 
-              {/* Filter tabs for news */}
+              {/* Filter tabs for magazine */}
               <div className="flex flex-wrap items-center gap-2">
                 {[
-                  { id: 'all', label: 'Sve vijesti' },
-                  { id: 'Vijesti iz Hrvatske', label: 'Hrvatska' },
-                  { id: 'Vijesti iz Svijeta', label: 'Svijet' },
-                  { id: 'Zanimljivosti', label: 'Zanimljivosti' },
-                  { id: 'Putovanja', label: 'Magazin' },
+                  { id: 'all', label: 'Sve teme' },
+                  { id: 'Putovanja', label: 'Putovanja' },
+                  { id: 'Gastronomija', label: 'Gastronomija' },
+                  { id: 'Vodiči', label: 'Vodiči' },
+                  { id: 'Kultura', label: 'Kultura' },
                 ].map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setNewsCategoryTab(tab.id)}
+                    onClick={() => setBlogCategoryTab(tab.id)}
                     className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
-                      newsCategoryTab === tab.id
+                      blogCategoryTab === tab.id
                         ? 'bg-slate-900 text-white shadow-md'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
@@ -809,59 +998,59 @@ export default function Home() {
                     {tab.label}
                   </button>
                 ))}
-                <Link href="/vijesti/vijesti-iz-hrvatske">
+                <Link href="/blog">
                   <Button variant="ghost" className="text-primary font-bold text-xs uppercase tracking-wider h-10 px-3">
-                    Sve vijesti →
+                    Cijeli magazin →
                   </Button>
                 </Link>
               </div>
             </div>
 
-            {/* News Magazine Layout: 1 Featured Hero Card + 4 Sidebar Articles */}
+            {/* Editorial Magazine Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
               
-              {/* Featured Large News Article (5/12) */}
-              {featuredNewsArticle ? (
+              {/* Featured Large Blog Article (5/12) */}
+              {featuredBlogArticle ? (
                 <div className="lg:col-span-5 h-full">
-                  <Link href={`/blog/${featuredNewsArticle.slug || featuredNewsArticle.id}`} className="group h-full flex flex-col">
+                  <Link href={`/blog/${featuredBlogArticle.slug || featuredBlogArticle.id}`} className="group h-full flex flex-col">
                     <div className="relative h-72 md:h-80 w-full rounded-[2.5rem] overflow-hidden bg-slate-900 shadow-xl border border-black/5">
-                      {featuredNewsArticle.image && (
-                        <Image src={featuredNewsArticle.image} alt={featuredNewsArticle.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                      {featuredBlogArticle.image && (
+                        <Image src={featuredBlogArticle.image} alt={featuredBlogArticle.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                       <Badge className="absolute top-5 left-5 bg-primary text-white font-black text-xs uppercase px-3.5 py-1">
-                        {featuredNewsArticle.category}
+                        {featuredBlogArticle.category || 'MAGAZIN'}
                       </Badge>
                       <div className="absolute bottom-5 left-5 right-5 text-white">
                         <div className="flex items-center gap-3 text-xs text-white/70 mb-2 font-medium">
-                          <span>{featuredNewsArticle.author || 'CroatiaBest'}</span>
+                          <span>{featuredBlogArticle.author || 'CroatiaBest Redakcija'}</span>
                           <span>•</span>
-                          <span>{featuredNewsArticle.readTime || '3 min'} čitanja</span>
+                          <span>{featuredBlogArticle.readTime || '5 min'} čitanja</span>
                         </div>
                         <h3 className="text-2xl md:text-3xl font-black italic font-headline leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                          {featuredNewsArticle.title}
+                          {featuredBlogArticle.title}
                         </h3>
                       </div>
                     </div>
                     <div className="p-4 pt-3 flex-1 flex flex-col justify-between">
                       <p className="text-sm text-slate-600 line-clamp-3 leading-relaxed">
-                        {featuredNewsArticle.excerpt}
+                        {featuredBlogArticle.excerpt}
                       </p>
                       <span className="text-primary font-black text-xs uppercase tracking-wider mt-4 inline-flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
-                        Pročitajte cijeli članak <ArrowRight className="size-4" />
+                        Pročitajte cijeli putopis <ArrowRight className="size-4" />
                       </span>
                     </div>
                   </Link>
                 </div>
               ) : (
                 <div className="lg:col-span-5 flex items-center justify-center p-12 bg-slate-50 rounded-[2.5rem] border border-dashed border-slate-300">
-                  <p className="text-slate-400 font-bold text-sm">Uskoro prve vijesti i priče.</p>
+                  <p className="text-slate-400 font-bold text-sm">Članci magazina stižu uskoro.</p>
                 </div>
               )}
 
-              {/* Side News Grid (7/12) */}
+              {/* Side Magazine Grid (7/12) */}
               <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {sideNewsArticles.map((article) => (
+                {sideBlogArticles.map((article) => (
                   <Link key={article.id} href={`/blog/${article.slug || article.id}`} className="group">
                     <div className="p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:bg-white hover:shadow-lg hover:border-slate-300 transition-all flex flex-col justify-between h-full">
                       <div className="space-y-3">
@@ -870,12 +1059,12 @@ export default function Home() {
                             <Image src={article.image} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                           )}
                           <Badge className="absolute top-2.5 left-2.5 bg-black/75 text-white font-bold text-[10px] uppercase">
-                            {article.category}
+                            {article.category || 'MAGAZIN'}
                           </Badge>
                         </div>
                         <div>
                           <div className="flex items-center gap-2 text-[11px] text-slate-400 mb-1 font-medium">
-                            <Clock className="size-3" /> {article.readTime || '3 min'}
+                            <Clock className="size-3" /> {article.readTime || '4 min'}
                           </div>
                           <h4 className="font-black text-sm text-slate-900 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
                             {article.title}
@@ -886,7 +1075,7 @@ export default function Home() {
                         </div>
                       </div>
                       <div className="pt-3 mt-3 border-t border-slate-200/60 flex items-center justify-between text-xs font-bold text-primary">
-                        <span>Detaljnije</span>
+                        <span>Opširnije</span>
                         <ChevronRight className="size-4 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
