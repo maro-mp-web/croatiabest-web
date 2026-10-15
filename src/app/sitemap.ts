@@ -24,16 +24,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
     },
     {
-      url: `${BASE_URL}/explore`,
+      url: `${BASE_URL}/vijesti`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
+      changeFrequency: 'hourly',
+      priority: 0.95,
     },
     {
       url: `${BASE_URL}/blog`,
       lastModified: new Date(),
       changeFrequency: 'daily',
-      priority: 0.8,
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/magazin`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.85,
+    },
+    {
+      url: `${BASE_URL}/explore`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
     },
     {
       url: `${BASE_URL}/about`,
@@ -67,7 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${BASE_URL}/vijesti/${cat}`,
       lastModified: new Date(),
       changeFrequency: 'daily' as const,
-      priority: 0.8,
+      priority: 0.85,
     })),
   ];
 
@@ -94,18 +106,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     });
 
-    // Blog posts
+    // Blog and News posts
     const blogs = await pb.collection('blogs').getFullList({
       requestKey: null,
-      fields: 'id,slug,updated',
+      fields: 'id,slug,updated,publishDate,created,category,tags',
     });
     blogs.forEach((blog) => {
       const path = blog.slug || blog.id;
+      const isNews = [
+        'Vijesti iz Hrvatske', 'Vijesti iz Svijeta', 'Poznati Hrvati',
+        'Slavni u Hrvatskoj', 'Zanimljivosti', 'Iz Povijesti',
+        'Iz geografije', 'Domovinski rat'
+      ].includes(blog.category) || (Array.isArray(blog.tags) && (blog.tags.includes('news_bot') || blog.tags.includes('vijesti')));
+
       routes.push({
         url: `${BASE_URL}/blog/${path}`,
-        lastModified: new Date(blog.updated || new Date()),
-        changeFrequency: 'weekly',
-        priority: 0.7,
+        lastModified: new Date(blog.updated || blog.publishDate || blog.created || new Date()),
+        changeFrequency: isNews ? 'daily' : 'weekly',
+        priority: isNews ? 0.85 : 0.75,
       });
     });
 

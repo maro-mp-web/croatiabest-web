@@ -83,6 +83,47 @@ export default function RootLayout({
             gtag('config', 'G-S2JR7QWYN4');
           `}
         </Script>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@graph': [
+                {
+                  '@type': 'WebSite',
+                  '@id': 'https://croatiabest.com.hr/#website',
+                  url: 'https://croatiabest.com.hr',
+                  name: 'CroatiaBest',
+                  description: 'Vrhunski turistički vodič kroz Hrvatsku - plaže, restorani, hoteli, gradovi, otoci i turističke vijesti.',
+                  publisher: {
+                    '@id': 'https://croatiabest.com.hr/#organization',
+                  },
+                  inLanguage: 'hr',
+                  potentialAction: {
+                    '@type': 'SearchAction',
+                    target: {
+                      '@type': 'EntryPoint',
+                      urlTemplate: 'https://croatiabest.com.hr/explore?q={search_term_string}',
+                    },
+                    'query-input': 'required name=search_term_string',
+                  },
+                },
+                {
+                  '@type': 'NewsMediaOrganization',
+                  '@id': 'https://croatiabest.com.hr/#organization',
+                  name: 'CroatiaBest',
+                  url: 'https://croatiabest.com.hr',
+                  logo: {
+                    '@type': 'ImageObject',
+                    url: 'https://croatiabest.com.hr/icon.png',
+                    width: 512,
+                    height: 512,
+                  },
+                },
+              ],
+            }),
+          }}
+        />
         <PocketBaseProvider>
           <LanguageProvider>
             <HreflangManager />
