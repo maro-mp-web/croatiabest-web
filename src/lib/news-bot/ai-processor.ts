@@ -17,34 +17,43 @@ interface GeminiAiOutput {
 }
 
 async function callGeminiApi(apiKey: string, promptText: string): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: promptText }] }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 8192,
-        responseMimeType: 'application/json',
-        thinkingConfig: {
-          thinkingBudget: 0,
-        },
-      },
-    }),
-  });
+  const models = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.8-flash'];
+  let lastError: Error | null = null;
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gemini API error (${response.status}): ${errText}`);
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 8192,
+            responseMimeType: 'application/json',
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        console.warn(`[NewsBot] Model ${model} vratio status ${response.status}: ${errText.slice(0, 150)}`);
+        lastError = new Error(`Gemini API error (${response.status}): ${errText}`);
+        continue;
+      }
+
+      const json = await response.json();
+      const candidateText = json.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (candidateText) {
+        return candidateText;
+      }
+    } catch (e: any) {
+      lastError = e;
+    }
   }
 
-  const json = await response.json();
-  const candidateText = json.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!candidateText) {
-    throw new Error('Nema odgovora od Gemini API-ja');
-  }
-  return candidateText;
+  throw lastError || new Error('Nema odgovora od Gemini API modela');
 }
 
 export async function processArticleWithAi(
@@ -67,18 +76,18 @@ Tekst: ${article.originalText}
 Rubrika: ${article.category}
 
 PRAVILA:
-1. "titleHr": Napiši nov, atraktivan, profesionalan naslov na hrvatskom jeziku (do 80 znakova).
-2. "titleEn": Točan i privlačan prijevod naslova na engleski jezik.
+1. "titleHr": Napiši nov, atraktivan, profesionalan naslov na HRVATSKOM jeziku (do 80 znakova). Čak i ako je izvorna vijest na engleskom, naslov OBAVEZNO mora biti na tečnom hrvatskom jeziku!
+2. "titleEn": Točan, novinarski i privlačan naslov na ENGLESKOM jeziku (do 80 znakova). Čak i ako je izvor bio na hrvatskom, naslov OBAVEZNO mora biti na tečnom engleskom jeziku!
 3. "excerptHr": Sažetak vijesti na hrvatskom jeziku (1 do 2 rečenice).
 4. "excerptEn": Sažetak vijesti na engleskom jeziku (1 do 2 rečenice).
-5. "contentHr": Napiši cjelovit, novinarski članak na hrvatskom (3 do 5 odlomaka). Koristi HTML tagove (<p>, <h3>). Zadrži sve bitne činjenice, brojke i izjave, ali tekst mora biti originalan!
-6. "contentEn": Cjelovit članak na engleskom jeziku s HTML tagovima (<p>, <h3>).
-7. "seoTitleHr": SEO naslov za Google (max 60 znakova).
+5. "contentHr": Napiši cjelovit, bogat novinarski članak na hrvatskom (minimalno 3 do 5 detaljnih odlomaka s HTML tagovima <p>, <h3>). Čak i ako je izvorna vijest kratka (samo 1-2 rečenice), razradi temu, pruži širi kontekst za turizam u Hrvatskoj, objasni zašto je to važno posjetiteljima ili gospodarstvu, te navedi sve relevantne činjenice i detalje. Zadrži sve bitne činjenice, brojke i izjave, ali tekst mora biti originalan!
+6. "contentEn": Cjelovit, bogat novinarski članak na engleskom jeziku s HTML tagovima (<p>, <h3>) od 3 do 5 odlomaka namijenjen stranim turistima i posjetiteljima Hrvatske.
+7. "seoTitleHr": SEO naslov za Google na hrvatskom (max 60 znakova).
 8. "seoTitleEn": SEO title za Google na engleskom (max 60 znakova).
-9. "seoDescriptionHr": SEO meta opis (130-155 znakova).
+9. "seoDescriptionHr": SEO meta opis na hrvatskom (130-155 znakova).
 10. "seoDescriptionEn": SEO meta description na engleskom (130-155 znakova).
-11. "seoKeywordsHr": 5 do 8 ključnih riječi odvojenih zarezom (npr. turizam, hrvatska, jadran, sezone).
-12. "seoKeywordsEn": 5 do 8 ključnih riječi na engleskom odvojenih zarezom.
+11. "seoKeywordsHr": 5 do 8 ključnih riječi odvojenih zarezom (npr. turizam, hrvatska, jadran, putovanja).
+12. "seoKeywordsEn": 5 do 8 ključnih riječi na engleskom odvojenih zarezom (e.g. croatia, tourism, travel, adriatic).
 
 Vrati ISKLJUČIVO valjani JSON objekt sa sljedećim ključevima:
 {

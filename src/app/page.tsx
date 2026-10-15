@@ -320,15 +320,21 @@ export default function Home() {
                       <span className="size-2 rounded-full bg-white animate-ping" />
                       UŽIVO VIJESTI
                     </span>
-                    <Link
-                      href={`/blog/${allValidNewsArticles[activeNewsIndex]?.slug || allValidNewsArticles[activeNewsIndex]?.id}`}
-                      className="hover:text-amber-300 font-bold transition-colors truncate max-w-[220px] sm:max-w-md inline-block"
-                      title={allValidNewsArticles[activeNewsIndex]?.title}
-                    >
-                      {allValidNewsArticles[activeNewsIndex]?.title}
-                    </Link>
+                    {(() => {
+                      const curNews = allValidNewsArticles[activeNewsIndex];
+                      const curTitle = isEn ? (curNews?.titleEn || curNews?.title) : (curNews?.title || curNews?.titleEn);
+                      return (
+                        <Link
+                          href={`/blog/${curNews?.slug || curNews?.id}`}
+                          className="hover:text-amber-300 font-bold transition-colors truncate max-w-[220px] sm:max-w-md inline-block"
+                          title={curTitle}
+                        >
+                          {curTitle}
+                        </Link>
+                      );
+                    })()}
                     <Link href="/vijesti" className="text-amber-400 hover:text-amber-300 font-black text-[11px] shrink-0 border-l border-white/20 pl-2">
-                      Sve →
+                      {isEn ? 'All →' : 'Sve →'}
                     </Link>
                   </div>
                 )}
@@ -636,7 +642,7 @@ export default function Home() {
                   <Link href={`/blog/${featuredNewsArticle.slug || featuredNewsArticle.id}`} className="group h-full flex flex-col">
                     <div className="relative h-64 md:h-72 w-full rounded-[2rem] overflow-hidden bg-slate-900 shadow-xl border border-black/5">
                       {featuredNewsArticle.image && (
-                        <Image src={featuredNewsArticle.image} alt={featuredNewsArticle.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                        <Image src={featuredNewsArticle.image} alt={isEn ? (featuredNewsArticle.titleEn || featuredNewsArticle.title) : featuredNewsArticle.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
                       <Badge className="absolute top-4 left-4 bg-rose-600 text-white font-black text-[11px] uppercase px-3 py-1 shadow-md">
@@ -645,64 +651,68 @@ export default function Home() {
                       <div className="absolute bottom-4 left-4 right-4 text-white">
                         <div className="flex items-center gap-2 text-xs text-white/70 mb-1.5 font-medium">
                           <Clock className="size-3 text-rose-400" />
-                          <span>{featuredNewsArticle.readTime || '3 min'} čitanja</span>
+                          <span>{featuredNewsArticle.readTime || '3 min'} {isEn ? 'read' : 'čitanja'}</span>
                           <span>•</span>
                           <span>{featuredNewsArticle.author || 'CroatiaBest'}</span>
                         </div>
                         <h3 className="text-xl md:text-2xl font-black italic font-headline leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                          {featuredNewsArticle.title}
+                          {isEn ? (featuredNewsArticle.titleEn || featuredNewsArticle.title) : (featuredNewsArticle.title || featuredNewsArticle.titleEn)}
                         </h3>
                       </div>
                     </div>
                     <div className="p-3 pt-2.5 flex-1 flex flex-col justify-between">
                       <p className="text-xs md:text-sm text-slate-600 line-clamp-2 leading-relaxed">
-                        {featuredNewsArticle.excerpt}
+                        {isEn ? (featuredNewsArticle.excerptEn || featuredNewsArticle.excerpt) : (featuredNewsArticle.excerpt || featuredNewsArticle.excerptEn)}
                       </p>
                       <span className="text-primary font-black text-xs uppercase tracking-wider mt-2.5 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                        Pročitajte cijelu vijest <ArrowRight className="size-3.5" />
+                        {isEn ? 'Read full story' : 'Pročitajte cijelu vijest'} <ArrowRight className="size-3.5" />
                       </span>
                     </div>
                   </Link>
                 </div>
               ) : (
                 <div className="lg:col-span-5 flex items-center justify-center p-8 bg-slate-50 rounded-[2rem] border border-dashed border-slate-300">
-                  <p className="text-slate-400 font-bold text-sm">Učitavanje najnovijih vijesti...</p>
+                  <p className="text-slate-400 font-bold text-sm">{isEn ? 'Loading latest news...' : 'Učitavanje najnovijih vijesti...'}</p>
                 </div>
               )}
 
               {/* Side News Grid (7/12) - 3 Compact items */}
               <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {sideNewsArticles.map((article) => (
-                  <Link key={article.id} href={`/blog/${article.slug || article.id}`} className="group h-full">
-                    <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/60 hover:bg-white hover:shadow-lg hover:border-slate-300 transition-all flex flex-col justify-between h-full">
-                      <div className="space-y-2.5">
-                        <div className="relative h-32 w-full rounded-xl overflow-hidden bg-slate-200">
-                          {article.image && (
-                            <Image src={article.image} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                          )}
-                          <Badge className="absolute top-2 left-2 bg-black/75 text-white font-bold text-[9px] uppercase">
-                            {article.category}
-                          </Badge>
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mb-1 font-medium">
-                            <Clock className="size-2.5" /> {article.readTime || '3 min'}
+                {sideNewsArticles.map((article) => {
+                  const displayTitle = isEn ? (article.titleEn || article.title) : (article.title || article.titleEn);
+                  const displayExcerpt = isEn ? (article.excerptEn || article.excerpt) : (article.excerpt || article.excerptEn);
+                  return (
+                    <Link key={article.id} href={`/blog/${article.slug || article.id}`} className="group h-full">
+                      <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/60 hover:bg-white hover:shadow-lg hover:border-slate-300 transition-all flex flex-col justify-between h-full">
+                        <div className="space-y-2.5">
+                          <div className="relative h-32 w-full rounded-xl overflow-hidden bg-slate-200">
+                            {article.image && (
+                              <Image src={article.image} alt={displayTitle} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                            )}
+                            <Badge className="absolute top-2 left-2 bg-black/75 text-white font-bold text-[9px] uppercase">
+                              {article.category}
+                            </Badge>
                           </div>
-                          <h4 className="font-black text-xs md:text-sm text-slate-900 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
-                            {article.title}
-                          </h4>
-                          <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed">
-                            {article.excerpt}
-                          </p>
+                          <div>
+                            <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mb-1 font-medium">
+                              <Clock className="size-2.5" /> {article.readTime || '3 min'}
+                            </div>
+                            <h4 className="font-black text-xs md:text-sm text-slate-900 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                              {displayTitle}
+                            </h4>
+                            <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                              {displayExcerpt}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="pt-2 mt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] font-bold text-primary">
+                          <span>{isEn ? 'Read' : 'Pročitaj'}</span>
+                          <ChevronRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
-                      <div className="pt-2 mt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] font-bold text-primary">
-                        <span>Pročitaj</span>
-                        <ChevronRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -1028,59 +1038,63 @@ export default function Home() {
                           <span>{featuredBlogArticle.readTime || '5 min'} čitanja</span>
                         </div>
                         <h3 className="text-2xl md:text-3xl font-black italic font-headline leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                          {featuredBlogArticle.title}
+                          {isEn ? (featuredBlogArticle.titleEn || featuredBlogArticle.title) : (featuredBlogArticle.title || featuredBlogArticle.titleEn)}
                         </h3>
                       </div>
                     </div>
                     <div className="p-4 pt-3 flex-1 flex flex-col justify-between">
                       <p className="text-sm text-slate-600 line-clamp-3 leading-relaxed">
-                        {featuredBlogArticle.excerpt}
+                        {isEn ? (featuredBlogArticle.excerptEn || featuredBlogArticle.excerpt) : (featuredBlogArticle.excerpt || featuredBlogArticle.excerptEn)}
                       </p>
                       <span className="text-primary font-black text-xs uppercase tracking-wider mt-4 inline-flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
-                        Pročitajte cijeli putopis <ArrowRight className="size-4" />
+                        {isEn ? 'Read full article' : 'Pročitajte cijeli putopis'} <ArrowRight className="size-4" />
                       </span>
                     </div>
                   </Link>
                 </div>
               ) : (
                 <div className="lg:col-span-5 flex items-center justify-center p-12 bg-slate-50 rounded-[2.5rem] border border-dashed border-slate-300">
-                  <p className="text-slate-400 font-bold text-sm">Članci magazina stižu uskoro.</p>
+                  <p className="text-slate-400 font-bold text-sm">{isEn ? 'Magazine stories coming soon.' : 'Članci magazina stižu uskoro.'}</p>
                 </div>
               )}
 
               {/* Side Magazine Grid (7/12) */}
               <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {sideBlogArticles.map((article) => (
-                  <Link key={article.id} href={`/blog/${article.slug || article.id}`} className="group">
-                    <div className="p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:bg-white hover:shadow-lg hover:border-slate-300 transition-all flex flex-col justify-between h-full">
-                      <div className="space-y-3">
-                        <div className="relative h-40 w-full rounded-xl overflow-hidden bg-slate-200">
-                          {article.image && (
-                            <Image src={article.image} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                          )}
-                          <Badge className="absolute top-2.5 left-2.5 bg-black/75 text-white font-bold text-[10px] uppercase">
-                            {article.category || 'MAGAZIN'}
-                          </Badge>
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 text-[11px] text-slate-400 mb-1 font-medium">
-                            <Clock className="size-3" /> {article.readTime || '4 min'}
+                {sideBlogArticles.map((article) => {
+                  const displayTitle = isEn ? (article.titleEn || article.title) : (article.title || article.titleEn);
+                  const displayExcerpt = isEn ? (article.excerptEn || article.excerpt) : (article.excerpt || article.excerptEn);
+                  return (
+                    <Link key={article.id} href={`/blog/${article.slug || article.id}`} className="group">
+                      <div className="p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:bg-white hover:shadow-lg hover:border-slate-300 transition-all flex flex-col justify-between h-full">
+                        <div className="space-y-3">
+                          <div className="relative h-40 w-full rounded-xl overflow-hidden bg-slate-200">
+                            {article.image && (
+                              <Image src={article.image} alt={displayTitle} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                            )}
+                            <Badge className="absolute top-2.5 left-2.5 bg-black/75 text-white font-bold text-[10px] uppercase">
+                              {article.category || 'MAGAZIN'}
+                            </Badge>
                           </div>
-                          <h4 className="font-black text-sm text-slate-900 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
-                            {article.title}
-                          </h4>
-                          <p className="text-xs text-slate-500 line-clamp-2 mt-1.5 leading-relaxed">
-                            {article.excerpt}
-                          </p>
+                          <div>
+                            <div className="flex items-center gap-2 text-[11px] text-slate-400 mb-1 font-medium">
+                              <Clock className="size-3" /> {article.readTime || '4 min'}
+                            </div>
+                            <h4 className="font-black text-sm text-slate-900 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                              {displayTitle}
+                            </h4>
+                            <p className="text-xs text-slate-500 line-clamp-2 mt-1.5 leading-relaxed">
+                              {displayExcerpt}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="pt-3 mt-3 border-t border-slate-200/60 flex items-center justify-between text-xs font-bold text-primary">
+                          <span>{isEn ? 'Read more' : 'Opširnije'}</span>
+                          <ChevronRight className="size-4 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
-                      <div className="pt-3 mt-3 border-t border-slate-200/60 flex items-center justify-between text-xs font-bold text-primary">
-                        <span>Opširnije</span>
-                        <ChevronRight className="size-4 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
               </div>
 
             </div>

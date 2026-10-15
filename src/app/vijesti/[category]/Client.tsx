@@ -52,30 +52,35 @@ export default function VijestiClient({ articles, category }: { articles: any[],
 
         {/* Articles Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {filteredArticles.map((article) => (
-            <Link key={article.id} href={getLocalizedUrl(`/blog/${article.slug || article.id}`, language)}>
-              <Card className="group overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] bg-white/60 backdrop-blur-md h-full flex flex-col">
-                <div className="relative h-64 overflow-hidden bg-slate-100 flex items-center justify-center">
-                  {article.image ? (
-                    <Image src={article.image} alt={article.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
-                  ) : (
-                    <span className="text-slate-300 font-bold uppercase tracking-widest">{article.category || 'VIJESTI'}</span>
-                  )}
-                  <Badge className="absolute top-6 left-6 bg-white/95 text-primary border-none shadow-lg font-black">{article.category}</Badge>
-                </div>
-                <CardContent className="p-8 flex-1 flex flex-col">
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4 font-bold uppercase tracking-widest">
-                    <span className="flex items-center gap-1"><Clock className="size-3" /> {article.readTime && article.readTime !== '5 min' ? article.readTime : `${calculateReadTime(article.content)} min`}</span>
+          {filteredArticles.map((article) => {
+            const isEn = language === 'en';
+            const displayTitle = isEn ? (article.titleEn || article.title) : (article.title || article.titleEn);
+            const displayExcerpt = isEn ? (article.excerptEn || article.excerpt) : (article.excerpt || article.excerptEn);
+            return (
+              <Link key={article.id} href={getLocalizedUrl(`/blog/${article.slug || article.id}`, language)}>
+                <Card className="group overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] bg-white/60 backdrop-blur-md h-full flex flex-col">
+                  <div className="relative h-64 overflow-hidden bg-slate-100 flex items-center justify-center">
+                    {article.image ? (
+                      <Image src={article.image} alt={displayTitle} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                    ) : (
+                      <span className="text-slate-300 font-bold uppercase tracking-widest">{article.category || 'VIJESTI'}</span>
+                    )}
+                    <Badge className="absolute top-6 left-6 bg-white/95 text-primary border-none shadow-lg font-black">{article.category}</Badge>
                   </div>
-                  <h3 className="text-2xl font-bold mb-4 leading-tight group-hover:text-primary transition-colors flex-1">{article.title}</h3>
-                  <p className="text-muted-foreground font-body line-clamp-3 mb-6">{article.excerpt}</p>
-                  <Button variant="ghost" className="w-full justify-between p-0 font-black hover:bg-transparent group/btn">
-                    PROČITAJ VIŠE <ArrowRight className="size-4 group-hover/btn:translate-x-2 transition-transform" />
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                  <CardContent className="p-8 flex-1 flex flex-col">
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4 font-bold uppercase tracking-widest">
+                      <span className="flex items-center gap-1"><Clock className="size-3" /> {article.readTime && article.readTime !== '5 min' ? article.readTime : `${calculateReadTime(article.content)} min`}</span>
+                    </div>
+                    <h3 className="text-2xl font-bold mb-4 leading-tight group-hover:text-primary transition-colors flex-1">{displayTitle}</h3>
+                    <p className="text-muted-foreground font-body line-clamp-3 mb-6">{displayExcerpt}</p>
+                    <Button variant="ghost" className="w-full justify-between p-0 font-black hover:bg-transparent group/btn">
+                      {isEn ? 'READ MORE' : 'PROČITAJ VIŠE'} <ArrowRight className="size-4 group-hover/btn:translate-x-2 transition-transform" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
 
         {filteredArticles.length === 0 && (

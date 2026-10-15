@@ -42,6 +42,38 @@ async function fetchOgImage(url: string): Promise<string | undefined> {
   return undefined;
 }
 
+// Dohvaća puni tekst članka s weba ako RSS sadrži samo kratki sažetak od 1-2 rečenice
+async function fetchFullArticleText(url: string): Promise<string | undefined> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return undefined;
+    const html = await res.text();
+
+    const containerMatch = html.match(/<div[^>]*class=["'][^"']*(?:post_content|entry-content|article-body|story-body|article__body|post-content)[^"']*["'][^>]*>([\s\S]*?)<\/div>/i) ||
+                           html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
+    let raw = containerMatch ? containerMatch[1] : '';
+    if (!raw) {
+      const pMatches = [...html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
+      raw = pMatches.map(m => m[1]).join('\n\n');
+    }
+    const clean = cleanText(raw);
+    if (clean.length > 250) {
+      return clean;
+    }
+  } catch {
+    // ignoriramo grešku timeouta
+  }
+  return undefined;
+}
+
 export async function scrapeFeed(source: NewsSource): Promise<ScrapedArticle[]> {
   const articles: ScrapedArticle[] = [];
   try {
@@ -67,15 +99,24 @@ export async function scrapeFeed(source: NewsSource): Promise<ScrapedArticle[]> 
     for (const rawItem of rawItems.slice(0, 15)) {
       const titleMatch = rawItem.match(/<title>([\s\S]*?)<\/title>/i);
       const linkMatch = rawItem.match(/<link>([\s\S]*?)<\/link>/i) || rawItem.match(/<link[^>]+href=["']([^"']+)["']/i);
-      const descMatch = rawItem.match(/<description>([\s\S]*?)<\/description>/i) || rawItem.match(/<content:encoded>([\s\S]*?)<\/content:encoded>/i);
+      const encodedMatch = rawItem.match(/<content:encoded>([\s\S]*?)<\/content:encoded>/i);
+      const descMatch = rawItem.match(/<description>([\s\S]*?)<\/description>/i);
       const pubDateMatch = rawItem.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
 
       let title = cleanText(titleMatch?.[1] || '');
       let link = (linkMatch?.[1] || '').replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').trim();
-      let originalText = cleanText(descMatch?.[1] || '');
+      let originalText = cleanText(encodedMatch?.[1] && encodedMatch[1].length > 100 ? encodedMatch[1] : (descMatch?.[1] || ''));
       const pubDate = pubDateMatch?.[1]?.trim();
 
       if (!title || !link) continue;
+
+      // Ako je tekst prekratak (npr. samo 1-2 rečenice u opisu), dohvatiti puni tekst s originalne stranice
+      if (originalText.length < 250 && link.startsWith('http')) {
+        const fullArticleText = await fetchFullArticleText(link);
+        if (fullArticleText) {
+          originalText = fullArticleText;
+        }
+      }
 
       // Tražimo sliku u enclosure ili media:content
       let imageUrl: string | undefined;

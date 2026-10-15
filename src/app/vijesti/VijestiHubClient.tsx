@@ -92,112 +92,122 @@ export default function VijestiHubClient({ articles }: { articles: any[] }) {
         </div>
 
         {/* Featured Big Article (if exists) */}
-        {featuredArticle && (
-          <div className="mb-12">
-            <Link href={getLocalizedUrl(`/blog/${featuredArticle.slug || featuredArticle.id}`, language)} className="group block">
-              <div className="relative rounded-[2.5rem] overflow-hidden bg-slate-900 shadow-2xl border border-black/5 grid grid-cols-1 lg:grid-cols-12 min-h-[420px] transition-all hover:shadow-primary/10">
-                {/* Image side */}
-                <div className="lg:col-span-7 relative h-72 lg:h-auto overflow-hidden">
-                  {featuredArticle.image ? (
-                    <Image
-                      src={featuredArticle.image}
-                      alt={featuredArticle.title}
-                      fill
-                      priority
-                      className="object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                      <Newspaper className="size-16 text-slate-600" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-slate-950/70 via-transparent to-transparent" />
-                  <Badge className="absolute top-6 left-6 bg-rose-600 text-white border-none shadow-lg font-black uppercase tracking-wider text-xs px-4 py-1.5">
-                    {featuredArticle.category || 'VIJESTI'}
-                  </Badge>
-                </div>
+        {featuredArticle && (() => {
+          const isEn = language === 'en';
+          const featTitle = isEn ? (featuredArticle.titleEn || featuredArticle.title) : (featuredArticle.title || featuredArticle.titleEn);
+          const featExcerpt = isEn ? (featuredArticle.excerptEn || featuredArticle.excerpt) : (featuredArticle.excerpt || featuredArticle.excerptEn);
+          return (
+            <div className="mb-12">
+              <Link href={getLocalizedUrl(`/blog/${featuredArticle.slug || featuredArticle.id}`, language)} className="group block">
+                <div className="relative rounded-[2.5rem] overflow-hidden bg-slate-900 shadow-2xl border border-black/5 grid grid-cols-1 lg:grid-cols-12 min-h-[420px] transition-all hover:shadow-primary/10">
+                  {/* Image side */}
+                  <div className="lg:col-span-7 relative h-72 lg:h-auto overflow-hidden">
+                    {featuredArticle.image ? (
+                      <Image
+                        src={featuredArticle.image}
+                        alt={featTitle}
+                        fill
+                        priority
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                        <Newspaper className="size-16 text-slate-600" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-slate-950/70 via-transparent to-transparent" />
+                    <Badge className="absolute top-6 left-6 bg-rose-600 text-white border-none shadow-lg font-black uppercase tracking-wider text-xs px-4 py-1.5">
+                      {featuredArticle.category || 'VIJESTI'}
+                    </Badge>
+                  </div>
 
-                {/* Content side */}
-                <div className="lg:col-span-5 p-8 lg:p-12 flex flex-col justify-between bg-slate-950 text-white">
-                  <div>
-                    <div className="flex items-center gap-3 text-xs text-white/60 mb-4 font-semibold uppercase tracking-wider">
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="size-3.5 text-rose-400" />
-                        {featuredArticle.readTime || `${calculateReadTime(featuredArticle.content)} min`} čitanja
+                  {/* Content side */}
+                  <div className="lg:col-span-5 p-8 lg:p-12 flex flex-col justify-between bg-slate-950 text-white">
+                    <div>
+                      <div className="flex items-center gap-3 text-xs text-white/60 mb-4 font-semibold uppercase tracking-wider">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="size-3.5 text-rose-400" />
+                          {featuredArticle.readTime || `${calculateReadTime(featuredArticle.content)} min`} {isEn ? 'read' : 'čitanja'}
+                        </span>
+                        <span>•</span>
+                        <span>{featuredArticle.author || 'CroatiaBest Redakcija'}</span>
+                      </div>
+                      <h2 className="text-2xl lg:text-3xl font-black font-headline leading-tight group-hover:text-primary transition-colors mb-4">
+                        {featTitle}
+                      </h2>
+                      <p className="text-white/80 font-body text-sm lg:text-base leading-relaxed line-clamp-4">
+                        {featExcerpt}
+                      </p>
+                    </div>
+
+                    <div className="pt-6 mt-6 border-t border-white/10 flex items-center justify-between">
+                      <span className="text-amber-400 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                        {isEn ? 'Read full story' : 'Pročitaj cijelu vijest'} <ArrowRight className="size-4 group-hover:translate-x-2 transition-transform" />
                       </span>
-                      <span>•</span>
-                      <span>{featuredArticle.author || 'CroatiaBest Redakcija'}</span>
+                      <span className="text-[11px] text-white/40 italic">CroatiaBest Vijesti</span>
                     </div>
-                    <h2 className="text-2xl lg:text-3xl font-black font-headline leading-tight group-hover:text-primary transition-colors mb-4">
-                      {featuredArticle.title}
-                    </h2>
-                    <p className="text-white/80 font-body text-sm lg:text-base leading-relaxed line-clamp-4">
-                      {featuredArticle.excerpt}
-                    </p>
-                  </div>
-
-                  <div className="pt-6 mt-6 border-t border-white/10 flex items-center justify-between">
-                    <span className="text-amber-400 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
-                      Pročitaj cijelu vijest <ArrowRight className="size-4 group-hover:translate-x-2 transition-transform" />
-                    </span>
-                    <span className="text-[11px] text-white/40 italic">CroatiaBest Vijesti</span>
                   </div>
                 </div>
-              </div>
-            </Link>
-          </div>
-        )}
+              </Link>
+            </div>
+          );
+        })()}
 
         {/* Regular Articles Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {gridArticles.map((article) => (
-            <Link key={article.id} href={getLocalizedUrl(`/blog/${article.slug || article.id}`, language)}>
-              <Card className="group overflow-hidden border border-slate-200/80 shadow-md hover:shadow-xl transition-all duration-300 rounded-[2rem] bg-white h-full flex flex-col hover:-translate-y-1">
-                <div className="relative h-56 overflow-hidden bg-slate-100">
-                  {article.image ? (
-                    <Image
-                      src={article.image}
-                      alt={article.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-slate-200">
-                      <Newspaper className="size-10 text-slate-400" />
-                    </div>
-                  )}
-                  <Badge className="absolute top-4 left-4 bg-slate-900/90 text-white backdrop-blur-md border-none shadow-md font-bold text-[11px] uppercase tracking-wider">
-                    {article.category || 'VIJESTI'}
-                  </Badge>
-                </div>
-
-                <CardContent className="p-6 flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-3 text-xs text-slate-400 mb-3 font-semibold uppercase tracking-wider">
-                      <span className="flex items-center gap-1">
-                        <Clock className="size-3" />
-                        {article.readTime || `${calculateReadTime(article.content)} min`}
-                      </span>
-                      <span>•</span>
-                      <span>{article.author || 'Redakcija'}</span>
-                    </div>
-                    <h3 className="text-xl font-bold mb-3 leading-snug group-hover:text-primary transition-colors line-clamp-2 text-slate-900 font-headline">
-                      {article.title}
-                    </h3>
-                    <p className="text-slate-600 font-body text-xs md:text-sm line-clamp-3 leading-relaxed mb-4">
-                      {article.excerpt}
-                    </p>
+          {gridArticles.map((article) => {
+            const isEn = language === 'en';
+            const displayTitle = isEn ? (article.titleEn || article.title) : (article.title || article.titleEn);
+            const displayExcerpt = isEn ? (article.excerptEn || article.excerpt) : (article.excerpt || article.excerptEn);
+            return (
+              <Link key={article.id} href={getLocalizedUrl(`/blog/${article.slug || article.id}`, language)}>
+                <Card className="group overflow-hidden border border-slate-200/80 shadow-md hover:shadow-xl transition-all duration-300 rounded-[2rem] bg-white h-full flex flex-col hover:-translate-y-1">
+                  <div className="relative h-56 overflow-hidden bg-slate-100">
+                    {article.image ? (
+                      <Image
+                        src={article.image}
+                        alt={displayTitle}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-slate-200">
+                        <Newspaper className="size-10 text-slate-400" />
+                      </div>
+                    )}
+                    <Badge className="absolute top-4 left-4 bg-slate-900/90 text-white backdrop-blur-md border-none shadow-md font-bold text-[11px] uppercase tracking-wider">
+                      {article.category || 'VIJESTI'}
+                    </Badge>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-black text-primary">
-                    <span className="tracking-wider uppercase">Pročitaj više</span>
-                    <ArrowRight className="size-4 group-hover:translate-x-1.5 transition-transform" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                  <CardContent className="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-3 text-xs text-slate-400 mb-3 font-semibold uppercase tracking-wider">
+                        <span className="flex items-center gap-1">
+                          <Clock className="size-3" />
+                          {article.readTime || `${calculateReadTime(article.content)} min`}
+                        </span>
+                        <span>•</span>
+                        <span>{article.author || 'Redakcija'}</span>
+                      </div>
+                      <h3 className="text-xl font-bold mb-3 leading-snug group-hover:text-primary transition-colors line-clamp-2 text-slate-900 font-headline">
+                        {displayTitle}
+                      </h3>
+                      <p className="text-slate-600 font-body text-xs md:text-sm line-clamp-3 leading-relaxed mb-4">
+                        {displayExcerpt}
+                      </p>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-black text-primary">
+                      <span className="tracking-wider uppercase">{isEn ? 'Read more' : 'Pročitaj više'}</span>
+                      <ArrowRight className="size-4 group-hover:translate-x-1.5 transition-transform" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
 
         {filteredArticles.length === 0 && (
