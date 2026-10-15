@@ -17,7 +17,7 @@ interface GeminiAiOutput {
 }
 
 async function callGeminiApi(apiKey: string, promptText: string): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -25,8 +25,11 @@ async function callGeminiApi(apiKey: string, promptText: string): Promise<string
       contents: [{ parts: [{ text: promptText }] }],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 2500,
+        maxOutputTokens: 8192,
         responseMimeType: 'application/json',
+        thinkingConfig: {
+          thinkingBudget: 0,
+        },
       },
     }),
   });
