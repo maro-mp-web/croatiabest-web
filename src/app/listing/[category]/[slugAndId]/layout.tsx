@@ -5,6 +5,7 @@ import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
 
 import { generateSlug } from '@/app/lib/utils/slug';
+import { getSeoOverride } from '@/app/lib/listing-seo-config';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,8 +57,22 @@ export async function generateMetadata({
   const slugAndId = resolvedParams.slugAndId || '';
 
   try {
-    const listing = await getListingRecord(slugAndId);
+    let listing: any = await getListingRecord(slugAndId);
+    const seoOverride = getSeoOverride(slugAndId);
     
+    if (!listing && seoOverride) {
+      listing = {
+        id: slugAndId,
+        name: seoOverride.h1Title.split('—')[0].trim(),
+        city: 'Hrvatska',
+        metadata: {
+          seoTitle: seoOverride.seoTitle,
+          seoDescription: seoOverride.seoDescription,
+          seoKeywords: seoOverride.seoKeywords.join(', '),
+        },
+      };
+    }
+
     if (!listing) {
       return { 
         title: 'Objekt | CroatiaBest',
@@ -75,10 +90,10 @@ export async function generateMetadata({
       : DEFAULT_LISTING_IMAGE;
 
     // SEO Title
-    const title = listing.metadata?.seoTitle || `${listing.name} - CroatiaBest`;
+    const title = seoOverride?.seoTitle || listing.metadata?.seoTitle || `${listing.name} - CroatiaBest`;
 
     // SEO Description
-    let description = listing.metadata?.seoDescription;
+    let description = seoOverride?.seoDescription || listing.metadata?.seoDescription;
     if (!description) {
       const rawDescription = (listing.description || '').replace(/<[^>]*>/g, '').trim();
       description = rawDescription.length > 160 
@@ -88,7 +103,9 @@ export async function generateMetadata({
 
     // SEO Keywords
     let keywords: string[] = [];
-    if (listing.metadata?.seoKeywords) {
+    if (seoOverride?.seoKeywords && seoOverride.seoKeywords.length > 0) {
+      keywords = seoOverride.seoKeywords;
+    } else if (listing.metadata?.seoKeywords) {
       keywords = listing.metadata.seoKeywords.split(',').map((k: string) => k.trim()).filter(Boolean);
     } else {
       keywords = [listing.name, listing.city, 'CroatiaBest', 'Hrvatska', 'vodič'];

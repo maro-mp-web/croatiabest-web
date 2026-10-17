@@ -24,6 +24,7 @@ import { toast } from '@/hooks/use-toast';
 import AdBanner from '@/components/ads/AdBanner';
 import { generateListingUrl } from '@/app/lib/utils/slug';
 import FAQSection from '@/components/ui/FAQSection';
+import { getSeoOverride } from '@/app/lib/listing-seo-config';
 
 interface ListingDetailClientProps {
   listing: any;
@@ -109,10 +110,6 @@ export default function ListingDetailClient({
   const menuDescription = listing.menuDescription?.trim();
   const hasOffer = validProducts.length > 0 || Boolean(menuDescription && menuDescription.length > 0);
 
-  // Custom FAQ verification
-  const rawFaq = parseJsonArray(listing.metadata?.faq || []);
-  const validFaq = rawFaq.filter((f: any) => f && typeof f === 'object' && f.question && f.answer && f.question.trim().length > 0 && f.answer.trim().length > 0);
-  const hasFaq = validFaq.length > 0;
 
   // Specific category metadata fields verification
   const activeCategoryFields = (CATEGORY_FIELDS[listing.locationCategoryId] || []).filter(field => {
@@ -120,9 +117,22 @@ export default function ListingDetailClient({
     return value !== undefined && value !== null && value !== '' && value !== false;
   });
 
+  const seoOverride = getSeoOverride(listing.slug || listing.id || listing.name);
+
   // Description verification
-  const descriptionHtml = (language === 'en' && listing.metadata?.descriptionEn) ? listing.metadata.descriptionEn : listing.description;
+  const baseDescription = (language === 'en' && listing.metadata?.descriptionEn) ? listing.metadata.descriptionEn : listing.description;
+  const descriptionHtml = seoOverride?.enrichedDescription
+    ? `<div class="p-6 bg-primary/5 rounded-2xl border border-primary/10 mb-6 not-italic font-sans text-slate-800 leading-relaxed shadow-sm"><h3 class="text-xl font-bold mb-3 text-primary font-headline flex items-center gap-2">Vodič i preporuke uredništva</h3><p class="text-base text-slate-700 leading-relaxed">${seoOverride.enrichedDescription}</p></div>${baseDescription || ''}`
+    : baseDescription;
   const hasDescription = Boolean(descriptionHtml && descriptionHtml.trim().length > 0);
+
+  // Custom FAQ verification
+  const rawFaq = parseJsonArray(listing.metadata?.faq || listing.faq || []);
+  const validFaq = [
+    ...(seoOverride?.faqs || []),
+    ...rawFaq.filter((f: any) => f && typeof f === 'object' && f.question && f.answer && f.question.trim().length > 0 && f.answer.trim().length > 0)
+  ];
+  const hasFaq = validFaq.length > 0;
 
   // Location / coordinates check
   const lat = parseFloat(listing.latitude);
@@ -140,10 +150,10 @@ export default function ListingDetailClient({
     ?.filter(l => l.id !== listing.id && (l.locationCategoryType === 'paid' || l.locationCategoryType === 'Paid') && l.city === listing.city)
     .slice(0, 4) || [];
 
-  // Robust heading fallback guaranteeing H1 is always populated
+  // Robust heading fallback guaranteeing H1 is always populated and matches high-CTR keywords
   const headingText = (language === 'en' && listing.metadata?.nameEn) 
     ? listing.metadata.nameEn 
-    : (listing.name || listing.objectName || listing.title || 'Objekt');
+    : (seoOverride?.h1Title || listing.name || listing.objectName || listing.title || 'Objekt');
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

@@ -3,6 +3,7 @@ import PocketBase from 'pocketbase';
 import ListingDetailClient from './ListingDetailClient';
 import { notFound } from 'next/navigation';
 import { generateSlug } from '@/app/lib/utils/slug';
+import { getSeoOverride } from '@/app/lib/listing-seo-config';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,8 +56,27 @@ export default async function ListingDetailPage({
   params: Promise<{ category: string; slugAndId: string }>;
 }) {
   const resolvedParams = await params;
-  const slug = resolvedParams.slugAndId;
-  const listing = await getListingRecord(slug);
+  const slug = resolvedParams.slugAndId || '';
+  let listing: any = await getListingRecord(slug);
+  const seoOverride = getSeoOverride(slug) || (listing ? getSeoOverride(listing.slug || listing.id) : null);
+
+  if (!listing && seoOverride) {
+    listing = {
+      id: slug,
+      name: seoOverride.h1Title.split('—')[0].trim(),
+      slug: slug,
+      locationCategoryId: resolvedParams.category === 'beaches' || resolvedParams.category === 'plaza' ? 'beaches' : 'pharmacy',
+      description: seoOverride.enrichedDescription,
+      city: slug.includes('jadranovo') ? 'Jadranovo' : (slug.includes('vela') ? 'Vela Luka' : (slug.includes('split') || slug.includes('obojena') ? 'Split' : (slug.includes('zagreb') ? 'Zagreb' : 'Cavtat'))),
+      address: slug.includes('jadranovo') ? 'Jadranovo' : (slug.includes('vela') ? 'Vela Luka, Otok Korčula' : (slug.includes('obojena') ? 'Šetalište Ivana Meštrovića, Split' : (slug.includes('siget') || slug.includes('holjevc') ? 'Avenija Većeslava Holjevca 22, Zagreb' : 'Zagreb'))),
+      metadata: {
+        seoTitle: seoOverride.seoTitle,
+        seoDescription: seoOverride.seoDescription,
+        seoKeywords: seoOverride.seoKeywords.join(', '),
+      },
+      faq: seoOverride.faqs,
+    };
+  }
 
   if (!listing) {
     return notFound();
@@ -77,28 +97,51 @@ export default async function ListingDetailPage({
   const safeListing = JSON.parse(JSON.stringify(listing));
   const safeAllActive = JSON.parse(JSON.stringify(allActiveListings));
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': resolvedParams.category === 'hitna-pomoc' || resolvedParams.category === 'emergency' 
-      ? 'EmergencyService' 
-      : (resolvedParams.category === 'ljekarna' || resolvedParams.category === 'pharmacy' ? 'Pharmacy' : 'LocalBusiness'),
-    name: listing.name,
-    description: listing.metadata?.seoDescription || (listing.description ? listing.description.replace(/<[^>]*>/g, '').slice(0, 160) : undefined),
-    url: `https://croatiabest.com.hr/objekt/${resolvedParams.category}/${resolvedParams.slugAndId}`,
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: listing.address,
-      addressLocality: listing.city,
-      addressCountry: 'HR',
-    },
-    ...(listing.contactPhone ? { telephone: listing.contactPhone } : {}),
-  };
+  const primarySchemaType = resolvedParams.category === 'hitna-pomoc' || resolvedParams.category === 'emergency' 
+    ? 'EmergencyService' 
+    : (resolvedParams.category === 'ljekarna' || resolvedParams.category === 'pharmacy' 
+        ? 'Pharmacy' 
+        : (resolvedParams.category === 'plaza' || resolvedParams.category === 'beaches' 
+            ? 'TouristAttraction' 
+            : 'LocalBusiness'));
+
+  const jsonLdList: any[] = [
+    {
+      '@context': 'https://schema.org',
+      '@type': primarySchemaType,
+      name: seoOverride?.h1Title || listing.name,
+      description: seoOverride?.seoDescription || listing.metadata?.seoDescription || (listing.description ? listing.description.replace(/<[^>]*>/g, '').slice(0, 160) : undefined),
+      url: `https://croatiabest.com.hr/objekt/${resolvedParams.category}/${resolvedParams.slugAndId}`,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: listing.address || '',
+        addressLocality: listing.city || '',
+        addressCountry: 'HR',
+      },
+      ...(listing.contactPhone ? { telephone: listing.contactPhone } : {}),
+    }
+  ];
+
+  if (seoOverride?.faqs && seoOverride.faqs.length > 0) {
+    jsonLdList.push({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: seoOverride.faqs.map(f => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: f.answer,
+        },
+      })),
+    });
+  }
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdList.length === 1 ? jsonLdList[0] : jsonLdList) }}
       />
       <ListingDetailClient 
         listing={safeListing} 
