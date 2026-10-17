@@ -38,15 +38,18 @@ import FAQSection from '@/components/ui/FAQSection';
 import AdBanner from '@/components/ads/AdBanner';
 import WikiView from '@/components/ui/WikiView';
 import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
+import WeatherWidget, { WeatherAnchorPill } from '@/components/weather/WeatherWidget';
+import type { WeatherData } from '@/app/lib/weather';
 
 interface CityClientProps {
   city: any;
   cityListings: any[];
   globalSpecialListings?: any[];
   allBlogs?: any[];
+  weather?: WeatherData | null;
 }
 
-export default function CityClient({ city, cityListings, globalSpecialListings = [], allBlogs = [] }: CityClientProps) {
+export default function CityClient({ city, cityListings, globalSpecialListings = [], allBlogs = [], weather = null }: CityClientProps) {
   const { language } = useLanguage();
   const isEn = language === 'en';
   const { user } = useUser();
@@ -176,6 +179,11 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
             <h1 className="text-6xl md:text-[8rem] font-black text-white font-headline drop-shadow-2xl italic tracking-tighter leading-none">
               {city.name} <span className="block text-2xl md:text-4xl not-italic tracking-widest mt-4 opacity-80 uppercase">{isEn ? 'GUIDE & HISTORY' : 'VODIČ I POVIJEST'}</span>
             </h1>
+            {weather && (
+              <div className="mt-6 animate-fade-in">
+                <WeatherAnchorPill data={weather} isEn={isEn} />
+              </div>
+            )}
           </div>
         </section>
 
@@ -425,9 +433,16 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
             </aside>
           </div>
 
+          {/* VRIJEME I MORE WIDGET (WEATHER & SEA HUB) */}
+          {weather && (
+            <div className="mt-12">
+              <WeatherWidget data={weather} locationName={city.name} isEn={isEn} />
+            </div>
+          )}
+
           {/* LISTINGS CATEGORIES COLUMNS - FULL WIDTH SECTION */}
           {(popularListings.length > 0 || viewpointListings.length > 0 || gastroListings.length > 0 || apartmentsListings.length > 0) && (
-            <div className="mt-20 pt-16 border-t border-black/5">
+            <div id="explore-listings" className="mt-20 pt-16 border-t border-black/5">
               <div className="text-center mb-12">
                 <h3 className="text-4xl font-headline font-black italic tracking-tighter">
                   {isEn ? 'Explore Top Categories' : 'Istražite najbolje lokacije'}

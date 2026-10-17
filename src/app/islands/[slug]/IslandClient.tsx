@@ -34,15 +34,18 @@ import { getFirstPhoto, isDummyPlaceholderPhoto } from '@/app/lib/image-helpers'
 import { getLocalizedUrl } from '@/lib/i18n-routes';
 import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 import AdBanner from '@/components/ads/AdBanner';
+import WeatherWidget, { WeatherAnchorPill } from '@/components/weather/WeatherWidget';
+import type { WeatherData } from '@/app/lib/weather';
 
 interface IslandClientProps {
   island: any;
   listings: any[];
   articles?: any[];
   islandCities?: any[];
+  weather?: WeatherData | null;
 }
 
-export default function IslandClient({ island, listings = [], articles = [], islandCities = [] }: IslandClientProps) {
+export default function IslandClient({ island, listings = [], articles = [], islandCities = [], weather = null }: IslandClientProps) {
   const { language } = useLanguage();
   const isEn = language === 'en';
   const { user } = useUser();
@@ -155,6 +158,11 @@ export default function IslandClient({ island, listings = [], articles = [], isl
             <h1 className="text-6xl md:text-[8rem] font-black text-white font-headline drop-shadow-2xl italic tracking-tighter leading-none">
               Otok {island.name} <span className="block text-2xl md:text-4xl not-italic tracking-widest mt-4 opacity-80 uppercase">Vodič i Plaže</span>
             </h1>
+            {weather && (
+              <div className="mt-6 animate-fade-in">
+                <WeatherAnchorPill data={weather} isEn={isEn} />
+              </div>
+            )}
           </div>
         </section>
 
@@ -324,9 +332,16 @@ export default function IslandClient({ island, listings = [], articles = [], isl
             </aside>
           </div>
           
+          {/* VRIJEME I MORE WIDGET (WEATHER & SEA HUB) */}
+          {weather && (
+            <div className="mt-12">
+              <WeatherWidget data={weather} locationName={`Otok ${island.name}`} isEn={isEn} />
+            </div>
+          )}
+
           {/* LISTINGS CATEGORIES COLUMNS - FULL WIDTH SECTION */}
           {(popularListings.length > 0 || viewpointListings.length > 0 || gastroListings.length > 0 || apartmentsListings.length > 0) && (
-            <div className="mt-20 pt-16 border-t border-black/5">
+            <div id="explore-listings" className="mt-20 pt-16 border-t border-black/5">
               <div className="text-center mb-12">
                 <h3 className="text-4xl font-headline font-black italic tracking-tighter">
                   {isEn ? 'Explore Top Categories' : 'Istražite najbolje lokacije'}

@@ -2,6 +2,7 @@ import PocketBase from 'pocketbase';
 import IslandClient from './IslandClient';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { getWeatherAndMarineData } from '@/app/lib/weather';
 
 const PB_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
 
@@ -16,13 +17,23 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const description = island.seoDescription || (island.description ? island.description.replace(/<[^>]*>/g, '').substring(0, 160) : `Istražite otok ${island.name} — plaže, restorani, znamenitosti i sve informacije.`);
     let keywords = island.seoKeywords ? island.seoKeywords.split(',').map((k: string) => k.trim()) : [island.name, 'otok', 'Hrvatska', 'turizam'];
 
+    let wikiKeywords: string[] = [];
     if (island.wikiSections && Array.isArray(island.wikiSections)) {
-      const wikiKeywords = island.wikiSections
+      wikiKeywords = island.wikiSections
         .filter((section: any) => section.title)
         .map((section: any) => `${island.name.toLowerCase()} ${section.title.toLowerCase()}`);
-      
-      keywords = Array.from(new Set([...keywords, ...wikiKeywords]));
     }
+
+    // Enhance keywords with high-volume island weather and sea temperature queries
+    keywords = Array.from(new Set([
+      ...keywords,
+      ...wikiKeywords,
+      `vrijeme otok ${island.name.toLowerCase()}`,
+      `temperatura mora ${island.name.toLowerCase()}`,
+      `vremenska prognoza ${island.name.toLowerCase()}`,
+      `otok ${island.name.toLowerCase()} weather`,
+      `temperatura mora otok ${island.name.toLowerCase()}`,
+    ]));
     return {
       title,
       description,
@@ -88,5 +99,8 @@ export default async function IslandPage({ params }: { params: Promise<{ slug: s
     }
   }
 
-  return <IslandClient island={island} listings={listings} articles={[]} islandCities={islandCities} />;
+  // Fetch real-time weather & marine data with 30m server ISR cache
+  const weather = await getWeatherAndMarineData(island.lat, island.lng, `Otok ${island.name}`);
+
+  return <IslandClient island={island} listings={listings} articles={[]} islandCities={islandCities} weather={weather} />;
 }

@@ -2,6 +2,7 @@ import PocketBase from 'pocketbase';
 import CityClient from './CityClient';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { getWeatherAndMarineData } from '@/app/lib/weather';
 
 const PB_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
 
@@ -16,14 +17,23 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const description = city.seoDescription || (city.description ? city.description.replace(/<[^>]*>/g, '').substring(0, 160) : `Istražite ${city.name} — sve informacije, restorani, plaže, smještaj i znamenitosti.`);
     let keywords = city.seoKeywords ? city.seoKeywords.split(',').map((k: string) => k.trim()) : [city.name, 'Hrvatska', 'turizam', 'vodič'];
 
+    let wikiKeywords: string[] = [];
     if (city.wikiSections && Array.isArray(city.wikiSections)) {
-      const wikiKeywords = city.wikiSections
+      wikiKeywords = city.wikiSections
         .filter((section: any) => section.title)
         .map((section: any) => `${city.name.toLowerCase()} ${section.title.toLowerCase()}`);
-      
-      // Merge and remove duplicates
-      keywords = Array.from(new Set([...keywords, ...wikiKeywords]));
     }
+
+    // Enhance keywords with high-intent weather and sea temperature search terms
+    keywords = Array.from(new Set([
+      ...keywords,
+      ...wikiKeywords,
+      `vrijeme ${city.name.toLowerCase()}`,
+      `vremenska prognoza ${city.name.toLowerCase()}`,
+      `temperatura mora ${city.name.toLowerCase()}`,
+      `${city.name.toLowerCase()} weather`,
+      `prognoza 7 dana ${city.name.toLowerCase()}`,
+    ]));
     return {
       title,
       description,
@@ -88,12 +98,16 @@ export default async function CityPage({ params }: { params: Promise<{ slug: str
     // ignore
   }
 
+  // Fetch real-time weather & marine data with 30m server ISR cache
+  const weather = await getWeatherAndMarineData(city.lat, city.lng, city.name);
+
   return (
     <CityClient 
       city={city} 
       cityListings={cityListings} 
       globalSpecialListings={globalSpecialListings}
       allBlogs={allBlogs}
+      weather={weather}
     />
   );
 }
