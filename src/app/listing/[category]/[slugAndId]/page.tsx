@@ -343,15 +343,13 @@ export default function ListingDetailPage() {
               </Card>
             )}
 
-            <div className="mt-8">
-              <AdBanner format="rectangle" />
-            </div>
+            {/* Sidebar Ad Placement (ZAPAMĆENA POZICIJA) */}
+            <AdBanner format="rectangle" positionId="LISTING_SIDEBAR_RECTANGLE" className="mt-8" />
           </aside>
         </div>
 
-        <div className="container mx-auto px-4 mt-16 mb-8">
-          <AdBanner format="horizontal" />
-        </div>
+        {/* Bottom Banner Placement (ZAPAMĆENA POZICIJA) */}
+        <AdBanner format="horizontal" positionId="LISTING_BOTTOM_HORIZONTAL" className="container mx-auto px-4 mt-16 mb-8" />
 
         {promotedListings.length > 0 && (
           <section className="container mx-auto px-4 mt-16">

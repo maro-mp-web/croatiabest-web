@@ -269,10 +269,8 @@ export default function IslandClient({ island, listings = [], articles = [], isl
                 </div>
               )}
 
-              {/* GOOGLE ADS TILE IN CONTENT */}
-              <div className="my-8">
-                <AdBanner format="rectangle" className="w-full h-[250px] shadow-sm rounded-3xl" />
-              </div>
+              {/* GOOGLE ADS TILE IN CONTENT (ZAPAMĆENA POZICIJA) */}
+              <AdBanner format="rectangle" positionId="ISLAND_IN_CONTENT_RECTANGLE" className="w-full h-[250px] my-8 shadow-sm rounded-3xl" />
 
             </div>
 
@@ -295,7 +293,8 @@ export default function IslandClient({ island, listings = [], articles = [], isl
                 </div>
               </Card>
 
-              <AdBanner format="vertical" className="w-full h-[600px] shadow-sm rounded-3xl" />
+              {/* Sidebar Ad Placement (ZAPAMĆENA POZICIJA) */}
+              <AdBanner format="vertical" positionId="ISLAND_SIDEBAR_VERTICAL" className="w-full h-[600px] shadow-sm rounded-3xl" />
 
               {/* TELEFONSKE SLUŽBE (EMERGENCY SERVICE NUMBERS) */}
               <Card className="rounded-[2.5rem] shadow-xl border-none overflow-hidden bg-slate-900 text-white p-8 space-y-6">

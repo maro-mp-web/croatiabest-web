@@ -15,7 +15,6 @@ import { MapPin, Search, List, Navigation2, Info, Loader2, Navigation as Navigat
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCollection } from '@/pocketbase';
-import AdBanner from '@/components/ads/AdBanner';
 import { generateListingUrl } from '@/app/lib/utils/slug';
 import Map from '@/components/map/Map';
 import { useLanguage } from '@/contexts/LanguageContext';

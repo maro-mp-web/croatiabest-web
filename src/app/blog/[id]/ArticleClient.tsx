@@ -180,7 +180,8 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
                   {isEn ? 'JOIN US' : 'PRIDRUŽI SE'}
                 </Button>
               </div>
-              <AdBanner format="vertical" className="w-full h-[600px] shadow-sm rounded-3xl" />
+              {/* Sidebar Ad Placement (ZAPAMĆENA POZICIJA) */}
+              <AdBanner format="vertical" positionId="BLOG_ARTICLE_SIDEBAR_VERTICAL" className="w-full h-[600px] shadow-sm rounded-3xl" />
             </div>
 
           </div>

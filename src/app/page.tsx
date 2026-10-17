@@ -1002,9 +1002,8 @@ export default function Home() {
               })}
             </div>
 
-            <div className="mt-12 flex justify-center">
-              <AdBanner format="horizontal" className="w-full max-w-4xl shadow-sm rounded-2xl overflow-hidden border border-black/5" />
-            </div>
+            {/* Homepage Mid-page Banner (ZAPAMĆENA POZICIJA) */}
+            <AdBanner format="horizontal" positionId="HOMEPAGE_HORIZONTAL_MID" className="w-full max-w-4xl mt-12 mx-auto shadow-sm rounded-2xl overflow-hidden border border-black/5" />
           </div>
         </section>
 
