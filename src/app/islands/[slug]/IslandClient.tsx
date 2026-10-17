@@ -332,16 +332,9 @@ export default function IslandClient({ island, listings = [], articles = [], isl
             </aside>
           </div>
           
-          {/* VRIJEME I MORE WIDGET (WEATHER & SEA HUB) */}
-          {weather && (
-            <div className="mt-12">
-              <WeatherWidget data={weather} locationName={`Otok ${island.name}`} isEn={isEn} />
-            </div>
-          )}
-
-          {/* LISTINGS CATEGORIES COLUMNS - FULL WIDTH SECTION */}
+          {/* LISTINGS CATEGORIES COLUMNS - FULL WIDTH SECTION (PRIJE VREMENA) */}
           {(popularListings.length > 0 || viewpointListings.length > 0 || gastroListings.length > 0 || apartmentsListings.length > 0) && (
-            <div id="explore-listings" className="mt-20 pt-16 border-t border-black/5">
+            <div id="explore-listings" className="mt-16 pt-12 border-t border-black/5 scroll-mt-24">
               <div className="text-center mb-12">
                 <h3 className="text-4xl font-headline font-black italic tracking-tighter">
                   {isEn ? 'Explore Top Categories' : 'Istražite najbolje lokacije'}
@@ -356,6 +349,13 @@ export default function IslandClient({ island, listings = [], articles = [], isl
                 {renderCategoryCards(gastroListings, isEn ? 'Gastronomy' : 'Gastro', <Utensils className="size-5" />, 'text-orange-600', 'restaurants')}
                 {renderCategoryCards(apartmentsListings, isEn ? 'Accommodation' : 'Apartmani', <BedDouble className="size-5" />, 'text-emerald-600', 'apartments')}
               </div>
+            </div>
+          )}
+
+          {/* VRIJEME I MORE WIDGET (WEATHER & SEA HUB) */}
+          {weather && (
+            <div className="mt-16">
+              <WeatherWidget data={weather} locationName={`Otok ${island.name}`} isEn={isEn} />
             </div>
           )}
 

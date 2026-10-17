@@ -280,40 +280,6 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
               {/* GOOGLE ADS TILE IN CONTENT (ZAPAMĆENA POZICIJA) */}
               <AdBanner format="rectangle" positionId="CITY_IN_CONTENT_RECTANGLE" className="w-full h-[250px] my-8 shadow-sm rounded-3xl" />
 
-              {/* NEARBY HOMELAND WAR MEMORIALS (DOMOVINSKI RAT) */}
-              {nearbyWarMemorials.length > 0 && (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2 border-b border-black/5 pb-4">
-                    <Shield className="size-6 text-red-600" />
-                    <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
-                      {isEn ? 'Homeland War Memorials' : 'Spomen obilježja Domovinskog rata'}
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                    {nearbyWarMemorials.map((l) => {
-                      const name = isEn && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
-                      const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
-                      const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id);
-                      return (
-                        <Link key={l.id} href={path} className="group">
-                          <Card className="rounded-2xl border-none shadow-md overflow-hidden bg-white h-full flex flex-col">
-                            <div className="relative aspect-square overflow-hidden">
-                              <Image src={image} alt={name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                              <Badge className="absolute top-3 left-3 bg-red-600 text-white border-none font-black text-[8px] uppercase tracking-wider shadow-md">
-                                {isEn ? 'Memorial' : 'Spomen obilježje'}
-                              </Badge>
-                            </div>
-                            <CardContent className="p-4 flex-1 bg-white z-10 -mt-2 rounded-t-xl">
-                              <h4 className="font-black text-sm leading-tight text-foreground group-hover:text-primary transition-colors line-clamp-2">{name}</h4>
-                            </CardContent>
-                          </Card>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
               {/* NEARBY NATIONAL PARKS */}
               {nearbyNationalParks.length > 0 && (
                 <div className="space-y-6">
@@ -433,16 +399,9 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
             </aside>
           </div>
 
-          {/* VRIJEME I MORE WIDGET (WEATHER & SEA HUB) */}
-          {weather && (
-            <div className="mt-12">
-              <WeatherWidget data={weather} locationName={city.name} isEn={isEn} />
-            </div>
-          )}
-
-          {/* LISTINGS CATEGORIES COLUMNS - FULL WIDTH SECTION */}
+          {/* LISTINGS CATEGORIES COLUMNS - FULL WIDTH SECTION (PRIJE VREMENA) */}
           {(popularListings.length > 0 || viewpointListings.length > 0 || gastroListings.length > 0 || apartmentsListings.length > 0) && (
-            <div id="explore-listings" className="mt-20 pt-16 border-t border-black/5">
+            <div id="explore-listings" className="mt-16 pt-12 border-t border-black/5 scroll-mt-24">
               <div className="text-center mb-12">
                 <h3 className="text-4xl font-headline font-black italic tracking-tighter">
                   {isEn ? 'Explore Top Categories' : 'Istražite najbolje lokacije'}
@@ -456,6 +415,54 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
                 {renderCategoryCards(viewpointListings, isEn ? 'Viewpoints' : 'Vidikovci', <Binoculars className="size-5" />, 'text-purple-600', 'viewpoints')}
                 {renderCategoryCards(gastroListings, isEn ? 'Gastronomy' : 'Gastro', <Utensils className="size-5" />, 'text-orange-600', 'restaurants')}
                 {renderCategoryCards(apartmentsListings, isEn ? 'Accommodation' : 'Apartmani', <BedDouble className="size-5" />, 'text-emerald-600', 'apartments')}
+              </div>
+            </div>
+          )}
+
+          {/* VRIJEME I MORE WIDGET (WEATHER & SEA HUB) */}
+          {weather && (
+            <div className="mt-16">
+              <WeatherWidget data={weather} locationName={city.name} isEn={isEn} />
+            </div>
+          )}
+
+          {/* NEARBY HOMELAND WAR MEMORIALS (DOMOVINSKI RAT) - ISPOD VREMENA */}
+          {nearbyWarMemorials.length > 0 && (
+            <div className="mt-16 pt-12 border-t border-black/5 space-y-8">
+              <div className="flex items-center gap-3 border-b border-black/5 pb-4">
+                <Shield className="size-7 text-red-600" />
+                <div>
+                  <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
+                    {isEn ? 'Homeland War Memorials' : 'Spomen obilježja Domovinskog rata'}
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-medium mt-1">
+                    {isEn 
+                      ? `Memorial sites and historical monuments in and around ${city.name}.` 
+                      : `Spomenici, spomen obilježja i mjesta sjećanja iz Domovinskog rata na području: ${city.name} i okolice.`}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                {nearbyWarMemorials.map((l) => {
+                  const name = isEn && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
+                  const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
+                  const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id);
+                  return (
+                    <Link key={l.id} href={path} className="group">
+                      <Card className="rounded-2xl border-none shadow-md overflow-hidden bg-white h-full flex flex-col hover:shadow-xl transition-all duration-300">
+                        <div className="relative aspect-square overflow-hidden">
+                          <Image src={image} alt={name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                          <Badge className="absolute top-3 left-3 bg-red-600 text-white border-none font-black text-[8px] uppercase tracking-wider shadow-md">
+                            {isEn ? 'Memorial' : 'Spomen obilježje'}
+                          </Badge>
+                        </div>
+                        <CardContent className="p-4 flex-1 bg-white z-10 -mt-2 rounded-t-xl">
+                          <h4 className="font-black text-sm leading-tight text-foreground group-hover:text-primary transition-colors line-clamp-2">{name}</h4>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}
