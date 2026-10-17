@@ -53,7 +53,22 @@ export const CATEGORY_SLUG_MAP: Record<string, string> = {
   hairdressers: 'frizerski-salon',
   beauty: 'salon-ljepote',
 
-  // Plural & legacy aliases
+  // Plural, singular & legacy aliases
+  beach: 'plaza',
+  viewpoint: 'vidikovac',
+  landmark: 'znamenitost',
+  bus_station: 'autobusni-kolodvor',
+  train_station: 'zeljeznicki-kolodvor',
+  ferry_port: 'trajektna-luka',
+  national_park: 'nacionalni-park',
+  restaurant: 'restoran',
+  apartment: 'apartmani',
+  camp: 'kampovi',
+  bar: 'kafic',
+  nightclub: 'nocni-klub',
+  tour: 'izlet',
+  shop: 'trgovina',
+  mechanic: 'auto-servis',
   spomenici: 'spomenik',
   vidikovci: 'vidikovac',
   plaze: 'plaza',
