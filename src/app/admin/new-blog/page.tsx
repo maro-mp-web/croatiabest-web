@@ -283,7 +283,7 @@ function AdminNewBlogPage() {
 
                   {/* HR Content */}
                   {langTab === 'hr' && (
-                    <div className="space-y-6 animate-fade-in">
+                    <div className="space-y-6">
                       <div className="space-y-3">
                         <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Sadržaj (WYSIWYG) *</Label>
                         <RichTextEditor 
@@ -301,7 +301,7 @@ function AdminNewBlogPage() {
 
                   {/* EN Content */}
                   {langTab === 'en' && (
-                    <div className="space-y-6 animate-fade-in">
+                    <div className="space-y-6">
                       <div className="space-y-3">
                         <Label className="text-sm font-black uppercase tracking-widest text-blue-600">Title (English)</Label>
                         <Input value={titleEn} onChange={(e) => setTitleEn(e.target.value)} placeholder="e.g. Top 10 Beaches in Croatia..." className="h-14 rounded-2xl bg-blue-50 border-none" />

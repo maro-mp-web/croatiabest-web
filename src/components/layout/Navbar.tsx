@@ -60,7 +60,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
   }, []);
 
   return (
-    <header className={`${transparent ? 'fixed' : 'sticky'} top-0 left-0 right-0 z-50 w-full border-b transition-all duration-300 ${
+    <header className={`${transparent ? 'fixed' : 'sticky'} top-0 left-0 right-0 z-50 w-full border-b transition-colors duration-200 ${
       isScrolled || !transparent
         ? 'bg-white/95 backdrop-blur-md text-foreground border-black/5 shadow-sm' 
         : 'bg-transparent text-white border-transparent'

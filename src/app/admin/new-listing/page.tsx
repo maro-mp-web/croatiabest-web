@@ -321,7 +321,7 @@ export default function AdminNewListingPage() {
             {/* HRVATSKI SADRŽAJ */}
             {langTab === 'hr' && (
               <>
-                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none bg-white">
+                <Card className="rounded-[2.5rem] shadow-xl border-none bg-white">
                   <CardHeader className="bg-secondary/5 border-b"><CardTitle>Osnovni podaci (Hrvatski)</CardTitle></CardHeader>
                   <CardContent className="p-8 space-y-6">
                     <div className="space-y-2">
@@ -441,7 +441,7 @@ export default function AdminNewListingPage() {
             {/* ENGLESKI SADRŽAJ */}
             {langTab === 'en' && (
               <>
-                <Card className="rounded-[2.5rem] shadow-xl overflow-hidden border-none bg-white">
+                <Card className="rounded-[2.5rem] shadow-xl border-none bg-white">
                   <CardHeader className="bg-blue-500/5 border-b flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-xl font-black flex items-center gap-2">

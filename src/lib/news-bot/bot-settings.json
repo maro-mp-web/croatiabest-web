@@ -29,10 +29,10 @@
     }
   ],
   "lastRun": {
-    "timestamp": "2026-10-16T12:37:52.922Z",
-    "imported": 2,
+    "timestamp": "2026-10-17T08:01:23.343Z",
+    "imported": 0,
     "totalFound": 35,
     "success": true,
-    "errors": 0
+    "errors": 35
   }
 }

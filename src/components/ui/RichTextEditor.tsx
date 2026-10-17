@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -17,13 +17,6 @@ import {
   Undo, Redo, Maximize2, Minimize2, ChevronDown
 } from 'lucide-react';
 import { MediaLibraryModal } from '@/components/media/MediaLibraryModal';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 interface RichTextEditorProps {
   value: string;
@@ -68,6 +61,8 @@ function ToolbarButton({
 export function RichTextEditor({ value, onChange, placeholder = 'Počnite pisati...', className }: RichTextEditorProps) {
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isTableMenuOpen, setIsTableMenuOpen] = useState(false);
+  const tableMenuRef = useRef<HTMLDivElement>(null);
 
   const editor = useEditor({
     extensions: [
@@ -131,6 +126,19 @@ export function RichTextEditor({ value, onChange, placeholder = 'Počnite pisati
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen]);
 
+  // Click outside to close table dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (tableMenuRef.current && !tableMenuRef.current.contains(e.target as Node)) {
+        setIsTableMenuOpen(false);
+      }
+    };
+    if (isTableMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isTableMenuOpen]);
+
   const addImage = useCallback(() => {
     setIsMediaModalOpen(true);
   }, []);
@@ -153,6 +161,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Počnite pisati
   const insertTable = useCallback((rows = 3, cols = 3) => {
     if (!editor) return;
     editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
+    setIsTableMenuOpen(false);
   }, [editor]);
 
   if (!editor) return null;
@@ -165,7 +174,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Počnite pisati
   return (
     <div 
       className={`
-        transition-all duration-200
+        transition-all duration-150
         ${isFullscreen 
           ? 'fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex flex-col p-2 sm:p-6 overflow-y-auto' 
           : 'relative rounded-2xl border border-slate-200 bg-white shadow-sm'
@@ -174,11 +183,11 @@ export function RichTextEditor({ value, onChange, placeholder = 'Počnite pisati
       `}
     >
       <div className={isFullscreen ? 'max-w-5xl w-full mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col my-auto border border-slate-200 overflow-hidden min-h-[85vh]' : 'flex flex-col'}>
-        {/* Sticky Toolbar */}
+        {/* Sticky Unified Toolbar */}
         <div 
           className={`
             sticky z-30 transition-all duration-150
-            bg-white/95 backdrop-blur-md border-b border-slate-200/90
+            bg-white/95 backdrop-blur-md border-b border-slate-200
             px-3 py-2 rounded-t-2xl shadow-xs
             ${isFullscreen ? 'top-0 !rounded-none shadow-sm px-4 py-2.5' : 'top-20'}
           `}
@@ -365,138 +374,145 @@ export function RichTextEditor({ value, onChange, placeholder = 'Počnite pisati
               <ImageIcon className="size-4" />
             </ToolbarButton>
 
-            {/* Table Dropdown Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  title="Upravljanje tablicama"
-                  className={`
-                    h-9 px-2.5 rounded-lg flex items-center gap-1.5 transition-all duration-150 shrink-0 text-sm font-semibold
-                    ${isTableActive 
-                      ? 'bg-primary text-white shadow-sm shadow-primary/25' 
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:scale-95'
-                    }
-                  `}
-                >
-                  <TableIcon className="size-4" />
-                  <span className="hidden sm:inline">Tablica</span>
-                  <ChevronDown className="size-3 opacity-60" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 p-1.5 rounded-xl shadow-xl border border-slate-200 bg-white">
-                {!isTableActive ? (
-                  <>
-                    <DropdownMenuItem 
-                      onClick={() => insertTable(3, 3)} 
-                      className="cursor-pointer py-2 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2"
-                    >
-                      <TableIcon className="size-4 text-primary" />
-                      Ubaci tablicu (3x3)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => insertTable(2, 2)} 
-                      className="cursor-pointer py-2 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2"
-                    >
-                      <TableIcon className="size-4 text-slate-500" />
-                      Ubaci tablicu (2x2)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => insertTable(4, 4)} 
-                      className="cursor-pointer py-2 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2"
-                    >
-                      <TableIcon className="size-4 text-slate-500" />
-                      Ubaci tablicu (4x4)
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
-                    <DropdownMenuItem 
-                      onClick={() => editor.chain().focus().addRowBefore().run()}
-                      className="cursor-pointer py-2 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2"
-                    >
-                      <Rows className="size-4 text-slate-500" />
-                      Dodaj redak iznad
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => editor.chain().focus().addRowAfter().run()}
-                      className="cursor-pointer py-2 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2"
-                    >
-                      <Rows className="size-4 text-slate-500" />
-                      Dodaj redak ispod
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => editor.chain().focus().deleteRow().run()}
-                      className="cursor-pointer py-2 px-3 rounded-lg text-sm font-medium hover:bg-red-50 text-red-600 flex items-center gap-2"
-                    >
-                      <Trash2 className="size-4" />
-                      Obriši redak
-                    </DropdownMenuItem>
-                    
-                    <DropdownMenuSeparator className="my-1 bg-slate-100" />
+            {/* Self-contained Table Menu (No Radix body scroll lock) */}
+            <div className="relative inline-block" ref={tableMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsTableMenuOpen(prev => !prev)}
+                title="Upravljanje tablicama"
+                className={`
+                  h-9 px-2.5 rounded-lg flex items-center gap-1.5 transition-all duration-150 shrink-0 text-sm font-semibold
+                  ${isTableActive 
+                    ? 'bg-primary text-white shadow-sm shadow-primary/25' 
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:scale-95'
+                  }
+                `}
+              >
+                <TableIcon className="size-4" />
+                <span className="hidden sm:inline">Tablica</span>
+                <ChevronDown className="size-3 opacity-60" />
+              </button>
 
-                    <DropdownMenuItem 
-                      onClick={() => editor.chain().focus().addColumnBefore().run()}
-                      className="cursor-pointer py-2 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2"
-                    >
-                      <Columns className="size-4 text-slate-500" />
-                      Dodaj stupac lijevo
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => editor.chain().focus().addColumnAfter().run()}
-                      className="cursor-pointer py-2 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2"
-                    >
-                      <Columns className="size-4 text-slate-500" />
-                      Dodaj stupac desno
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => editor.chain().focus().deleteColumn().run()}
-                      className="cursor-pointer py-2 px-3 rounded-lg text-sm font-medium hover:bg-red-50 text-red-600 flex items-center gap-2"
-                    >
-                      <Trash2 className="size-4" />
-                      Obriši stupac
-                    </DropdownMenuItem>
+              {isTableMenuOpen && (
+                <div className="absolute left-0 top-full mt-1.5 w-56 p-1.5 rounded-xl shadow-xl border border-slate-200 bg-white z-50 animate-in fade-in zoom-in-95 duration-100">
+                  {!isTableActive ? (
+                    <div className="space-y-0.5">
+                      <button
+                        type="button"
+                        onClick={() => insertTable(3, 3)} 
+                        className="w-full text-left py-2 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2 transition"
+                      >
+                        <TableIcon className="size-4 text-primary" />
+                        Ubaci tablicu (3x3)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertTable(2, 2)} 
+                        className="w-full text-left py-2 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2 transition"
+                      >
+                        <TableIcon className="size-4 text-slate-500" />
+                        Ubaci tablicu (2x2)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertTable(4, 4)} 
+                        className="w-full text-left py-2 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2 transition"
+                      >
+                        <TableIcon className="size-4 text-slate-500" />
+                        Ubaci tablicu (4x4)
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-0.5">
+                      <button
+                        type="button"
+                        onClick={() => { editor.chain().focus().addRowBefore().run(); setIsTableMenuOpen(false); }}
+                        className="w-full text-left py-1.5 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2 transition"
+                      >
+                        <Rows className="size-4 text-slate-500" /> Dodaj redak iznad
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { editor.chain().focus().addRowAfter().run(); setIsTableMenuOpen(false); }}
+                        className="w-full text-left py-1.5 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2 transition"
+                      >
+                        <Rows className="size-4 text-slate-500" /> Dodaj redak ispod
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { editor.chain().focus().deleteRow().run(); setIsTableMenuOpen(false); }}
+                        className="w-full text-left py-1.5 px-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-2 transition"
+                      >
+                        <Trash2 className="size-4" /> Obriši redak
+                      </button>
 
-                    <DropdownMenuSeparator className="my-1 bg-slate-100" />
+                      <div className="my-1 border-t border-slate-100" />
 
-                    <DropdownMenuItem 
-                      onClick={() => editor.chain().focus().toggleHeaderRow().run()}
-                      className="cursor-pointer py-2 px-3 rounded-lg text-sm font-medium hover:bg-slate-100"
-                    >
-                      Uključi / isključi zaglavlje
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => editor.chain().focus().mergeCells().run()}
-                      className="cursor-pointer py-2 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2"
-                    >
-                      <Merge className="size-4 text-slate-500" />
-                      Spoji odabrane ćelije
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => editor.chain().focus().splitCell().run()}
-                      className="cursor-pointer py-2 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2"
-                    >
-                      <Split className="size-4 text-slate-500" />
-                      Razdvoji ćeliju
-                    </DropdownMenuItem>
+                      <button
+                        type="button"
+                        onClick={() => { editor.chain().focus().addColumnBefore().run(); setIsTableMenuOpen(false); }}
+                        className="w-full text-left py-1.5 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2 transition"
+                      >
+                        <Columns className="size-4 text-slate-500" /> Dodaj stupac lijevo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { editor.chain().focus().addColumnAfter().run(); setIsTableMenuOpen(false); }}
+                        className="w-full text-left py-1.5 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2 transition"
+                      >
+                        <Columns className="size-4 text-slate-500" /> Dodaj stupac desno
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { editor.chain().focus().deleteColumn().run(); setIsTableMenuOpen(false); }}
+                        className="w-full text-left py-1.5 px-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-2 transition"
+                      >
+                        <Trash2 className="size-4" /> Obriši stupac
+                      </button>
 
-                    <DropdownMenuSeparator className="my-1 bg-slate-100" />
+                      <div className="my-1 border-t border-slate-100" />
 
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        if (window.confirm('Želite li sigurno ukloniti cijelu tablicu?')) {
-                          editor.chain().focus().deleteTable().run();
-                        }
-                      }}
-                      className="cursor-pointer py-2 px-3 rounded-lg text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2"
-                    >
-                      <Trash2 className="size-4 text-red-600" />
-                      Obriši cijelu tablicu
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                      <button
+                        type="button"
+                        onClick={() => { editor.chain().focus().toggleHeaderRow().run(); setIsTableMenuOpen(false); }}
+                        className="w-full text-left py-1.5 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 transition"
+                      >
+                        Uključi / isključi zaglavlje
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { editor.chain().focus().mergeCells().run(); setIsTableMenuOpen(false); }}
+                        className="w-full text-left py-1.5 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2 transition"
+                      >
+                        <Merge className="size-4 text-slate-500" /> Spoji odabrane ćelije
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { editor.chain().focus().splitCell().run(); setIsTableMenuOpen(false); }}
+                        className="w-full text-left py-1.5 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 flex items-center gap-2 transition"
+                      >
+                        <Split className="size-4 text-slate-500" /> Razdvoji ćeliju
+                      </button>
+
+                      <div className="my-1 border-t border-slate-100" />
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm('Želite li sigurno ukloniti cijelu tablicu?')) {
+                            editor.chain().focus().deleteTable().run();
+                          }
+                          setIsTableMenuOpen(false);
+                        }}
+                        className="w-full text-left py-1.5 px-3 rounded-lg text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition"
+                      >
+                        <Trash2 className="size-4 text-red-600" /> Obriši cijelu tablicu
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="flex-1" />
 
@@ -509,114 +525,114 @@ export function RichTextEditor({ value, onChange, placeholder = 'Počnite pisati
               {isFullscreen ? <Minimize2 className="size-4 text-primary" /> : <Maximize2 className="size-4" />}
             </ToolbarButton>
           </div>
+
+          {/* Contextual Sub-bar for Table - unified inside sticky header */}
+          {isTableActive && (
+            <div className="flex flex-wrap items-center gap-1.5 pt-2 mt-2 border-t border-slate-200/80 text-xs">
+              <div className="flex items-center gap-1.5 font-bold text-slate-900 mr-1.5">
+                <span className="inline-block size-2 rounded-full bg-primary animate-pulse" />
+                <span>Tablica:</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().addRowBefore().run()}
+                className="px-2 py-0.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded font-medium text-slate-700 transition flex items-center gap-1"
+                title="Dodaj redak iznad trenutnog"
+              >
+                <Rows className="size-3 text-slate-500" /> + Redak gore
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().addRowAfter().run()}
+                className="px-2 py-0.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded font-medium text-slate-700 transition flex items-center gap-1"
+                title="Dodaj redak ispod trenutnog"
+              >
+                <Rows className="size-3 text-slate-500" /> + Redak dolje
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().deleteRow().run()}
+                className="px-2 py-0.5 bg-white hover:bg-red-50 border border-red-200 text-red-600 rounded font-medium transition flex items-center gap-1"
+                title="Obriši trenutni redak"
+              >
+                ✕ Redak
+              </button>
+
+              <div className="w-px h-3.5 bg-slate-200 mx-0.5" />
+
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().addColumnBefore().run()}
+                className="px-2 py-0.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded font-medium text-slate-700 transition flex items-center gap-1"
+                title="Dodaj stupac lijevo"
+              >
+                <Columns className="size-3 text-slate-500" /> + Stupac lijevo
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().addColumnAfter().run()}
+                className="px-2 py-0.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded font-medium text-slate-700 transition flex items-center gap-1"
+                title="Dodaj stupac desno"
+              >
+                <Columns className="size-3 text-slate-500" /> + Stupac desno
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().deleteColumn().run()}
+                className="px-2 py-0.5 bg-white hover:bg-red-50 border border-red-200 text-red-600 rounded font-medium transition flex items-center gap-1"
+                title="Obriši trenutni stupac"
+              >
+                ✕ Stupac
+              </button>
+
+              <div className="w-px h-3.5 bg-slate-200 mx-0.5" />
+
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleHeaderRow().run()}
+                className="px-2 py-0.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded font-medium text-slate-700 transition"
+                title="Uključi / isključi zaglavlje tablice"
+              >
+                Zaglavlje
+              </button>
+
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().mergeCells().run()}
+                className="px-2 py-0.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded font-medium text-slate-700 transition flex items-center gap-1"
+                title="Spoji odabrane ćelije"
+              >
+                <Merge className="size-3 text-slate-500" /> Spoji
+              </button>
+
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().splitCell().run()}
+                className="px-2 py-0.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded font-medium text-slate-700 transition flex items-center gap-1"
+                title="Razdvoji prethodno spojenu ćeliju"
+              >
+                <Split className="size-3 text-slate-500" /> Razdvoji
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm('Želite li sigurno ukloniti cijelu tablicu?')) {
+                    editor.chain().focus().deleteTable().run();
+                  }
+                }}
+                className="ml-auto px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white rounded font-bold transition flex items-center gap-1"
+                title="Obriši cijelu tablicu"
+              >
+                <Trash2 className="size-3" /> Obriši tablicu
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Dedicated Contextual Sub-bar for Table when active */}
-        {isTableActive && (
-          <div className={`sticky ${isFullscreen ? 'top-[53px]' : 'top-[128px]'} z-25 flex flex-wrap items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-red-50 via-slate-50 to-blue-50 border-b border-slate-200 text-xs shadow-xs transition-all`}>
-            <div className="flex items-center gap-1.5 font-bold text-slate-900 mr-2">
-              <span className="inline-block size-2 rounded-full bg-primary animate-pulse" />
-              <span>Tablica:</span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => editor.chain().focus().addRowBefore().run()}
-              className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-700 hover:text-slate-900 transition shadow-2xs flex items-center gap-1"
-              title="Dodaj redak iznad trenutnog"
-            >
-              <Rows className="size-3 text-slate-500" /> + Redak gore
-            </button>
-            <button
-              type="button"
-              onClick={() => editor.chain().focus().addRowAfter().run()}
-              className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-700 hover:text-slate-900 transition shadow-2xs flex items-center gap-1"
-              title="Dodaj redak ispod trenutnog"
-            >
-              <Rows className="size-3 text-slate-500" /> + Redak dolje
-            </button>
-            <button
-              type="button"
-              onClick={() => editor.chain().focus().deleteRow().run()}
-              className="px-2.5 py-1 bg-white hover:bg-red-50 border border-red-200 text-red-600 rounded-lg font-medium transition shadow-2xs flex items-center gap-1"
-              title="Obriši trenutni redak"
-            >
-              ✕ Redak
-            </button>
-
-            <div className="w-px h-4 bg-slate-300 mx-1" />
-
-            <button
-              type="button"
-              onClick={() => editor.chain().focus().addColumnBefore().run()}
-              className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-700 hover:text-slate-900 transition shadow-2xs flex items-center gap-1"
-              title="Dodaj stupac lijevo"
-            >
-              <Columns className="size-3 text-slate-500" /> + Stupac lijevo
-            </button>
-            <button
-              type="button"
-              onClick={() => editor.chain().focus().addColumnAfter().run()}
-              className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-700 hover:text-slate-900 transition shadow-2xs flex items-center gap-1"
-              title="Dodaj stupac desno"
-            >
-              <Columns className="size-3 text-slate-500" /> + Stupac desno
-            </button>
-            <button
-              type="button"
-              onClick={() => editor.chain().focus().deleteColumn().run()}
-              className="px-2.5 py-1 bg-white hover:bg-red-50 border border-red-200 text-red-600 rounded-lg font-medium transition shadow-2xs flex items-center gap-1"
-              title="Obriši trenutni stupac"
-            >
-              ✕ Stupac
-            </button>
-
-            <div className="w-px h-4 bg-slate-300 mx-1" />
-
-            <button
-              type="button"
-              onClick={() => editor.chain().focus().toggleHeaderRow().run()}
-              className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-700 hover:text-slate-900 transition shadow-2xs"
-              title="Uključi / isključi zaglavlje tablice"
-            >
-              Zaglavlje
-            </button>
-
-            <button
-              type="button"
-              onClick={() => editor.chain().focus().mergeCells().run()}
-              className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-700 hover:text-slate-900 transition shadow-2xs flex items-center gap-1"
-              title="Spoji odabrane ćelije"
-            >
-              <Merge className="size-3 text-slate-500" /> Spoji
-            </button>
-
-            <button
-              type="button"
-              onClick={() => editor.chain().focus().splitCell().run()}
-              className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-700 hover:text-slate-900 transition shadow-2xs flex items-center gap-1"
-              title="Razdvoji prethodno spojenu ćeliju"
-            >
-              <Split className="size-3 text-slate-500" /> Razdvoji
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                if (window.confirm('Želite li sigurno ukloniti cijelu tablicu?')) {
-                  editor.chain().focus().deleteTable().run();
-                }
-              }}
-              className="ml-auto px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition flex items-center gap-1 shadow-xs"
-              title="Obriši cijelu tablicu"
-            >
-              <Trash2 className="size-3" /> Obriši tablicu
-            </button>
-          </div>
-        )}
-
-        {/* Editor Content */}
-        <div className="flex-1 bg-white overflow-x-auto">
+        {/* Editor Content Area */}
+        <div className="flex-1 bg-white">
           <EditorContent editor={editor} />
         </div>
 
