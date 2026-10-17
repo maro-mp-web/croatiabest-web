@@ -15,7 +15,8 @@ export const ROUTE_TRANSLATIONS = {
     '/magazin': '/blog',
     '/vijesti': '/news',
     '/o-nama': '/about',
-    '/objekt': '/listing',
+    '/listing': '/objekt',
+    '/objekt': '/objekt',
   }
 } as const;
 

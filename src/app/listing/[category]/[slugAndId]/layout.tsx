@@ -4,7 +4,7 @@ import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 
 const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
 
-import { generateSlug } from '@/app/lib/utils/slug';
+import { generateSlug, CATEGORY_SLUG_MAP } from '@/app/lib/utils/slug';
 import { getSeoOverride } from '@/app/lib/listing-seo-config';
 
 export const dynamic = 'force-dynamic';
@@ -111,7 +111,9 @@ export async function generateMetadata({
       keywords = [listing.name, listing.city, 'CroatiaBest', 'Hrvatska', 'vodič'];
     }
 
-    const canonicalUrl = `https://croatiabest.com.hr/objekt/${resolvedParams.category}/${resolvedParams.slugAndId}`;
+    const rawCategory = (resolvedParams.category || 'ostalo').toLowerCase();
+    const normalizedCategory = CATEGORY_SLUG_MAP[rawCategory] || rawCategory;
+    const canonicalUrl = `https://croatiabest.com.hr/objekt/${normalizedCategory}/${resolvedParams.slugAndId}`;
 
     return {
       title,

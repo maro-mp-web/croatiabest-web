@@ -15,6 +15,7 @@ export function generateSlug(name: string): string {
 }
 
 export const CATEGORY_SLUG_MAP: Record<string, string> = {
+  // Public / Free categories
   pharmacy: 'ljekarna',
   emergency: 'hitna-pomoc',
   police: 'policija',
@@ -29,8 +30,13 @@ export const CATEGORY_SLUG_MAP: Record<string, string> = {
   train_stations: 'zeljeznicki-kolodvor',
   ferry_ports: 'trajektna-luka',
   marinas: 'marina',
+  national_parks: 'nacionalni-park',
+
+  // Business / Paid categories
   restaurants: 'restoran',
   hotels: 'hotel',
+  apartments: 'apartmani',
+  camps: 'kampovi',
   bars: 'kafic',
   nightclubs: 'nocni-klub',
   boat_rentals: 'nautika',
@@ -45,14 +51,29 @@ export const CATEGORY_SLUG_MAP: Record<string, string> = {
   digital: 'digitalne-usluge',
   accounting: 'knjigovodstvo',
   hairdressers: 'frizerski-salon',
-  beauty: 'salon-ljepote'
+  beauty: 'salon-ljepote',
+
+  // Plural & legacy aliases
+  spomenici: 'spomenik',
+  vidikovci: 'vidikovac',
+  plaze: 'plaza',
+  ljekarne: 'ljekarna',
+  marine: 'marina',
+  kolodvori: 'autobusni-kolodvor',
+  znamenitosti: 'znamenitost',
+  restorani: 'restoran',
+  hoteli: 'hotel',
+  vinarije: 'vinarija',
+  trgovine: 'trgovina',
+  kafici: 'kafic',
+  parks: 'nacionalni-park',
+  parkovi: 'nacionalni-park',
 };
 
 export function generateListingUrl(category: string, nameOrSlug: string, langOrId?: 'hr' | 'en' | string, id?: string): string {
   const rawCat = (category || 'ostalo').toLowerCase();
   const niceCat = CATEGORY_SLUG_MAP[rawCat] || rawCat;
   const slug = generateSlug(nameOrSlug || '');
-  const lang = (langOrId === 'en' || langOrId === 'hr') ? langOrId : 'hr';
-  const base = `/listing/${niceCat}/${slug}`;
-  return getLocalizedUrl(base, lang);
+  return `/objekt/${niceCat}/${slug}`;
 }
+

@@ -2,7 +2,7 @@ import React from 'react';
 import PocketBase from 'pocketbase';
 import ListingDetailClient from './ListingDetailClient';
 import { notFound } from 'next/navigation';
-import { generateSlug } from '@/app/lib/utils/slug';
+import { generateSlug, CATEGORY_SLUG_MAP } from '@/app/lib/utils/slug';
 import { getSeoOverride } from '@/app/lib/listing-seo-config';
 
 export const dynamic = 'force-dynamic';
@@ -97,11 +97,14 @@ export default async function ListingDetailPage({
   const safeListing = JSON.parse(JSON.stringify(listing));
   const safeAllActive = JSON.parse(JSON.stringify(allActiveListings));
 
-  const primarySchemaType = resolvedParams.category === 'hitna-pomoc' || resolvedParams.category === 'emergency' 
+  const rawCategory = (resolvedParams.category || 'ostalo').toLowerCase();
+  const normalizedCategory = CATEGORY_SLUG_MAP[rawCategory] || rawCategory;
+
+  const primarySchemaType = normalizedCategory === 'hitna-pomoc' || normalizedCategory === 'emergency' 
     ? 'EmergencyService' 
-    : (resolvedParams.category === 'ljekarna' || resolvedParams.category === 'pharmacy' 
+    : (normalizedCategory === 'ljekarna' || normalizedCategory === 'pharmacy' 
         ? 'Pharmacy' 
-        : (resolvedParams.category === 'plaza' || resolvedParams.category === 'beaches' 
+        : (normalizedCategory === 'plaza' || normalizedCategory === 'beaches' 
             ? 'TouristAttraction' 
             : 'LocalBusiness'));
 
@@ -111,7 +114,7 @@ export default async function ListingDetailPage({
       '@type': primarySchemaType,
       name: seoOverride?.h1Title || listing.name,
       description: seoOverride?.seoDescription || listing.metadata?.seoDescription || (listing.description ? listing.description.replace(/<[^>]*>/g, '').slice(0, 160) : undefined),
-      url: `https://croatiabest.com.hr/objekt/${resolvedParams.category}/${resolvedParams.slugAndId}`,
+      url: `https://croatiabest.com.hr/objekt/${normalizedCategory}/${resolvedParams.slugAndId}`,
       address: {
         '@type': 'PostalAddress',
         streetAddress: listing.address || '',
@@ -146,7 +149,7 @@ export default async function ListingDetailPage({
       <ListingDetailClient 
         listing={safeListing} 
         allActiveListings={safeAllActive}
-        categorySlug={resolvedParams.category}
+        categorySlug={normalizedCategory}
       />
     </>
   );

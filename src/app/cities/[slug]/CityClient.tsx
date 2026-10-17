@@ -138,7 +138,7 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
             );
           })}
         </div>
-        <Link href={getLocalizedUrl(`/listing/${viewMoreSlug}`, language)} className={`w-full py-3 rounded-xl border-2 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:bg-foreground hover:text-white ${colorClass.replace('text-', 'border-').replace('600', '200')}`}>
+        <Link href={`${getLocalizedUrl('/explore', language)}?category=${viewMoreSlug}&q=${encodeURIComponent(city.name)}`} className={`w-full py-3 rounded-xl border-2 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:bg-foreground hover:text-white ${colorClass.replace('text-', 'border-').replace('600', '200')}`}>
           {isEn ? 'View More' : 'Pogledaj više'} <ArrowRight className="size-4" />
         </Link>
       </div>
