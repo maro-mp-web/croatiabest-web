@@ -9,7 +9,10 @@ import { useUser, usePB } from '@/pocketbase';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, User, Clock, Share2, Facebook, Link as LinkIcon, Edit3, ShieldCheck } from 'lucide-react';
+import { 
+  ArrowLeft, Calendar, User, Clock, Share2, Facebook, Link as LinkIcon, 
+  Edit3, ShieldCheck, MapPin, Compass, Waves, UtensilsCrossed, Landmark, ArrowRight, ExternalLink 
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import FAQSection from '@/components/ui/FAQSection';
@@ -17,7 +20,17 @@ import AdBanner from '@/components/ads/AdBanner';
 import { formatDate } from '@/lib/utils';
 import { getLocalizedUrl } from '@/lib/i18n-routes';
 
-export default function ArticleClient({ article, relatedArticles }: { article: any, relatedArticles: any[] }) {
+export default function ArticleClient({ 
+  article, 
+  relatedArticles,
+  cities = [],
+  islands = []
+}: { 
+  article: any; 
+  relatedArticles: any[];
+  cities?: any[];
+  islands?: any[];
+}) {
   const { language } = useLanguage();
   const isEn = language === 'en';
   const { user } = useUser();
@@ -37,6 +50,48 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
   const displayReadTime = article.readTime || '5 min';
   const displayDate = article.publishDate ? formatDate(article.publishDate) : (article.created ? formatDate(article.created) : null);
 
+  // Helper to extract root stem for Croatian declensions (e.g., Korčula -> Korčul, Split -> Split)
+  const getStem = (name: string) => {
+    if (!name) return '';
+    const clean = name.trim().toLowerCase();
+    if (clean.length > 4 && /[aeiou]$/i.test(clean)) {
+      return clean.slice(0, -1);
+    }
+    return clean;
+  };
+
+  const articleTags = Array.isArray(article.tags) 
+    ? article.tags 
+    : (typeof article.tags === 'string' ? article.tags.split(',').map((t: string) => t.trim()) : []);
+
+  const searchCorpus = `${article.title || ''} ${article.titleEn || ''} ${article.excerpt || ''} ${(article.content || '').slice(0, 2500)}`.toLowerCase();
+
+  // Find matched island first (or city)
+  const matchedIsland = (islands || []).find((isl: any) => {
+    const name = (isl.name || '').toLowerCase();
+    const stem = getStem(isl.name);
+    const hasTag = articleTags.some((t: string) => {
+      const tl = t.toLowerCase();
+      return tl === name || tl === `otok ${name}` || (stem.length >= 4 && tl.includes(stem));
+    });
+    const hasField = (article.city && article.city.toLowerCase() === name) || (article.location && article.location.toLowerCase().includes(name));
+    const hasMention = searchCorpus.includes(name) || searchCorpus.includes(`otok ${name}`) || (stem.length >= 4 && searchCorpus.includes(stem));
+    return hasTag || hasField || hasMention;
+  });
+
+  // Find matched city
+  const matchedCity = (cities || []).find((c: any) => {
+    const name = (c.name || '').toLowerCase();
+    const stem = getStem(c.name);
+    const hasTag = articleTags.some((t: string) => {
+      const tl = t.toLowerCase();
+      return tl === name || (stem.length >= 4 && tl.includes(stem));
+    });
+    const hasField = (article.city && article.city.toLowerCase() === name) || (article.location && article.location.toLowerCase().includes(name));
+    const hasMention = searchCorpus.includes(name) || (stem.length >= 4 && searchCorpus.includes(stem));
+    return hasTag || hasField || hasMention;
+  });
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
@@ -50,9 +105,28 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="container mx-auto px-4 text-center max-w-4xl space-y-6">
               <div className="flex flex-wrap items-center justify-center gap-3">
-                <Badge className="bg-primary hover:bg-primary text-white border-none px-6 py-2 text-sm font-black uppercase tracking-widest">
+                <Badge className="bg-primary hover:bg-primary text-white border-none px-6 py-2 text-sm font-black uppercase tracking-widest shadow-lg">
                   {article.category}
                 </Badge>
+
+                {matchedCity && (
+                  <Link href={getLocalizedUrl(`/cities/${matchedCity.slug}`, language)}>
+                    <Badge className="bg-white hover:bg-white/90 text-slate-900 border-none px-5 py-2 text-sm font-black tracking-wide flex items-center gap-1.5 shadow-xl transition-all hover:scale-105 cursor-pointer">
+                      <MapPin className="size-4 text-primary" />
+                      {isEn && matchedCity.nameEn ? matchedCity.nameEn : matchedCity.name}
+                    </Badge>
+                  </Link>
+                )}
+
+                {matchedIsland && (!matchedCity || matchedCity.name.toLowerCase() !== matchedIsland.name.toLowerCase()) && (
+                  <Link href={getLocalizedUrl(`/islands/${matchedIsland.slug}`, language)}>
+                    <Badge className="bg-sky-500 hover:bg-sky-400 text-white border-none px-5 py-2 text-sm font-black tracking-wide flex items-center gap-1.5 shadow-xl transition-all hover:scale-105 cursor-pointer">
+                      <Compass className="size-4" />
+                      {isEn ? `Island ${matchedIsland.name}` : `Otok ${matchedIsland.name}`}
+                    </Badge>
+                  </Link>
+                )}
+
                 {isAdmin && (
                   <Link href={`/admin/new-blog?edit=${article.id}`}>
                     <Button size="sm" className="bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-xs rounded-full px-5 h-9 shadow-xl gap-2 border border-amber-300 transition-all hover:scale-105">
@@ -132,6 +206,160 @@ export default function ArticleClient({ article, relatedArticles }: { article: a
                   </div>
                 </div>
               </div>
+
+              {/* CONNECTED DESTINATION SHOWCASE CARD */}
+              {matchedCity ? (
+                <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-2xl p-6 sm:p-10 border border-white/10 group">
+                  <div className="absolute inset-0 opacity-25 group-hover:opacity-35 transition-opacity duration-700">
+                    <Image 
+                      src={matchedCity.image || '/hero-dubrovnik.jpg'} 
+                      alt={matchedCity.name} 
+                      fill 
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 to-transparent" />
+                  
+                  <div className="relative z-10 space-y-6 max-w-2xl">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge className="bg-primary text-white border-none font-black text-xs uppercase tracking-widest px-4 py-1.5 flex items-center gap-1.5">
+                        <MapPin className="size-3.5" />
+                        {isEn ? 'Connected Destination' : 'Povezana destinacija'}
+                      </Badge>
+                      <Badge className="bg-white/15 text-white border-white/20 font-bold text-xs">
+                        {isEn ? 'City Guide' : 'Vodič kroz grad'}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h3 className="text-3xl sm:text-4xl font-headline font-black text-white tracking-tight">
+                        {isEn ? `Explore ${matchedCity.nameEn || matchedCity.name}` : `Istražite grad: ${matchedCity.name}`}
+                      </h3>
+                      <p className="text-slate-300 text-sm sm:text-base line-clamp-3 leading-relaxed font-body">
+                        {isEn && matchedCity.descriptionEn
+                          ? matchedCity.descriptionEn.replace(/<[^>]*>/g, '').slice(0, 200)
+                          : (matchedCity.description ? matchedCity.description.replace(/<[^>]*>/g, '').slice(0, 200) : (isEn ? 'Discover top attractions, local beaches, restaurants and travel guides.' : 'Otkrijte najbolje atrakcije, plaže, restorane i kompletan vodič kroz destinaciju.'))}...
+                      </p>
+                    </div>
+
+                    {/* Quick navigation pill links */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <Link href={`${getLocalizedUrl('/explore', language)}?category=beaches&q=${encodeURIComponent(matchedCity.name)}`}>
+                        <span className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/15 transition-colors cursor-pointer">
+                          <Waves className="size-3 text-cyan-400" /> {isEn ? 'Beaches' : 'Plaže'}
+                        </span>
+                      </Link>
+                      <Link href={`${getLocalizedUrl('/explore', language)}?category=restaurants&q=${encodeURIComponent(matchedCity.name)}`}>
+                        <span className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/15 transition-colors cursor-pointer">
+                          <UtensilsCrossed className="size-3 text-amber-400" /> {isEn ? 'Restaurants' : 'Restorani'}
+                        </span>
+                      </Link>
+                      <Link href={`${getLocalizedUrl('/explore', language)}?category=attractions&q=${encodeURIComponent(matchedCity.name)}`}>
+                        <span className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/15 transition-colors cursor-pointer">
+                          <Landmark className="size-3 text-emerald-400" /> {isEn ? 'Attractions' : 'Znamenitosti'}
+                        </span>
+                      </Link>
+                    </div>
+
+                    <div>
+                      <Link href={getLocalizedUrl(`/cities/${matchedCity.slug}`, language)}>
+                        <Button className="bg-primary hover:bg-primary/90 text-white font-black text-sm rounded-2xl px-6 h-12 shadow-xl gap-2 hover:gap-3 transition-all">
+                          {isEn ? `Open Complete ${matchedCity.nameEn || matchedCity.name} Guide` : `Pogledaj cijeli vodič kroz ${matchedCity.name}`}
+                          <ArrowRight className="size-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ) : matchedIsland ? (
+                <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-2xl p-6 sm:p-10 border border-white/10 group">
+                  <div className="absolute inset-0 opacity-25 group-hover:opacity-35 transition-opacity duration-700">
+                    <Image 
+                      src={matchedIsland.image || '/hero-dubrovnik.jpg'} 
+                      alt={matchedIsland.name} 
+                      fill 
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 to-transparent" />
+                  
+                  <div className="relative z-10 space-y-6 max-w-2xl">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge className="bg-sky-500 text-white border-none font-black text-xs uppercase tracking-widest px-4 py-1.5 flex items-center gap-1.5">
+                        <Compass className="size-3.5" />
+                        {isEn ? 'Connected Island' : 'Povezani otok'}
+                      </Badge>
+                      <Badge className="bg-white/15 text-white border-white/20 font-bold text-xs">
+                        {isEn ? 'Island Guide' : 'Vodič kroz otok'}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h3 className="text-3xl sm:text-4xl font-headline font-black text-white tracking-tight">
+                        {isEn ? `Explore Island ${matchedIsland.name}` : `Istražite otok: ${matchedIsland.name}`}
+                      </h3>
+                      <p className="text-slate-300 text-sm sm:text-base line-clamp-3 leading-relaxed font-body">
+                        {isEn && matchedIsland.descriptionEn
+                          ? matchedIsland.descriptionEn.replace(/<[^>]*>/g, '').slice(0, 200)
+                          : (matchedIsland.description ? matchedIsland.description.replace(/<[^>]*>/g, '').slice(0, 200) : (isEn ? 'Discover secret coves, top beaches, local gastronomy and sights.' : 'Otkrijte skrivene uvale, najbolje plaže, lokalnu gastronomiju i znamenitosti.'))}...
+                      </p>
+                    </div>
+
+                    {/* Quick navigation pill links */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <Link href={`${getLocalizedUrl('/explore', language)}?category=beaches&q=${encodeURIComponent(matchedIsland.name)}`}>
+                        <span className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/15 transition-colors cursor-pointer">
+                          <Waves className="size-3 text-cyan-400" /> {isEn ? 'Island Beaches' : 'Plaže na otoku'}
+                        </span>
+                      </Link>
+                      <Link href={`${getLocalizedUrl('/explore', language)}?category=restaurants&q=${encodeURIComponent(matchedIsland.name)}`}>
+                        <span className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/15 transition-colors cursor-pointer">
+                          <UtensilsCrossed className="size-3 text-amber-400" /> {isEn ? 'Restaurants' : 'Restorani'}
+                        </span>
+                      </Link>
+                    </div>
+
+                    <div>
+                      <Link href={getLocalizedUrl(`/islands/${matchedIsland.slug}`, language)}>
+                        <Button className="bg-sky-500 hover:bg-sky-600 text-white font-black text-sm rounded-2xl px-6 h-12 shadow-xl gap-2 hover:gap-3 transition-all">
+                          {isEn ? `Open Complete Island ${matchedIsland.name} Guide` : `Pogledaj cijeli vodič: Otok ${matchedIsland.name}`}
+                          <ArrowRight className="size-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-xl p-6 sm:p-8 border border-white/10">
+                  <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="space-y-2 max-w-xl">
+                      <Badge className="bg-primary/20 text-primary border border-primary/30 font-black text-xs uppercase tracking-widest px-3 py-1">
+                        CroatiaBest Vodiči
+                      </Badge>
+                      <h4 className="text-2xl font-headline font-black text-white">
+                        {isEn ? 'Explore Croatia’s Top Cities & Islands' : 'Istražite najljepše gradove i otoke Hrvatske'}
+                      </h4>
+                      <p className="text-slate-300 text-sm font-body">
+                        {isEn ? 'Interactive maps, verified local attractions, top beaches and gastronomy.' : 'Interaktivne karte, provjerene lokacije, najbolje plaže i vrhunski restorani.'}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 shrink-0">
+                      <Link href={getLocalizedUrl('/gradovi', language)}>
+                        <Button className="bg-white text-slate-900 hover:bg-slate-100 font-black rounded-xl text-xs px-5 h-11">
+                          <MapPin className="size-3.5 mr-1.5 text-primary" />
+                          {isEn ? 'All Cities' : 'Svi gradovi'}
+                        </Button>
+                      </Link>
+                      <Link href={getLocalizedUrl('/otoci', language)}>
+                        <Button className="bg-sky-500 hover:bg-sky-600 text-white font-black rounded-xl text-xs px-5 h-11">
+                          <Compass className="size-3.5 mr-1.5" />
+                          {isEn ? 'All Islands' : 'Svi otoci'}
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Related articles mockup */}
               <div className="space-y-8">

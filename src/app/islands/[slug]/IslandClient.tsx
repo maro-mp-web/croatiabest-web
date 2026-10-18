@@ -101,24 +101,65 @@ export default function IslandClient({ island, listings = [], articles = [], isl
       (Array.isArray(a.tags) && (a.tags.includes('news_bot') || a.tags.includes('vijesti')));
   };
 
+  // Helper to extract root stem for Croatian declensions (e.g., Korčula -> Korčul, Hvar -> Hvar, Brač -> Brač)
+  const getStem = (name: string) => {
+    if (!name) return '';
+    const clean = name.trim().toLowerCase();
+    if (clean.length > 4 && /[aeiou]$/i.test(clean)) {
+      return clean.slice(0, -1);
+    }
+    return clean;
+  };
+
   const matchesIsland = (a: any) => {
     const islandName = island.name.toLowerCase();
+    const islandStem = getStem(island.name);
+    const regionName = island.region ? island.region.toLowerCase() : '';
+
+    // 1. Tags matching
     const tagArray = Array.isArray(a.tags) 
       ? a.tags 
       : typeof a.tags === 'string' 
         ? a.tags.split(',').map((t: string) => t.trim()) 
         : [];
-    const hasTag = tagArray.some((t: string) => t.toLowerCase() === islandName || t.toLowerCase() === `otok ${islandName}` || islandCityNames.includes(t.toLowerCase()));
-    const hasTitle = a.title?.toLowerCase().includes(islandName) || a.titleEn?.toLowerCase().includes(islandName);
-    const hasExcerpt = a.excerpt?.toLowerCase().includes(islandName) || a.excerptEn?.toLowerCase().includes(islandName);
-    return hasTag || hasTitle || hasExcerpt;
+    const hasTag = tagArray.some((t: string) => {
+      const tl = t.toLowerCase();
+      return (
+        tl === islandName || 
+        tl === `otok ${islandName}` || 
+        (islandStem.length >= 4 && tl.includes(islandStem)) ||
+        islandCityNames.includes(tl) ||
+        (regionName && tl === regionName)
+      );
+    });
+
+    // 2. Title, excerpt, and content check
+    const textToSearch = `${a.title || ''} ${a.titleEn || ''} ${a.excerpt || ''} ${a.excerptEn || ''} ${(a.content || '').slice(0, 1500)}`.toLowerCase();
+    const hasMention = 
+      textToSearch.includes(islandName) || 
+      textToSearch.includes(`otok ${islandName}`) ||
+      (islandStem.length >= 4 && textToSearch.includes(islandStem)) ||
+      islandCityNames.some((c: string) => c && c.length >= 4 && textToSearch.includes(c));
+
+    // 3. Direct city/location field if present
+    const hasLocationField = 
+      (a.city && (a.city.toLowerCase() === islandName || islandCityNames.includes(a.city.toLowerCase()))) ||
+      (a.location && (a.location.toLowerCase().includes(islandName) || (islandStem.length >= 4 && a.location.toLowerCase().includes(islandStem))));
+
+    return hasTag || hasMention || hasLocationField;
   };
 
-  // Vijesti filtrirane po tagu ili spomenu otoka
-  const islandNews = articles?.filter(a => isNewsArticle(a) && matchesIsland(a)).slice(0, 5) || [];
+  // Vijesti vezane uz otok (direktne ili opće turističke aktualnosti)
+  const directIslandNews = (articles || []).filter(a => isNewsArticle(a) && matchesIsland(a));
+  const fallbackIslandNews = (articles || []).filter(a => isNewsArticle(a) && !directIslandNews.includes(a));
+  const islandNews = (directIslandNews.length > 0 ? directIslandNews : fallbackIslandNews).slice(0, 5);
+  const hasDirectNews = directIslandNews.length > 0;
 
-  // Povezani putopisi i blog vodiči (koji nisu dnevne vijesti)
-  const relatedArticles = articles?.filter(a => !isNewsArticle(a) && matchesIsland(a)).slice(0, 3) || [];
+  // Povezani putopisi i vodiči o otoku (direktni ili najnoviji vodiči)
+  const directIslandArticles = (articles || []).filter(a => !isNewsArticle(a) && matchesIsland(a));
+  const fallbackIslandArticles = (articles || []).filter(a => !isNewsArticle(a) && !directIslandArticles.includes(a));
+  const relatedArticles = (directIslandArticles.length > 0 ? directIslandArticles : fallbackIslandArticles).slice(0, 3);
+  const hasDirectArticles = directIslandArticles.length > 0;
 
   const getDirectionsUrl = (lat: number, lng: number) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
@@ -361,7 +402,9 @@ export default function IslandClient({ island, listings = [], articles = [], isl
                   <div className="flex items-center gap-2 border-b border-black/5 pb-4">
                     <Umbrella className="size-6 text-primary" />
                     <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
-                      {isEn ? `News & Articles: ${island.name}` : `Vijesti i članci: ${island.name}`}
+                      {hasDirectNews 
+                        ? (isEn ? `News & Articles: ${island.name}` : `Vijesti i članci: Otok ${island.name}`) 
+                        : (isEn ? 'Latest Travel News & Updates' : 'Aktualne turističke vijesti')}
                     </h3>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
@@ -389,7 +432,9 @@ export default function IslandClient({ island, listings = [], articles = [], isl
                   <div className="flex items-center gap-2 border-b border-black/5 pb-4">
                     <BookOpen className="size-6 text-primary" />
                     <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
-                      {isEn ? `Stories & Guides: ${island.name}` : `Zanimljivosti i vodiči: ${island.name}`}
+                      {hasDirectArticles 
+                        ? (isEn ? `Stories & Guides: ${island.name}` : `Zanimljivosti i vodiči: Otok ${island.name}`) 
+                        : (isEn ? 'Croatia Island & Travel Guides' : 'Vodiči i zanimljivosti iz Hrvatske')}
                     </h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -116,6 +116,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ id: st
 
   const pb = new PocketBase(PB_URL);
   let relatedArticles: any[] = [];
+  let allCities: any[] = [];
+  let allIslands: any[] = [];
   try {
     const allBlogs = await pb.collection('blogs').getFullList({ requestKey: null });
     relatedArticles = allBlogs.filter((a: any) => a.id !== article.id).map(a => structuredClone(a));
@@ -123,9 +125,23 @@ export default async function ArticlePage({ params }: { params: Promise<{ id: st
     // silently fail - related articles are optional
   }
 
+  try {
+    allCities = await pb.collection('cities').getFullList({ sort: 'name', requestKey: null });
+  } catch (e) {
+    // silently fail
+  }
+
+  try {
+    allIslands = await pb.collection('islands').getFullList({ sort: 'name', requestKey: null });
+  } catch (e) {
+    // silently fail
+  }
+
   // Ensure plain objects are passed to Client Components
   const safeArticle = JSON.parse(JSON.stringify(article));
   const safeRelated = JSON.parse(JSON.stringify(relatedArticles));
+  const safeCities = JSON.parse(JSON.stringify(allCities));
+  const safeIslands = JSON.parse(JSON.stringify(allIslands));
 
   if (article.created && !safeArticle.created) {
     safeArticle.created = article.created;
@@ -223,7 +239,12 @@ export default async function ArticlePage({ params }: { params: Promise<{ id: st
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <ArticleClient article={safeArticle} relatedArticles={safeRelated} />
+      <ArticleClient 
+        article={safeArticle} 
+        relatedArticles={safeRelated} 
+        cities={safeCities} 
+        islands={safeIslands} 
+      />
     </>
   );
 }

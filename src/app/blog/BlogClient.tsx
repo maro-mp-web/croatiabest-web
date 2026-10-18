@@ -9,20 +9,46 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Calendar, User, Clock, ArrowRight } from 'lucide-react';
+import { Search, Calendar, User, Clock, ArrowRight, MapPin, Compass, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatDate, calculateReadTime } from '@/lib/utils';
 import { getLocalizedUrl } from '@/lib/i18n-routes';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+const POPULAR_DESTINATIONS = [
+  { name: 'Dubrovnik', isIsland: false },
+  { name: 'Split', isIsland: false },
+  { name: 'Zagreb', isIsland: false },
+  { name: 'Zadar', isIsland: false },
+  { name: 'Rovinj', isIsland: false },
+  { name: 'Hvar', isIsland: true, label: 'Otok Hvar', labelEn: 'Island Hvar' },
+  { name: 'Korčula', isIsland: true, label: 'Otok Korčula', labelEn: 'Island Korčula' },
+  { name: 'Brač', isIsland: true, label: 'Otok Brač', labelEn: 'Island Brač' },
+  { name: 'Krk', isIsland: true, label: 'Otok Krk', labelEn: 'Island Krk' },
+];
+
 export default function BlogClient({ articles }: { articles: any[] }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('all');
   const { language } = useLanguage();
+  const isEn = language === 'en';
 
   const filteredArticles = articles.filter(article => {
-    const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.toLowerCase().trim();
+    const tagArray = Array.isArray(article.tags) 
+      ? article.tags 
+      : (typeof article.tags === 'string' ? article.tags.split(',') : []);
+
+    const matchesSearch = !q || 
+      (article.title && article.title.toLowerCase().includes(q)) ||
+      (article.titleEn && article.titleEn.toLowerCase().includes(q)) ||
+      (article.excerpt && article.excerpt.toLowerCase().includes(q)) ||
+      (article.excerptEn && article.excerptEn.toLowerCase().includes(q)) ||
+      tagArray.some((t: string) => t.toLowerCase().includes(q)) ||
+      (article.city && article.city.toLowerCase().includes(q)) ||
+      (article.location && article.location.toLowerCase().includes(q));
+
     const matchesCategory = category === 'all' || article.category === category;
     return matchesSearch && matchesCategory;
   });
@@ -89,11 +115,52 @@ export default function BlogClient({ articles }: { articles: any[] }) {
           <div className="relative w-full md:w-80">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input 
-              placeholder="Pretraži članke..." 
+              placeholder={isEn ? "Search articles & destinations..." : "Pretraži članke i destinacije..."} 
               className="pl-12 h-12 rounded-2xl bg-secondary/30 border-none"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+          </div>
+        </div>
+
+        {/* Popular Destination Quick-Filters */}
+        <div className="mb-10 p-4 md:p-6 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <MapPin className="size-3.5 text-primary" />
+              {isEn ? 'Filter by Destination:' : 'Filtriraj po destinaciji:'}
+            </span>
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="text-xs font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1 cursor-pointer"
+              >
+                <X className="size-3" /> {isEn ? 'Clear filter' : 'Poništi filter'}
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {POPULAR_DESTINATIONS.map(dest => {
+              const isActive = searchQuery.toLowerCase() === dest.name.toLowerCase();
+              const label = isEn 
+                ? (dest.labelEn || dest.name)
+                : (dest.label || dest.name);
+
+              return (
+                <button
+                  key={dest.name}
+                  onClick={() => setSearchQuery(isActive ? '' : dest.name)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                    isActive 
+                      ? (dest.isIsland ? 'bg-sky-500 text-white shadow-md scale-105' : 'bg-primary text-white shadow-md scale-105')
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
+                >
+                  {dest.isIsland ? <Compass className="size-3 text-sky-400" /> : <MapPin className="size-3 text-primary" />}
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
 

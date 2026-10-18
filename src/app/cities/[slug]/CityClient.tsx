@@ -100,6 +100,15 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
     l => l.locationCategoryId === 'national_parks' && (l.region === city.region || l.city === city.name)
   );
 
+  // Helper to extract word stem for Croatian declensions (e.g. Dubrovnik -> dubrovni, Korčula -> korčul, Pula -> pul)
+  const getStem = (name: string) => {
+    const n = name.toLowerCase().trim();
+    if (n.endsWith('a') || n.endsWith('e') || n.endsWith('i') || n.endsWith('o') || n.endsWith('u')) {
+      return n.slice(0, -1);
+    }
+    return n;
+  };
+
   // Helper to distinguish news articles from general magazine blogs
   const isNewsArticle = (a: any) => {
     const newsCategories = [
@@ -113,22 +122,41 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
 
   const matchesCity = (a: any) => {
     const cityName = city.name.toLowerCase();
+    const cityStem = getStem(city.name);
+    const regionName = (city.region || '').toLowerCase();
+    
+    // 1. Tag check
     const tagArray = Array.isArray(a.tags) 
       ? a.tags 
       : typeof a.tags === 'string' 
         ? a.tags.split(',').map((t: string) => t.trim()) 
         : [];
-    const hasTag = tagArray.some((t: string) => t.toLowerCase() === cityName);
-    const hasTitle = a.title?.toLowerCase().includes(cityName) || a.titleEn?.toLowerCase().includes(cityName);
-    const hasExcerpt = a.excerpt?.toLowerCase().includes(cityName) || a.excerptEn?.toLowerCase().includes(cityName);
-    return hasTag || hasTitle || hasExcerpt;
+    const hasTag = tagArray.some((t: string) => {
+      const tl = t.toLowerCase();
+      return tl === cityName || (cityStem.length >= 4 && tl.includes(cityStem)) || (regionName && tl === regionName);
+    });
+
+    // 2. Title, excerpt, and content check
+    const textToSearch = `${a.title || ''} ${a.titleEn || ''} ${a.excerpt || ''} ${a.excerptEn || ''} ${(a.content || '').slice(0, 1500)}`.toLowerCase();
+    const hasMention = textToSearch.includes(cityName) || (cityStem.length >= 4 && textToSearch.includes(cityStem));
+    
+    // 3. Direct city/location field if present
+    const hasCityField = (a.city && a.city.toLowerCase() === cityName) || (a.location && a.location.toLowerCase().includes(cityName));
+
+    return hasTag || hasMention || hasCityField;
   };
 
-  // Vijesti vezane uz grad (po tagu ili spomenu grada u naslovu/opisu)
-  const cityNews = allBlogs.filter(a => isNewsArticle(a) && matchesCity(a)).slice(0, 5);
+  // Vijesti vezane uz grad (direktne ili najnovije turističke aktualnosti)
+  const directCityNews = allBlogs.filter(a => isNewsArticle(a) && matchesCity(a));
+  const fallbackNews = allBlogs.filter(a => isNewsArticle(a) && !directCityNews.includes(a));
+  const cityNews = (directCityNews.length > 0 ? directCityNews : fallbackNews).slice(0, 5);
+  const hasDirectNews = directCityNews.length > 0;
 
-  // Povezani putopisi i gastro vodiči (koji nisu dnevne vijesti)
-  const relatedArticles = allBlogs.filter(a => !isNewsArticle(a) && matchesCity(a)).slice(0, 3);
+  // Povezani putopisi i gastro vodiči (direktni ili najnoviji vodiči)
+  const directArticles = allBlogs.filter(a => !isNewsArticle(a) && matchesCity(a));
+  const fallbackArticles = allBlogs.filter(a => !isNewsArticle(a) && !directArticles.includes(a));
+  const relatedArticles = (directArticles.length > 0 ? directArticles : fallbackArticles).slice(0, 3);
+  const hasDirectArticles = directArticles.length > 0;
 
   const getDirectionsUrl = (lat: number, lng: number) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
@@ -339,7 +367,9 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
                   <div className="flex items-center gap-2 border-b border-black/5 pb-4">
                     <BookOpen className="size-6 text-primary" />
                     <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
-                      {isEn ? `News & Articles: ${city.name}` : `Vijesti i članci: ${city.name}`}
+                      {hasDirectNews 
+                        ? (isEn ? `News & Articles: ${city.name}` : `Vijesti i članci: ${city.name}`) 
+                        : (isEn ? 'Latest Travel News & Updates' : 'Aktualne turističke vijesti')}
                     </h3>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
@@ -404,7 +434,9 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
                   <div className="flex items-center gap-2 border-b border-black/5 pb-4">
                     <BookOpen className="size-6 text-secondary" />
                     <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
-                      {isEn ? `Stories and News from ${city.name}` : `Zanimljivosti i vijesti iz: ${city.name}`}
+                      {hasDirectArticles 
+                        ? (isEn ? `Stories & Guides: ${city.name}` : `Zanimljivosti i vodiči: ${city.name}`) 
+                        : (isEn ? 'Croatia Travel Guides & Stories' : 'Vodiči i zanimljivosti iz Hrvatske')}
                     </h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

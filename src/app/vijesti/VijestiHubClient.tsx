@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Clock, ArrowRight, Newspaper, Flame, Sparkles } from 'lucide-react';
+import { Search, Clock, ArrowRight, Newspaper, Flame, Sparkles, MapPin, Compass, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { calculateReadTime } from '@/lib/utils';
@@ -25,16 +25,40 @@ const CATEGORIES = [
   { id: 'Domovinski rat', label: 'Domovinski rat' },
 ];
 
+const POPULAR_DESTINATIONS = [
+  { name: 'Dubrovnik', isIsland: false },
+  { name: 'Split', isIsland: false },
+  { name: 'Zagreb', isIsland: false },
+  { name: 'Zadar', isIsland: false },
+  { name: 'Rovinj', isIsland: false },
+  { name: 'Hvar', isIsland: true, label: 'Otok Hvar', labelEn: 'Island Hvar' },
+  { name: 'Korčula', isIsland: true, label: 'Otok Korčula', labelEn: 'Island Korčula' },
+  { name: 'Brač', isIsland: true, label: 'Otok Brač', labelEn: 'Island Brač' },
+  { name: 'Krk', isIsland: true, label: 'Otok Krk', labelEn: 'Island Krk' },
+];
+
 export default function VijestiHubClient({ articles }: { articles: any[] }) {
   const { language } = useLanguage();
+  const isEn = language === 'en';
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredArticles = articles.filter(article => {
     const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory;
-    const matchesSearch = !searchQuery.trim() || 
-      (article.title && article.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (article.excerpt && article.excerpt.toLowerCase().includes(searchQuery.toLowerCase()));
+    const q = searchQuery.toLowerCase().trim();
+    const tagArray = Array.isArray(article.tags) 
+      ? article.tags 
+      : (typeof article.tags === 'string' ? article.tags.split(',') : []);
+
+    const matchesSearch = !q || 
+      (article.title && article.title.toLowerCase().includes(q)) ||
+      (article.titleEn && article.titleEn.toLowerCase().includes(q)) ||
+      (article.excerpt && article.excerpt.toLowerCase().includes(q)) ||
+      (article.excerptEn && article.excerptEn.toLowerCase().includes(q)) ||
+      tagArray.some((t: string) => t.toLowerCase().includes(q)) ||
+      (article.city && article.city.toLowerCase().includes(q)) ||
+      (article.location && article.location.toLowerCase().includes(q));
+
     return matchesCategory && matchesSearch;
   });
 
@@ -83,11 +107,52 @@ export default function VijestiHubClient({ articles }: { articles: any[] }) {
           <div className="relative w-full lg:w-80 shrink-0">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
             <Input
-              placeholder="Pretraži naslove i teme..."
+              placeholder={isEn ? "Search headlines & destinations..." : "Pretraži naslove i destinacije..."}
               className="pl-11 h-11 rounded-2xl bg-white border border-slate-200 shadow-sm font-medium"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+          </div>
+        </div>
+
+        {/* Destination Quick Filters */}
+        <div className="mb-10 p-4 md:p-5 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+              <MapPin className="size-3.5 text-primary" />
+              {isEn ? 'Filter news by destination:' : 'Filtriraj vijesti po destinaciji:'}
+            </span>
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="text-xs font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1 cursor-pointer"
+              >
+                <X className="size-3" /> {isEn ? 'Clear filter' : 'Poništi filter'}
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {POPULAR_DESTINATIONS.map(dest => {
+              const isActive = searchQuery.toLowerCase() === dest.name.toLowerCase();
+              const label = isEn 
+                ? (dest.labelEn || dest.name)
+                : (dest.label || dest.name);
+
+              return (
+                <button
+                  key={dest.name}
+                  onClick={() => setSearchQuery(isActive ? '' : dest.name)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                    isActive 
+                      ? (dest.isIsland ? 'bg-sky-500 text-white shadow-md scale-105' : 'bg-slate-900 text-white shadow-md scale-105')
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
+                >
+                  {dest.isIsland ? <Compass className="size-3 text-sky-400" /> : <MapPin className="size-3 text-primary" />}
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
