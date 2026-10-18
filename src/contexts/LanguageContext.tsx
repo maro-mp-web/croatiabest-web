@@ -27,8 +27,23 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     if (!pathname) return;
     if (pathname === '/en' || pathname.startsWith('/en/')) {
       setLanguage('en');
-    } else if (pathname === '/' && typeof localStorage !== 'undefined' && localStorage.getItem('cb_lang') === 'hr') {
+    } else if (pathname === '/') {
       setLanguage('hr');
+    } else if (
+      pathname === '/gradovi' || pathname.startsWith('/gradovi/') || 
+      pathname === '/otoci' || pathname.startsWith('/otoci/') || 
+      pathname === '/vijesti' || pathname.startsWith('/vijesti/') || 
+      pathname === '/magazin' || pathname.startsWith('/magazin/') || 
+      pathname === '/istrazi' || pathname === '/o-nama'
+    ) {
+      setLanguage('hr');
+    } else if (
+      pathname === '/cities' || pathname.startsWith('/cities/') || 
+      pathname === '/islands' || pathname.startsWith('/islands/') || 
+      pathname === '/news' || pathname.startsWith('/news/') || 
+      pathname === '/about'
+    ) {
+      setLanguage('en');
     } else {
       const saved = (typeof localStorage !== 'undefined' && localStorage.getItem('cb_lang')) as Language | null;
       if (saved === 'en' || saved === 'hr') {
@@ -51,8 +66,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const t = translations[language];
 
   const handleLanguageSwitch = useCallback((newLang: Language) => {
-    if (newLang === language) return;
     setLanguage(newLang);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('cb_lang', newLang);
+    }
     
     // Redirect to the localized URL if necessary
     if (typeof window !== 'undefined' && pathname) {
@@ -63,7 +80,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         router.push(`${newUrl}${search}`);
       }
     }
-  }, [language, pathname, router]);
+  }, [pathname, router]);
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage: handleLanguageSwitch, t }}>

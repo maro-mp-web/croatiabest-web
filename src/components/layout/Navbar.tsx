@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Map, Menu, BookOpen, ChevronDown, Building2, Anchor, PlusCircle, LogOut, User, LayoutDashboard, CreditCard, Newspaper, Sparkles } from 'lucide-react';
 import { getLocalizedUrl } from '@/lib/i18n-routes';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,10 @@ export function Navbar({ transparent = false }: NavbarProps) {
   const { user } = useUser();
   const pb = usePB();
   const router = useRouter();
+  const pathname = usePathname();
+
+  const hrUrl = getLocalizedUrl(pathname || '/', 'hr');
+  const enUrl = getLocalizedUrl(pathname || '/', 'en');
 
   // Logout handler
   const handleLogout = () => {
@@ -67,7 +71,7 @@ export function Navbar({ transparent = false }: NavbarProps) {
     }`}>
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <div className="flex items-center gap-6 md:gap-10">
-          <Link href="/" className="hover:opacity-90 transition-opacity">
+          <Link href={getLocalizedUrl('/', language)} className="hover:opacity-90 transition-opacity">
             <Logo />
           </Link>
           <nav className="hidden gap-6 lg:flex items-center">
@@ -268,19 +272,21 @@ export function Navbar({ transparent = false }: NavbarProps) {
           )}
 
           <div className="flex items-center space-x-2 font-black text-sm">
-            <button 
+            <Link 
+              href={hrUrl}
               onClick={() => setLanguage('hr')} 
-              className={`transition-colors ${language === 'hr' ? 'text-primary' : (isScrolled || !transparent ? 'text-muted-foreground hover:text-foreground' : 'text-white/60 hover:text-white')}`}
+              className={`transition-colors cursor-pointer ${language === 'hr' ? 'text-primary' : (isScrolled || !transparent ? 'text-muted-foreground hover:text-foreground' : 'text-white/60 hover:text-white')}`}
             >
               HR
-            </button>
+            </Link>
             <span className="text-muted-foreground/30">|</span>
-            <button 
+            <Link 
+              href={enUrl}
               onClick={() => setLanguage('en')} 
-              className={`transition-colors ${language === 'en' ? 'text-primary' : (isScrolled || !transparent ? 'text-muted-foreground hover:text-foreground' : 'text-white/60 hover:text-white')}`}
+              className={`transition-colors cursor-pointer ${language === 'en' ? 'text-primary' : (isScrolled || !transparent ? 'text-muted-foreground hover:text-foreground' : 'text-white/60 hover:text-white')}`}
             >
               EN
-            </button>
+            </Link>
           </div>
           
           <Sheet>
@@ -292,8 +298,29 @@ export function Navbar({ transparent = false }: NavbarProps) {
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <SheetTitle className="sr-only">Navigacija</SheetTitle>
               <SheetDescription className="sr-only">Glavni izbornik za mobilne uređaje</SheetDescription>
-              <div className="flex flex-col gap-8 pt-12">
-                <Logo className="mb-4" />
+              <div className="flex flex-col gap-6 pt-12">
+                <Link href={getLocalizedUrl('/', language)} className="hover:opacity-90 transition-opacity">
+                  <Logo className="mb-2" />
+                </Link>
+
+                {/* Mobile Language Switcher */}
+                <div className="flex items-center gap-3 pb-3 border-b border-black/5 font-black text-xs">
+                  <span className="text-muted-foreground uppercase tracking-wider">{language === 'en' ? 'Language:' : 'Jezik:'}</span>
+                  <Link 
+                    href={hrUrl}
+                    onClick={() => setLanguage('hr')}
+                    className={`px-3 py-1.5 rounded-xl transition-all ${language === 'hr' ? 'bg-primary text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                  >
+                    HR (Hrvatski)
+                  </Link>
+                  <Link 
+                    href={enUrl}
+                    onClick={() => setLanguage('en')}
+                    className={`px-3 py-1.5 rounded-xl transition-all ${language === 'en' ? 'bg-primary text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                  >
+                    EN (English)
+                  </Link>
+                </div>
                 <nav className="flex flex-col gap-4">
                   <Link href={getLocalizedUrl("/dodaj-objekt", language)} className="text-xl font-black text-primary uppercase tracking-tight">
                     {t.navAddListing}

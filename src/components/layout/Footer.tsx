@@ -28,7 +28,7 @@ export default function Footer() {
           <div className="space-y-6">
             <h3 className="text-xl font-bold">{isHr ? 'Istraži' : 'Explore'}</h3>
             <ul className="space-y-3 text-sm text-background/70 font-medium">
-              <li><Link href="/" className="hover:text-primary transition-colors">{isHr ? 'Naslovnica' : 'Home'}</Link></li>
+              <li><Link href={getLocalizedUrl('/', language)} className="hover:text-primary transition-colors">{isHr ? 'Naslovnica' : 'Home'}</Link></li>
               <li><Link href={getLocalizedUrl("/explore", language)} className="hover:text-primary transition-colors">{isHr ? 'Karta' : 'Map'}</Link></li>
               <li><Link href={getLocalizedUrl("/about", language)} className="hover:text-primary transition-colors">{isHr ? 'O nama' : 'About Us'}</Link></li>
             </ul>
