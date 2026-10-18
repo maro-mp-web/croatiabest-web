@@ -106,12 +106,17 @@ export default async function CityPage({ params }: { params: Promise<{ slug: str
   // Fetch real-time weather & marine data with 30m server ISR cache
   const weather = await getWeatherAndMarineData(city.lat, city.lng, city.name);
 
+  const safeCity = JSON.parse(JSON.stringify(city));
+  const safeListings = JSON.parse(JSON.stringify(cityListings));
+  const safeSpecial = JSON.parse(JSON.stringify(globalSpecialListings));
+  const safeBlogs = JSON.parse(JSON.stringify(allBlogs));
+
   return (
     <CityClient 
-      city={city} 
-      cityListings={cityListings} 
-      globalSpecialListings={globalSpecialListings}
-      allBlogs={allBlogs}
+      city={safeCity} 
+      cityListings={safeListings} 
+      globalSpecialListings={safeSpecial}
+      allBlogs={safeBlogs}
       weather={weather}
     />
   );

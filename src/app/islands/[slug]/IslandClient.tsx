@@ -21,7 +21,11 @@ import {
   ArrowRight,
   MapPin,
   Shield,
-  BookOpen
+  BookOpen,
+  Calendar,
+  Clock,
+  Newspaper,
+  Sparkles
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { generateListingUrl } from '@/app/lib/utils/slug';
@@ -39,6 +43,9 @@ import { DEFAULT_LISTING_IMAGE } from '@/app/lib/constants';
 import AdBanner from '@/components/ads/AdBanner';
 import WeatherWidget, { WeatherAnchorPill } from '@/components/weather/WeatherWidget';
 import type { WeatherData } from '@/app/lib/weather';
+import { formatDate } from '@/lib/utils';
+
+const DEFAULT_BLOG_IMAGE = 'https://croatiabest.com.hr/hero-dubrovnik.jpg';
 
 interface IslandClientProps {
   island: any;
@@ -149,17 +156,30 @@ export default function IslandClient({ island, listings = [], articles = [], isl
     return hasTag || hasMention || hasLocationField;
   };
 
+  // Client-side live fallback if SSR blogs are empty or failed to serialize
+  const { data: liveBlogs } = useCollection('blogs', { sort: '-created' });
+  const rawArticles = (articles && articles.length > 0) ? articles : (liveBlogs || []);
+
   // Vijesti vezane uz otok (direktne ili opće turističke aktualnosti)
-  const directIslandNews = (articles || []).filter(a => isNewsArticle(a) && matchesIsland(a));
-  const fallbackIslandNews = (articles || []).filter(a => isNewsArticle(a) && !directIslandNews.includes(a));
-  const islandNews = (directIslandNews.length > 0 ? directIslandNews : fallbackIslandNews).slice(0, 5);
+  const directIslandNews = rawArticles.filter(a => isNewsArticle(a) && matchesIsland(a));
+  const fallbackIslandNews = rawArticles.filter(a => isNewsArticle(a) && !directIslandNews.some((d: any) => d.id === a.id));
+  const islandNews = (
+    directIslandNews.length >= 4 
+      ? directIslandNews 
+      : [...directIslandNews, ...fallbackIslandNews]
+  ).slice(0, 4);
   const hasDirectNews = directIslandNews.length > 0;
 
   // Povezani putopisi i vodiči o otoku (direktni ili najnoviji vodiči)
-  const directIslandArticles = (articles || []).filter(a => !isNewsArticle(a) && matchesIsland(a));
-  const fallbackIslandArticles = (articles || []).filter(a => !isNewsArticle(a) && !directIslandArticles.includes(a));
-  const relatedArticles = (directIslandArticles.length > 0 ? directIslandArticles : fallbackIslandArticles).slice(0, 3);
+  const directIslandArticles = rawArticles.filter(a => !isNewsArticle(a) && matchesIsland(a));
+  const fallbackIslandArticles = rawArticles.filter(a => !isNewsArticle(a) && !directIslandArticles.some((d: any) => d.id === a.id));
+  const relatedArticles = (
+    directIslandArticles.length >= 4 
+      ? directIslandArticles 
+      : [...directIslandArticles, ...fallbackIslandArticles]
+  ).slice(0, 4);
   const hasDirectArticles = directIslandArticles.length > 0;
+  const totalArticlesCount = islandNews.length + relatedArticles.length;
 
   const getDirectionsUrl = (lat: number, lng: number) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
@@ -305,11 +325,22 @@ export default function IslandClient({ island, listings = [], articles = [], isl
             <h1 className="text-6xl md:text-[8rem] font-black text-white font-headline drop-shadow-2xl italic tracking-tighter leading-none">
               Otok {island.name} <span className="block text-2xl md:text-4xl not-italic tracking-widest mt-4 opacity-80 uppercase">Vodič i Plaže</span>
             </h1>
-            {weather && (
-              <div className="mt-6 animate-fade-in">
-                <WeatherAnchorPill data={weather} isEn={isEn} />
-              </div>
-            )}
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+              {weather && (
+                <div className="animate-fade-in">
+                  <WeatherAnchorPill data={weather} isEn={isEn} />
+                </div>
+              )}
+              {totalArticlesCount > 0 && (
+                <a
+                  href="#island-news-blog"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold text-xs uppercase tracking-wider border border-white/30 transition-all shadow-lg hover:scale-105"
+                >
+                  <Newspaper className="size-4 text-amber-300" />
+                  {isEn ? `News & Blog (${totalArticlesCount})` : `Vijesti i blog (${totalArticlesCount})`}
+                </a>
+              )}
+            </div>
           </div>
         </section>
 
@@ -396,69 +427,172 @@ export default function IslandClient({ island, listings = [], articles = [], isl
                 </div>
               </Card>
 
-              {/* ISLAND NEWS (TAGGED BLOGS) */}
-              {islandNews.length > 0 && (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2 border-b border-black/5 pb-4">
-                    <Umbrella className="size-6 text-primary" />
-                    <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
-                      {hasDirectNews 
-                        ? (isEn ? `News & Articles: ${island.name}` : `Vijesti i članci: Otok ${island.name}`) 
-                        : (isEn ? 'Latest Travel News & Updates' : 'Aktualne turističke vijesti')}
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-                    {islandNews.map((a) => {
-                      const bTitle = isEn && a.titleEn ? a.titleEn : a.title;
-                      return (
-                        <Link key={a.id} href={getLocalizedUrl(`/blog/${a.slug || a.id}`, language)} className="group block">
-                          <Card className="rounded-2xl border-none shadow-md overflow-hidden bg-white relative h-32 group-hover:shadow-lg transition-all duration-300">
-                            <Image src={a.image} alt={bTitle} fill className="object-cover brightness-[0.5] group-hover:scale-105 transition-transform duration-700" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                            <CardContent className="absolute bottom-2 left-3 right-3 p-0 z-10">
-                              <h4 className="font-black text-xs leading-tight text-white group-hover:text-primary transition-colors line-clamp-3">{bTitle}</h4>
-                            </CardContent>
-                          </Card>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              {/* DEDICATED ISLAND NEWS & STORIES SECTION */}
+              <div id="island-news-blog" className="space-y-12 scroll-mt-24 pt-4 border-t border-black/5">
+                {/* 1. LOKALNE I TURISTIČKE VIJESTI ZA OTOK */}
+                {islandNews.length > 0 && (
+                  <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-black/5 pb-4">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <Newspaper className="size-5 text-primary" />
+                          <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-widest px-3 py-1">
+                            {hasDirectNews ? (isEn ? 'Island News' : 'Otočne vijesti') : (isEn ? 'Croatia Travel News' : 'Turističke vijesti')}
+                          </Badge>
+                        </div>
+                        <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
+                          {hasDirectNews 
+                            ? (isEn ? `News & Articles: Island ${island.name}` : `Vijesti i aktualnosti: Otok ${island.name}`) 
+                            : (isEn ? `Latest Travel News for ${island.name} Visitors` : `Aktualne vijesti za posjetitelje: Otok ${island.name}`)}
+                        </h3>
+                        <p className="text-xs text-muted-foreground font-medium">
+                          {isEn ? `Latest events, ferry schedules, cultural happenings and updates for ${island.name}.` : `Najnovija zbivanja, trajektne linije, kulturni programi i servisne informacije za otok ${island.name}.`}
+                        </p>
+                      </div>
+                      <Link href={getLocalizedUrl('/vijesti', language)} className="text-xs font-black text-primary hover:underline flex items-center gap-1 shrink-0 uppercase tracking-wider">
+                        {isEn ? 'All News' : 'Sve vijesti'} <ArrowRight className="size-3.5" />
+                      </Link>
+                    </div>
 
-              {/* RELATED MAGAZINE BLOG ARTICLES */}
-              {relatedArticles.length > 0 && (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2 border-b border-black/5 pb-4">
-                    <BookOpen className="size-6 text-primary" />
-                    <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
-                      {hasDirectArticles 
-                        ? (isEn ? `Stories & Guides: ${island.name}` : `Zanimljivosti i vodiči: Otok ${island.name}`) 
-                        : (isEn ? 'Croatia Island & Travel Guides' : 'Vodiči i zanimljivosti iz Hrvatske')}
-                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      {islandNews.map((a) => {
+                        const bTitle = isEn && a.titleEn ? a.titleEn : a.title;
+                        const bExcerpt = isEn && a.excerptEn ? a.excerptEn : a.excerpt;
+                        const aImg = a.image && !isDummyPlaceholderPhoto(a.image) ? a.image : DEFAULT_BLOG_IMAGE;
+                        const isDirectMatch = matchesIsland(a);
+
+                        return (
+                          <Link key={a.id} href={getLocalizedUrl(`/blog/${a.slug || a.id}`, language)} className="group block h-full">
+                            <Card className="rounded-[2rem] border border-black/5 shadow-md overflow-hidden bg-white hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                              <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
+                                <Image 
+                                  src={aImg} 
+                                  alt={bTitle} 
+                                  fill 
+                                  className="object-cover group-hover:scale-105 transition-transform duration-700" 
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <Badge className="absolute top-3 left-3 bg-primary text-white border-none font-black text-[9px] uppercase tracking-wider shadow-md">
+                                  {a.category || (isEn ? 'News' : 'Vijesti')}
+                                </Badge>
+                                {isDirectMatch && (
+                                  <Badge className="absolute top-3 right-3 bg-white/95 text-slate-900 border-none font-black text-[9px] uppercase tracking-wider shadow-md flex items-center gap-1">
+                                    <Anchor className="size-2.5 text-primary" /> {island.name}
+                                  </Badge>
+                                )}
+                              </div>
+                              <CardContent className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2 text-[11px] font-bold text-muted-foreground">
+                                    <Calendar className="size-3 text-primary" />
+                                    <span>{formatDate(a.publishDate || a.created)}</span>
+                                    <span>•</span>
+                                    <Clock className="size-3 text-primary" />
+                                    <span>{a.readTime || '3 min'}</span>
+                                  </div>
+                                  <h4 className="font-headline font-bold text-base leading-snug text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                                    {bTitle}
+                                  </h4>
+                                  {bExcerpt && (
+                                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-body">
+                                      {bExcerpt}
+                                    </p>
+                                  )}
+                                </div>
+                                <span className="text-xs font-black text-primary flex items-center gap-1 pt-1 group-hover:translate-x-1 transition-transform">
+                                  {isEn ? 'Read article' : 'Pročitaj članak'} <ArrowRight className="size-3" />
+                                </span>
+                              </CardContent>
+                            </Card>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {relatedArticles.map((a) => {
-                      const bTitle = isEn && a.titleEn ? a.titleEn : a.title;
-                      return (
-                        <Link key={a.id} href={getLocalizedUrl(`/blog/${a.slug || a.id}`, language)} className="group">
-                          <Card className="rounded-2xl border-none shadow-md overflow-hidden bg-white h-full flex flex-col hover:shadow-xl transition-all duration-300">
-                            <div className="relative aspect-[16/10] overflow-hidden">
-                              <Image src={a.image} alt={bTitle} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                              <Badge className="absolute top-3 left-3 bg-primary text-white border-none font-black text-[8px] uppercase tracking-wider">
-                                {a.category}
-                              </Badge>
-                            </div>
-                            <CardContent className="p-4 flex-1">
-                              <h4 className="font-bold text-sm leading-tight text-foreground group-hover:text-primary transition-colors line-clamp-2">{bTitle}</h4>
-                            </CardContent>
-                          </Card>
-                        </Link>
-                      );
-                    })}
+                )}
+
+                {/* 2. VODIČI, BLOGOVI I OTOČNE PRIČE */}
+                {relatedArticles.length > 0 && (
+                  <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-black/5 pb-4">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="size-5 text-secondary" />
+                          <Badge className="bg-secondary/10 text-secondary border-none text-[10px] font-black uppercase tracking-widest px-3 py-1">
+                            {hasDirectArticles ? (isEn ? 'Island Stories' : 'Vodiči i priče') : (isEn ? 'Croatia Best Magazine' : 'CroatiaBest Magazin')}
+                          </Badge>
+                        </div>
+                        <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
+                          {hasDirectArticles 
+                            ? (isEn ? `Travel Stories & Guides: Island ${island.name}` : `Zanimljivosti i vodiči: Otok ${island.name}`) 
+                            : (isEn ? `Travel Guides & Recommendations: ${island.name}` : `Preporuke i vodiči za posjetitelje: Otok ${island.name}`)}
+                        </h3>
+                        <p className="text-xs text-muted-foreground font-medium">
+                          {isEn ? `Secret coves, nautical routes, culinary spots and cultural highlights on ${island.name}.` : `Skrivene uvale, nautičke rute, otočni OPG-ovi i gastro preporuke za otok ${island.name}.`}
+                        </p>
+                      </div>
+                      <Link href={getLocalizedUrl('/blog', language)} className="text-xs font-black text-secondary hover:underline flex items-center gap-1 shrink-0 uppercase tracking-wider">
+                        {isEn ? 'All Guides' : 'Svi vodiči'} <ArrowRight className="size-3.5" />
+                      </Link>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      {relatedArticles.map((a) => {
+                        const bTitle = isEn && a.titleEn ? a.titleEn : a.title;
+                        const bExcerpt = isEn && a.excerptEn ? a.excerptEn : a.excerpt;
+                        const aImg = a.image && !isDummyPlaceholderPhoto(a.image) ? a.image : DEFAULT_BLOG_IMAGE;
+                        const isDirectMatch = matchesIsland(a);
+
+                        return (
+                          <Link key={a.id} href={getLocalizedUrl(`/blog/${a.slug || a.id}`, language)} className="group block h-full">
+                            <Card className="rounded-[2rem] border border-black/5 shadow-md overflow-hidden bg-white hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                              <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
+                                <Image 
+                                  src={aImg} 
+                                  alt={bTitle} 
+                                  fill 
+                                  className="object-cover group-hover:scale-105 transition-transform duration-700" 
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <Badge className="absolute top-3 left-3 bg-secondary text-secondary-foreground border-none font-black text-[9px] uppercase tracking-wider shadow-md">
+                                  {a.category || (isEn ? 'Guide' : 'Vodič')}
+                                </Badge>
+                                {isDirectMatch && (
+                                  <Badge className="absolute top-3 right-3 bg-white/95 text-slate-900 border-none font-black text-[9px] uppercase tracking-wider shadow-md flex items-center gap-1">
+                                    <Anchor className="size-2.5 text-secondary" /> {island.name}
+                                  </Badge>
+                                )}
+                              </div>
+                              <CardContent className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2 text-[11px] font-bold text-muted-foreground">
+                                    <Calendar className="size-3 text-secondary" />
+                                    <span>{formatDate(a.publishDate || a.created)}</span>
+                                    <span>•</span>
+                                    <Clock className="size-3 text-secondary" />
+                                    <span>{a.readTime || '4 min'}</span>
+                                  </div>
+                                  <h4 className="font-headline font-bold text-base leading-snug text-foreground group-hover:text-secondary transition-colors line-clamp-2">
+                                    {bTitle}
+                                  </h4>
+                                  {bExcerpt && (
+                                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-body">
+                                      {bExcerpt}
+                                    </p>
+                                  )}
+                                </div>
+                                <span className="text-xs font-black text-secondary flex items-center gap-1 pt-1 group-hover:translate-x-1 transition-transform">
+                                  {isEn ? 'Read guide' : 'Pročitaj vodič'} <ArrowRight className="size-3" />
+                                </span>
+                              </CardContent>
+                            </Card>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* GOOGLE ADS TILE IN CONTENT (ZAPAMĆENA POZICIJA) */}
               <AdBanner format="rectangle" positionId="ISLAND_IN_CONTENT_RECTANGLE" className="w-full h-[250px] my-8 shadow-sm rounded-3xl" />

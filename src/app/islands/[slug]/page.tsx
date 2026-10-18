@@ -139,13 +139,19 @@ export default async function IslandPage({ params }: { params: Promise<{ slug: s
   // Fetch real-time weather & marine data with 30m server ISR cache
   const weather = await getWeatherAndMarineData(island.lat, island.lng, `Otok ${island.name}`);
 
+  const safeIsland = JSON.parse(JSON.stringify(island));
+  const safeListings = JSON.parse(JSON.stringify(listings));
+  const safeBlogs = JSON.parse(JSON.stringify(allBlogs));
+  const safeCities = JSON.parse(JSON.stringify(islandCities));
+  const safeSpecial = JSON.parse(JSON.stringify(globalSpecialListings));
+
   return (
     <IslandClient 
-      island={island} 
-      listings={listings} 
-      articles={allBlogs} 
-      islandCities={islandCities} 
-      globalSpecialListings={globalSpecialListings}
+      island={safeIsland} 
+      listings={safeListings} 
+      articles={safeBlogs} 
+      islandCities={safeCities} 
+      globalSpecialListings={safeSpecial}
       weather={weather} 
     />
   );
