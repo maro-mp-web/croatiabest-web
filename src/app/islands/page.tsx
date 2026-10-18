@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   keywords: ['otoci hrvatska', 'otoci jadran', 'hvar', 'brač', 'korčula', 'vis', 'krk', 'croatiabest'],
   alternates: {
     canonical: 'https://croatiabest.com.hr/islands',
+    languages: {
+      'hr': 'https://croatiabest.com.hr/otoci',
+      'en': 'https://croatiabest.com.hr/islands',
+      'x-default': 'https://croatiabest.com.hr/islands',
+    },
   },
   openGraph: {
     title: 'Hrvatski Otoci | CroatiaBest',

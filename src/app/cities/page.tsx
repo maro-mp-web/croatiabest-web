@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   keywords: ['gradovi hrvatska', 'turistički vodič gradovi', 'dubrovnik', 'split', 'zagreb', 'rovinj', 'zadar', 'croatiabest'],
   alternates: {
     canonical: 'https://croatiabest.com.hr/cities',
+    languages: {
+      'hr': 'https://croatiabest.com.hr/gradovi',
+      'en': 'https://croatiabest.com.hr/cities',
+      'x-default': 'https://croatiabest.com.hr/cities',
+    },
   },
   openGraph: {
     title: 'Gradovi u Hrvatskoj | CroatiaBest',

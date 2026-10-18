@@ -32,8 +32,16 @@ const nextConfig: NextConfig = {
         destination: '/explore',
       },
       {
+        source: '/gradovi',
+        destination: '/cities',
+      },
+      {
         source: '/gradovi/:slug*',
         destination: '/cities/:slug*',
+      },
+      {
+        source: '/otoci',
+        destination: '/islands',
       },
       {
         source: '/otoci/:slug*',
@@ -64,11 +72,35 @@ const nextConfig: NextConfig = {
         destination: '/about',
       },
       {
+        source: '/en/cities',
+        destination: '/cities',
+      },
+      {
         source: '/en/cities/:slug*',
         destination: '/cities/:slug*',
       },
       {
+        source: '/en/gradovi',
+        destination: '/cities',
+      },
+      {
+        source: '/en/gradovi/:slug*',
+        destination: '/cities/:slug*',
+      },
+      {
+        source: '/en/islands',
+        destination: '/islands',
+      },
+      {
         source: '/en/islands/:slug*',
+        destination: '/islands/:slug*',
+      },
+      {
+        source: '/en/otoci',
+        destination: '/islands',
+      },
+      {
+        source: '/en/otoci/:slug*',
         destination: '/islands/:slug*',
       },
       {

@@ -877,6 +877,19 @@ export default function HomeView({ forcedLanguage }: { forcedLanguage?: 'hr' | '
               </div>
             </div>
 
+            {/* CTA: Pogledaj sve gradove */}
+            <div className="mt-12 text-center">
+              <Link href={getLocalizedUrl('/cities', language)}>
+                <Button 
+                  variant="outline" 
+                  className="h-12 px-8 rounded-full border-2 border-primary/30 hover:border-primary hover:bg-primary/5 text-primary font-black text-xs uppercase tracking-widest shadow-sm transition-all group"
+                >
+                  {isEn ? 'View all cities' : 'Pogledaj sve gradove'}
+                  <ArrowRight className="size-4 ml-2 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+            </div>
+
           </div>
         </section>
 
@@ -920,6 +933,19 @@ export default function HomeView({ forcedLanguage }: { forcedLanguage?: 'hr' | '
                   </Link>
                 </div>
               ))}
+            </div>
+
+            {/* CTA: Pogledaj sve otoke */}
+            <div className="mt-12 text-center">
+              <Link href={getLocalizedUrl('/islands', language)}>
+                <Button 
+                  variant="outline" 
+                  className="h-12 px-8 rounded-full border-2 border-secondary/30 hover:border-secondary hover:bg-secondary/5 text-secondary font-black text-xs uppercase tracking-widest shadow-sm transition-all group"
+                >
+                  {isEn ? 'View all islands' : 'Pogledaj sve otoke'}
+                  <ArrowRight className="size-4 ml-2 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
             </div>
           </div>
         </section>

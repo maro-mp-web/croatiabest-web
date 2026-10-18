@@ -5,7 +5,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Building2, ArrowRight, Compass } from 'lucide-react';
+import { Search, Building2, ArrowRight, Compass, BookOpen } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getLocalizedUrl } from '@/lib/i18n-routes';
@@ -20,13 +20,60 @@ export default function CitiesHubClient({ cities }: { cities: any[] }) {
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
     const name = (city.name || '').toLowerCase();
+    const nameEn = (city.nameEn || '').toLowerCase();
     const region = (city.region || '').toLowerCase();
     const desc = (city.description || '').toLowerCase();
-    return name.includes(q) || region.includes(q) || desc.includes(q);
+    const descEn = (city.descriptionEn || '').toLowerCase();
+    return name.includes(q) || nameEn.includes(q) || region.includes(q) || desc.includes(q) || descEn.includes(q);
   });
+
+  // Structured Data Schema (ItemList + BreadcrumbList)
+  const schemaData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'ItemList',
+        '@id': 'https://croatiabest.com.hr/cities#itemlist',
+        name: isEn ? 'Cities in Croatia' : 'Gradovi u Hrvatskoj',
+        description: isEn 
+          ? 'Comprehensive guide to cities across Croatia, featuring historic sights, gastronomy, and cultural heritage.'
+          : 'Vodič kroz sve gradove u Hrvatskoj s pregledom znamenitosti, gastronomije i kulturne baštine.',
+        numberOfItems: filteredCities.length,
+        itemListElement: filteredCities.slice(0, 50).map((city, idx) => ({
+          '@type': 'ListItem',
+          position: idx + 1,
+          name: isEn && city.nameEn ? city.nameEn : city.name,
+          url: `https://croatiabest.com.hr/cities/${city.slug}`,
+        })),
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': 'https://croatiabest.com.hr/cities#breadcrumb',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: isEn ? 'Home' : 'Početna',
+            item: isEn ? 'https://croatiabest.com.hr/en' : 'https://croatiabest.com.hr',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: isEn ? 'Cities' : 'Gradovi',
+            item: isEn ? 'https://croatiabest.com.hr/cities' : 'https://croatiabest.com.hr/gradovi',
+          },
+        ],
+      },
+    ],
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      />
       <Navbar />
 
       <main className="container mx-auto px-4 md:px-6 py-10 flex-1">
@@ -58,65 +105,103 @@ export default function CitiesHubClient({ cities }: { cities: any[] }) {
           </div>
         </div>
 
-        {/* Cities Grid */}
+        {/* Cities Grid in 3 to 4 columns */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredCities.map((city) => (
-            <Link 
-              key={city.slug || city.id} 
-              href={getLocalizedUrl(`/cities/${city.slug}`, language)}
-              className="group block h-full"
-            >
-              <Card className="h-full overflow-hidden rounded-2xl border-slate-200/80 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white flex flex-col">
-                <div className="relative h-48 w-full bg-slate-900 overflow-hidden">
-                  {city.image ? (
-                    <Image 
-                      src={city.image} 
-                      alt={city.name} 
-                      fill 
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-slate-800 to-indigo-950 flex flex-col items-center justify-center p-4">
-                      <Building2 className="w-10 h-10 text-white/20 mb-2" />
-                      <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">
-                        {isEn ? 'Photo coming soon' : 'Fotografija uskoro'}
-                      </span>
+          {filteredCities.map((city) => {
+            const cityName = isEn && city.nameEn ? city.nameEn : city.name;
+            const cityDescription = isEn && city.descriptionEn 
+              ? city.descriptionEn.replace(/<[^>]*>/g, '').substring(0, 140)
+              : (city.seoDescription || (city.description ? city.description.replace(/<[^>]*>/g, '').substring(0, 140) : (isEn ? 'Explore destinations, restaurants, beaches and attractions.' : 'Istražite odredišta, restorane, plaže i znamenitosti.')));
+
+            return (
+              <Link 
+                key={city.slug || city.id} 
+                href={getLocalizedUrl(`/cities/${city.slug}`, language)}
+                className="group block h-full"
+              >
+                <Card className="h-full overflow-hidden rounded-2xl border-slate-200/80 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white flex flex-col">
+                  <div className="relative h-48 w-full bg-slate-900 overflow-hidden">
+                    {city.image ? (
+                      <Image 
+                        src={city.image} 
+                        alt={cityName} 
+                        fill 
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-slate-800 to-indigo-950 flex flex-col items-center justify-center p-4">
+                        <Building2 className="w-10 h-10 text-white/20 mb-2" />
+                        <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">
+                          {isEn ? 'Photo coming soon' : 'Fotografija uskoro'}
+                        </span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    
+                    {city.region && (
+                      <div className="absolute top-3 left-3 z-10">
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-black/50 backdrop-blur-md text-amber-300 px-2.5 py-1 rounded-full border border-white/10">
+                          {city.region}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="absolute bottom-3 left-3 right-3 z-10">
+                      <h2 className="text-2xl font-black text-white group-hover:text-primary transition-colors leading-tight drop-shadow-md">
+                        {cityName}
+                      </h2>
                     </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  
-                  {city.region && (
-                    <div className="absolute top-3 left-3 z-10">
-                      <span className="text-[10px] font-black uppercase tracking-wider bg-black/50 backdrop-blur-md text-amber-300 px-2.5 py-1 rounded-full border border-white/10">
-                        {city.region}
-                      </span>
+                  </div>
+
+                  <CardContent className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <p className="text-xs text-slate-600 line-clamp-3 mb-3 font-body leading-relaxed">
+                        {cityDescription}
+                      </p>
+
+                      {/* Popis wiki kategorija / poglavlja (ako grad ima wiki sekcije) */}
+                      {city.wikiSections && Array.isArray(city.wikiSections) && city.wikiSections.length > 0 && (
+                        <div className="mb-3 pt-2.5 border-t border-slate-100">
+                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1">
+                            <BookOpen className="size-3 text-primary" />
+                            {isEn ? 'Wiki Chapters' : 'Wiki poglavlja'}:
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {city.wikiSections.slice(0, 4).map((sec: any, idx: number) => {
+                              const secTitle = (isEn && sec.titleEn) ? sec.titleEn : sec.title;
+                              if (!secTitle) return null;
+                              return (
+                                <span
+                                  key={sec.id || idx}
+                                  className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md group-hover:bg-primary/10 group-hover:text-primary transition-colors"
+                                >
+                                  {secTitle}
+                                </span>
+                              );
+                            })}
+                            {city.wikiSections.length > 4 && (
+                              <span className="text-[10px] font-black text-primary/70 self-center px-0.5">
+                                +{city.wikiSections.length - 4}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
 
-                  <div className="absolute bottom-3 left-3 right-3 z-10">
-                    <h2 className="text-2xl font-black text-white group-hover:text-primary transition-colors leading-tight drop-shadow-md">
-                      {city.name}
-                    </h2>
-                  </div>
-                </div>
-
-                <CardContent className="p-4 flex-1 flex flex-col justify-between">
-                  <p className="text-xs text-slate-600 line-clamp-3 mb-4 font-body leading-relaxed">
-                    {city.seoDescription || (city.description ? city.description.replace(/<[^>]*>/g, '').substring(0, 140) : (isEn ? 'Explore destinations, restaurants, beaches and attractions.' : 'Istražite odredišta, restorane, plaže i znamenitosti.'))}
-                  </p>
-
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-primary text-xs font-bold">
-                    <span className="flex items-center gap-1">
-                      <Compass className="size-3.5" />
-                      {isEn ? 'Explore Guide' : 'Istraži vodič'}
-                    </span>
-                    <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-primary text-xs font-bold mt-2">
+                      <span className="flex items-center gap-1">
+                        <Compass className="size-3.5" />
+                        {isEn ? 'Explore Guide' : 'Istraži vodič'}
+                      </span>
+                      <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
 
         {filteredCities.length === 0 && (
