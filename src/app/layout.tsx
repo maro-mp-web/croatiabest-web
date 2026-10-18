@@ -25,7 +25,22 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://croatiabest.com.hr'),
   title: 'CroatiaBest - Premium vodič kroz Hrvatsku',
   description: 'Istražite najbolje skrivene plaže, luksuzne restorane i vrhunske hotele u Hrvatskoj uz našu interaktivnu kartu i stručne vodiče.',
-  keywords: ['Hrvatska', 'Putovanja', 'Plaže', 'Restorani', 'Hoteli', 'Jadran', 'Turizam', 'Iznajmljivanje'],
+  keywords: [
+    'CroatiaBest',
+    'Croatia Best',
+    'croatiabest.com.hr',
+    'vodič kroz Hrvatsku',
+    'Hrvatska',
+    'Putovanja',
+    'Plaže',
+    'Restorani',
+    'Hoteli',
+    'Jadran',
+    'Turizam',
+    'Iznajmljivanje',
+    'Croatia travel guide',
+    'Best of Croatia'
+  ],
   authors: [{ name: 'CroatiaBest Team' }],
   robots: {
     index: true,

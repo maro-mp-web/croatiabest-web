@@ -1192,6 +1192,85 @@ export default function Home() {
           </div>
         </section>
 
+        {/* 7.5. O NAMA / ABOUT US SECTION (SEO & E-E-A-T TRUST SIGNALS) */}
+        <section className="py-20 bg-slate-50 relative z-30 border-t border-black/5">
+          <div className="container mx-auto px-6">
+            <div className="max-w-5xl mx-auto bg-white rounded-[3rem] p-8 md:p-14 border border-black/5 shadow-xl space-y-8">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-black/5 pb-8">
+                <div className="space-y-2">
+                  <Badge className="bg-primary/10 text-primary border-none font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-widest flex items-center gap-1.5 w-fit">
+                    <Sparkles className="size-3.5" />
+                    {isEn ? 'ABOUT CROATIABEST' : 'O PROJEKTU CROATIABEST'}
+                  </Badge>
+                  <h2 className="text-3xl md:text-4xl font-headline font-black italic tracking-tight text-slate-900">
+                    {isEn 
+                      ? 'CroatiaBest — Your curated digital guide to Croatia' 
+                      : 'CroatiaBest — Vaš autentični digitalni vodič kroz Hrvatsku'}
+                  </h2>
+                </div>
+                <Link href={getLocalizedUrl('/about', language)}>
+                  <Button variant="outline" className="rounded-2xl h-11 px-6 font-bold text-xs uppercase tracking-wider text-primary border-primary/30 hover:bg-primary/5 shrink-0">
+                    {isEn ? 'Full story & Vision →' : 'Saznajte više o nama →'}
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="prose prose-slate max-w-none text-slate-600 text-sm md:text-base leading-relaxed space-y-4 font-medium">
+                <p>
+                  {isEn
+                    ? 'CroatiaBest was created out of a deep passion for authentic Croatia — from hidden Adriatic coves, pristine pebble beaches, and thousand-year-old stone towns to family-owned konobas, boutique wineries, and luxury resorts.'
+                    : 'CroatiaBest je nastao iz strasti prema autentičnoj Hrvatskoj — od skrivenih jadranskih uvala, kristalnih šljunčanih plaža i tisućljetnih kamenih gradova, do obiteljskih konoba, butik vinarija i vrhunskog smještaja.'}
+                </p>
+                <p>
+                  {isEn
+                    ? 'Our mission is to offer travelers independent, verified, and up-to-date recommendations. We combine high-speed interactive mapping, real-time Adriatic sea and weather data, and cultural history to help you discover the true soul of Croatia.'
+                    : 'Naša misija je pružiti putnicima i posjetiteljima neovisne, provjerene i točne preporuke. Spajamo modernu interaktivnu kartu, podatke o vremenu i temperaturi mora u stvarnom vremenu te bogatu povijesnu baštinu kako biste doživjeli Hrvatsku na najbolji mogući način.'}
+                </p>
+              </div>
+
+              {/* 3 Trust pillars */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-black/5">
+                <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                  <CheckCircle2 className="size-5 text-primary shrink-0" />
+                  <div>
+                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-900">
+                      {isEn ? '100% Curated' : '100% Provjereno'}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {isEn ? 'Carefully selected locations' : 'Pažljivo odabrane lokacije'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                  <Compass className="size-5 text-primary shrink-0" />
+                  <div>
+                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-900">
+                      {isEn ? 'Interactive Map' : 'Interaktivna Karta'}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {isEn ? 'Fast navigation & routes' : 'Navigacija i rute uživo'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                  <ShieldCheck className="size-5 text-primary shrink-0" />
+                  <div>
+                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-900">
+                      {isEn ? 'Local Heritage' : 'Kulturna Baština'}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {isEn ? 'History, cities & islands' : 'Gradovi, otoci i povijest'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
         {/* 8. CALL TO ACTION SECTION: Newsletter & Postanite Partner (Bottom of screenshot) */}
         <section className="py-20 bg-slate-950 text-white relative z-30">
           <div className="container mx-auto px-6">
