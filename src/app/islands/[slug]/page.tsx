@@ -49,6 +49,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       },
       alternates: {
         canonical: `https://croatiabest.com.hr/islands/${island.slug}`,
+        languages: {
+          'hr': `https://croatiabest.com.hr/otoci/${island.slug}`,
+          'en': `https://croatiabest.com.hr/islands/${island.slug}`,
+          'x-default': `https://croatiabest.com.hr/islands/${island.slug}`,
+        },
       },
     };
   } catch (e) {

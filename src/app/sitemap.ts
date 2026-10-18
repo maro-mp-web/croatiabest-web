@@ -15,73 +15,215 @@ const PB_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090'
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pb = new PocketBase(PB_URL);
   
-  // Base static routes
+  // Base static routes with full HR and EN alternates
   const routes: MetadataRoute.Sitemap = [
     {
       url: `${BASE_URL}`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 1.0,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}`,
+          en: `${BASE_URL}/en`,
+          'x-default': `${BASE_URL}/en`,
+        },
+      },
+    },
+    {
+      url: `${BASE_URL}/en`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 1.0,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}`,
+          en: `${BASE_URL}/en`,
+          'x-default': `${BASE_URL}/en`,
+        },
+      },
     },
     {
       url: `${BASE_URL}/vijesti`,
       lastModified: new Date(),
       changeFrequency: 'hourly',
       priority: 0.95,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/vijesti`,
+          en: `${BASE_URL}/news`,
+          'x-default': `${BASE_URL}/news`,
+        },
+      },
     },
     {
-      url: `${BASE_URL}/blog`,
+      url: `${BASE_URL}/news`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.85,
+      changeFrequency: 'hourly',
+      priority: 0.95,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/vijesti`,
+          en: `${BASE_URL}/news`,
+          'x-default': `${BASE_URL}/news`,
+        },
+      },
     },
     {
       url: `${BASE_URL}/magazin`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.85,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/magazin`,
+          en: `${BASE_URL}/blog`,
+          'x-default': `${BASE_URL}/blog`,
+        },
+      },
     },
     {
-      url: `${BASE_URL}/cities`,
+      url: `${BASE_URL}/blog`,
       lastModified: new Date(),
       changeFrequency: 'daily',
-      priority: 0.9,
+      priority: 0.85,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/magazin`,
+          en: `${BASE_URL}/blog`,
+          'x-default': `${BASE_URL}/blog`,
+        },
+      },
     },
     {
       url: `${BASE_URL}/gradovi`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/gradovi`,
+          en: `${BASE_URL}/cities`,
+          'x-default': `${BASE_URL}/cities`,
+        },
+      },
     },
     {
-      url: `${BASE_URL}/islands`,
+      url: `${BASE_URL}/cities`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/gradovi`,
+          en: `${BASE_URL}/cities`,
+          'x-default': `${BASE_URL}/cities`,
+        },
+      },
     },
     {
       url: `${BASE_URL}/otoci`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/otoci`,
+          en: `${BASE_URL}/islands`,
+          'x-default': `${BASE_URL}/islands`,
+        },
+      },
+    },
+    {
+      url: `${BASE_URL}/islands`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/otoci`,
+          en: `${BASE_URL}/islands`,
+          'x-default': `${BASE_URL}/islands`,
+        },
+      },
+    },
+    {
+      url: `${BASE_URL}/istrazi`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/istrazi`,
+          en: `${BASE_URL}/explore`,
+          'x-default': `${BASE_URL}/explore`,
+        },
+      },
     },
     {
       url: `${BASE_URL}/explore`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/istrazi`,
+          en: `${BASE_URL}/explore`,
+          'x-default': `${BASE_URL}/explore`,
+        },
+      },
+    },
+    {
+      url: `${BASE_URL}/o-nama`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/o-nama`,
+          en: `${BASE_URL}/about`,
+          'x-default': `${BASE_URL}/about`,
+        },
+      },
     },
     {
       url: `${BASE_URL}/about`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
+      priority: 0.6,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/o-nama`,
+          en: `${BASE_URL}/about`,
+          'x-default': `${BASE_URL}/about`,
+        },
+      },
+    },
+    {
+      url: `${BASE_URL}/dodaj-objekt`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
       priority: 0.5,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/dodaj-objekt`,
+          en: `${BASE_URL}/submit`,
+          'x-default': `${BASE_URL}/submit`,
+        },
+      },
     },
     {
       url: `${BASE_URL}/submit`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,
+      alternates: {
+        languages: {
+          hr: `${BASE_URL}/dodaj-objekt`,
+          en: `${BASE_URL}/submit`,
+          'x-default': `${BASE_URL}/submit`,
+        },
+      },
     },
     {
       url: `${BASE_URL}/terms`,
@@ -108,7 +250,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    // Fetch cities
+    // Fetch cities (both /cities and /gradovi in sitemap with hreflang alternates)
     const cities = await pb.collection('cities').getFullList({ requestKey: null });
     cities.forEach((city) => {
       routes.push({
@@ -116,10 +258,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: new Date(city.updated || new Date()),
         changeFrequency: 'weekly',
         priority: 0.8,
+        alternates: {
+          languages: {
+            hr: `${BASE_URL}/gradovi/${city.slug}`,
+            en: `${BASE_URL}/cities/${city.slug}`,
+            'x-default': `${BASE_URL}/cities/${city.slug}`,
+          },
+        },
+      });
+      routes.push({
+        url: `${BASE_URL}/gradovi/${city.slug}`,
+        lastModified: new Date(city.updated || new Date()),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+        alternates: {
+          languages: {
+            hr: `${BASE_URL}/gradovi/${city.slug}`,
+            en: `${BASE_URL}/cities/${city.slug}`,
+            'x-default': `${BASE_URL}/cities/${city.slug}`,
+          },
+        },
       });
     });
 
-    // Fetch islands
+    // Fetch islands (both /islands and /otoci in sitemap with hreflang alternates)
     const islands = await pb.collection('islands').getFullList({ requestKey: null });
     islands.forEach((island) => {
       routes.push({
@@ -127,6 +289,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: new Date(island.updated || new Date()),
         changeFrequency: 'weekly',
         priority: 0.8,
+        alternates: {
+          languages: {
+            hr: `${BASE_URL}/otoci/${island.slug}`,
+            en: `${BASE_URL}/islands/${island.slug}`,
+            'x-default': `${BASE_URL}/islands/${island.slug}`,
+          },
+        },
+      });
+      routes.push({
+        url: `${BASE_URL}/otoci/${island.slug}`,
+        lastModified: new Date(island.updated || new Date()),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+        alternates: {
+          languages: {
+            hr: `${BASE_URL}/otoci/${island.slug}`,
+            en: `${BASE_URL}/islands/${island.slug}`,
+            'x-default': `${BASE_URL}/islands/${island.slug}`,
+          },
+        },
       });
     });
 

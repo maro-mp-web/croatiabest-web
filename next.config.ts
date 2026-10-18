@@ -63,6 +63,30 @@ const nextConfig: NextConfig = {
         source: '/o-nama',
         destination: '/about',
       },
+      {
+        source: '/en/cities/:slug*',
+        destination: '/cities/:slug*',
+      },
+      {
+        source: '/en/islands/:slug*',
+        destination: '/islands/:slug*',
+      },
+      {
+        source: '/en/explore',
+        destination: '/explore',
+      },
+      {
+        source: '/en/about',
+        destination: '/about',
+      },
+      {
+        source: '/en/blog/:slug*',
+        destination: '/blog/:slug*',
+      },
+      {
+        source: '/en/news/:slug*',
+        destination: '/vijesti/:slug*',
+      },
     ];
   },
 };

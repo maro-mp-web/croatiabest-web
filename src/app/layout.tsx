@@ -55,6 +55,11 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: 'https://croatiabest.com.hr',
+    languages: {
+      'hr': 'https://croatiabest.com.hr',
+      'en': 'https://croatiabest.com.hr/en',
+      'x-default': 'https://croatiabest.com.hr/en',
+    },
   },
   openGraph: {
     title: 'CroatiaBest - Vaš ultimativni jadranski vodič',

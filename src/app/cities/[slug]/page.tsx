@@ -49,6 +49,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       },
       alternates: {
         canonical: `https://croatiabest.com.hr/cities/${city.slug}`,
+        languages: {
+          'hr': `https://croatiabest.com.hr/gradovi/${city.slug}`,
+          'en': `https://croatiabest.com.hr/cities/${city.slug}`,
+          'x-default': `https://croatiabest.com.hr/cities/${city.slug}`,
+        },
       },
     };
   } catch (e) {

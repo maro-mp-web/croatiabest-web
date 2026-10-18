@@ -14,17 +14,28 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>('hr');
   const router = useRouter();
   const pathname = usePathname();
 
-  // On mount: restore persisted language preference
+  // Detect whether current URL path is an English route
+  const isEnRoute = pathname === '/en' || pathname?.startsWith('/en/') || pathname === '/cities' || pathname?.startsWith('/cities/') || pathname === '/islands' || pathname?.startsWith('/islands/') || pathname === '/blog' || pathname?.startsWith('/blog/') || pathname === '/news' || pathname?.startsWith('/news/') || pathname === '/about' || pathname === '/explore';
+
+  const [language, setLanguage] = useState<Language>(isEnRoute ? 'en' : 'hr');
+
+  // Synchronize language when route changes
   useEffect(() => {
-    const saved = (typeof localStorage !== 'undefined' && localStorage.getItem('cb_lang')) as Language | null;
-    if (saved === 'en' || saved === 'hr') {
-      setLanguage(saved);
+    if (!pathname) return;
+    if (pathname === '/en' || pathname.startsWith('/en/')) {
+      setLanguage('en');
+    } else if (pathname === '/' && typeof localStorage !== 'undefined' && localStorage.getItem('cb_lang') === 'hr') {
+      setLanguage('hr');
+    } else {
+      const saved = (typeof localStorage !== 'undefined' && localStorage.getItem('cb_lang')) as Language | null;
+      if (saved === 'en' || saved === 'hr') {
+        setLanguage(saved);
+      }
     }
-  }, []);
+  }, [pathname]);
 
   // Whenever language changes: update <html lang> and persist
   useEffect(() => {

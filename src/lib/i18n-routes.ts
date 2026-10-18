@@ -1,5 +1,6 @@
 export const ROUTE_TRANSLATIONS = {
   hr: {
+    '/en': '/',
     '/explore': '/istrazi',
     '/cities': '/gradovi',
     '/islands': '/otoci',
@@ -9,6 +10,8 @@ export const ROUTE_TRANSLATIONS = {
     '/listing': '/objekt',
   },
   en: {
+    '/': '/en',
+    '/en': '/en',
     '/istrazi': '/explore',
     '/gradovi': '/cities',
     '/otoci': '/islands',
@@ -25,10 +28,22 @@ export const ROUTE_TRANSLATIONS = {
  * Assumes the path is absolute (starts with /).
  */
 export function getLocalizedUrl(path: string, lang: 'hr' | 'en'): string {
-  if (!path || path === '/') return '/';
+  if (!path || path === '/') {
+    return lang === 'en' ? '/en' : '/';
+  }
+  if (path === '/en' || path === '/en/') {
+    return lang === 'hr' ? '/' : '/en';
+  }
 
   const parts = path.split('/').filter(Boolean);
-  if (parts.length === 0) return '/';
+  if (parts.length === 0) return lang === 'en' ? '/en' : '/';
+
+  // Handle /en/ prefix if present
+  if (parts[0] === 'en') {
+    if (parts.length === 1) return lang === 'hr' ? '/' : '/en';
+    const rest = '/' + parts.slice(1).join('/');
+    return getLocalizedUrl(rest, lang);
+  }
 
   const baseSegment = '/' + parts[0];
   
