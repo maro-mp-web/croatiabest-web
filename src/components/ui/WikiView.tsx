@@ -94,24 +94,39 @@ export default function WikiView({ sections }: WikiViewProps) {
           </ul>
         </div>
 
-        {/* Content Box (Instant switch) */}
+        {/* Content Box (All sections in DOM for 100% SEO indexing, active section visible) */}
         <div className="w-full lg:w-3/4 bg-white p-8 md:p-14 rounded-[3rem] shadow-xl shadow-black/5 border border-black/5 min-h-[500px] flex flex-col justify-between">
           <div>
-            <div className="border-b border-black/5 pb-6 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <span className="text-xs font-black uppercase tracking-widest text-primary">
-                  {isEn ? `Section ${activeIndex + 1} of ${sections.length}` : `Poglavlje ${activeIndex + 1} od ${sections.length}`}
-                </span>
-                <h2 className="text-3xl md:text-5xl font-headline font-black italic tracking-tighter text-foreground mt-1">
-                  {getTitle(activeSection)}
-                </h2>
-              </div>
-            </div>
+            {sections.map((section, idx) => {
+              const isActive = activeId === section.id;
+              return (
+                <article
+                  key={section.id}
+                  id={`wiki-section-${section.id}`}
+                  className={`${isActive ? 'block' : 'hidden'}`}
+                  itemScope
+                  itemType="https://schema.org/Article"
+                >
+                  <meta itemProp="headline" content={getTitle(section)} />
+                  <div className="border-b border-black/5 pb-6 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <span className="text-xs font-black uppercase tracking-widest text-primary">
+                        {isEn ? `Section ${idx + 1} of ${sections.length}` : `Poglavlje ${idx + 1} od ${sections.length}`}
+                      </span>
+                      <h2 className="text-3xl md:text-5xl font-headline font-black italic tracking-tighter text-foreground mt-1">
+                        {getTitle(section)}
+                      </h2>
+                    </div>
+                  </div>
 
-            <div 
-              className="prose prose-lg max-w-none text-muted-foreground prose-headings:text-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-img:rounded-3xl prose-p:leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: getContent(activeSection) }}
-            />
+                  <div 
+                    itemProp="articleBody"
+                    className="prose prose-lg max-w-none text-muted-foreground prose-headings:text-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-img:rounded-3xl prose-p:leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: getContent(section) }}
+                  />
+                </article>
+              );
+            })}
           </div>
 
           {/* Next / Previous Navigation Footer */}

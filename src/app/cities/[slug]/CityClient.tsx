@@ -100,20 +100,100 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
     l => l.locationCategoryId === 'national_parks' && (l.region === city.region || l.city === city.name)
   );
 
-  // Povezani blogovi (članci koji spominju grad u naslovu ili sadržaju)
-  const relatedArticles = allBlogs.filter(
-    a => a.title.toLowerCase().includes(city.name.toLowerCase()) || 
-         a.excerpt?.toLowerCase().includes(city.name.toLowerCase())
-  ).slice(0, 3);
+  // Helper to distinguish news articles from general magazine blogs
+  const isNewsArticle = (a: any) => {
+    const newsCategories = [
+      'Vijesti iz Hrvatske', 'Vijesti iz Svijeta', 'Poznati Hrvati',
+      'Slavni u Hrvatskoj', 'Zanimljivosti', 'Iz Povijesti',
+      'Iz geografije', 'Domovinski rat'
+    ];
+    return newsCategories.includes(a.category) || 
+      (Array.isArray(a.tags) && (a.tags.includes('news_bot') || a.tags.includes('vijesti')));
+  };
 
-  // Vijesti filtrirane po tagu (imenu grada)
-  const cityNews = allBlogs.filter(a => {
-    if (!a.tags) return false;
-    const tagArray = Array.isArray(a.tags) ? a.tags : typeof a.tags === 'string' ? a.tags.split(',').map((t: string) => t.trim()) : [];
-    return tagArray.some((t: string) => t.toLowerCase() === city.name.toLowerCase());
-  }).slice(0, 5);
+  const matchesCity = (a: any) => {
+    const cityName = city.name.toLowerCase();
+    const tagArray = Array.isArray(a.tags) 
+      ? a.tags 
+      : typeof a.tags === 'string' 
+        ? a.tags.split(',').map((t: string) => t.trim()) 
+        : [];
+    const hasTag = tagArray.some((t: string) => t.toLowerCase() === cityName);
+    const hasTitle = a.title?.toLowerCase().includes(cityName) || a.titleEn?.toLowerCase().includes(cityName);
+    const hasExcerpt = a.excerpt?.toLowerCase().includes(cityName) || a.excerptEn?.toLowerCase().includes(cityName);
+    return hasTag || hasTitle || hasExcerpt;
+  };
+
+  // Vijesti vezane uz grad (po tagu ili spomenu grada u naslovu/opisu)
+  const cityNews = allBlogs.filter(a => isNewsArticle(a) && matchesCity(a)).slice(0, 5);
+
+  // Povezani putopisi i gastro vodiči (koji nisu dnevne vijesti)
+  const relatedArticles = allBlogs.filter(a => !isNewsArticle(a) && matchesCity(a)).slice(0, 3);
 
   const getDirectionsUrl = (lat: number, lng: number) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+  // Rich Structured Data (TouristDestination + BreadcrumbList)
+  const destinationSchema = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'TouristDestination',
+        '@id': `https://croatiabest.com.hr/cities/${city.slug}#destination`,
+        name: isEn && city.nameEn ? city.nameEn : city.name,
+        description: isEn && city.descriptionEn 
+          ? city.descriptionEn.replace(/<[^>]*>/g, '').substring(0, 300) 
+          : (city.description ? city.description.replace(/<[^>]*>/g, '').substring(0, 300) : `Turistički vodič kroz ${city.name}`),
+        url: `https://croatiabest.com.hr/cities/${city.slug}`,
+        image: city.image ? [city.image] : [],
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: city.lat,
+          longitude: city.lng,
+        },
+        containedInPlace: {
+          '@type': 'AdministrativeArea',
+          name: city.region || 'Hrvatska',
+        },
+        touristType: [
+          'Cultural tourism',
+          'Beach tourism',
+          'Gastronomy',
+          'Historical heritage',
+        ],
+        ...(popularListings.length > 0 ? {
+          includesAttraction: popularListings.slice(0, 5).map(l => ({
+            '@type': 'TouristAttraction',
+            name: isEn && l.metadata?.nameEn ? l.metadata.nameEn : l.name,
+            url: `https://croatiabest.com.hr/objekt/${l.locationCategoryId || l.categoryId}/${l.slug || l.id}`,
+          }))
+        } : {})
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `https://croatiabest.com.hr/cities/${city.slug}#breadcrumb`,
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: isEn ? 'Home' : 'Početna',
+            item: isEn ? 'https://croatiabest.com.hr/en' : 'https://croatiabest.com.hr',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: isEn ? 'Cities' : 'Gradovi',
+            item: isEn ? 'https://croatiabest.com.hr/cities' : 'https://croatiabest.com.hr/gradovi',
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: isEn && city.nameEn ? city.nameEn : city.name,
+            item: `https://croatiabest.com.hr/cities/${city.slug}`,
+          },
+        ],
+      },
+    ],
+  };
 
   const renderCategoryCards = (listings: any[], categoryTitle: string, icon: React.ReactNode, colorClass: string, viewMoreSlug: string) => {
     const limitedListings = listings.slice(0, 5);
@@ -150,6 +230,10 @@ export default function CityClient({ city, cityListings, globalSpecialListings =
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(destinationSchema) }}
+      />
       <Navbar />
       {isAdmin && (
         <div className="bg-sky-950/90 text-sky-100 border-b border-sky-500/30 px-6 py-2.5 backdrop-blur-md flex flex-wrap items-center justify-between gap-2 text-xs font-semibold z-30 relative">

@@ -19,7 +19,9 @@ import {
   ChevronRight,
   BedDouble,
   ArrowRight,
-  MapPin
+  MapPin,
+  Shield,
+  BookOpen
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { generateListingUrl } from '@/app/lib/utils/slug';
@@ -29,6 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { useCollection, useUser } from '@/pocketbase';
 import Map from '@/components/map/Map';
 import WikiView from '@/components/ui/WikiView';
+import FAQSection from '@/components/ui/FAQSection';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getFirstPhoto, isDummyPlaceholderPhoto } from '@/app/lib/image-helpers';
 import { getLocalizedUrl } from '@/lib/i18n-routes';
@@ -42,10 +45,11 @@ interface IslandClientProps {
   listings: any[];
   articles?: any[];
   islandCities?: any[];
+  globalSpecialListings?: any[];
   weather?: WeatherData | null;
 }
 
-export default function IslandClient({ island, listings = [], articles = [], islandCities = [], weather = null }: IslandClientProps) {
+export default function IslandClient({ island, listings = [], articles = [], islandCities = [], globalSpecialListings = [], weather = null }: IslandClientProps) {
   const { language } = useLanguage();
   const isEn = language === 'en';
   const { user } = useUser();
@@ -76,12 +80,45 @@ export default function IslandClient({ island, listings = [], articles = [], isl
   const gastroListings = listings?.filter(l => ['restaurants'].includes(l.locationCategoryId || l.categoryId)) || [];
   const apartmentsListings = listings?.filter(l => ['apartments', 'hotels', 'camps', 'accommodation', 'rooms', 'villas'].includes(l.locationCategoryId || l.categoryId)) || [];
 
-  // Vijesti filtrirane po tagu (imenu otoka)
-  const islandNews = articles?.filter(a => {
-    if (!a.tags) return false;
-    const tagArray = Array.isArray(a.tags) ? a.tags : typeof a.tags === 'string' ? a.tags.split(',').map((t: string) => t.trim()) : [];
-    return tagArray.some((t: string) => t.toLowerCase() === island.name.toLowerCase());
-  }).slice(0, 5) || [];
+  const islandCityNames = (islandCities || []).map((c: any) => c.name?.toLowerCase());
+
+  // Obližnji spomenici Domovinskog rata na otoku
+  const nearbyWarMemorials = (globalSpecialListings || []).filter(
+    l => l.locationCategoryId === 'homeland_war' && (
+      (l.region && l.region.toLowerCase() === island.name.toLowerCase()) || 
+      (l.city && (l.city.toLowerCase() === island.name.toLowerCase() || islandCityNames.includes(l.city.toLowerCase())))
+    )
+  ).slice(0, 8);
+
+  // Helper to distinguish news articles from general magazine blogs
+  const isNewsArticle = (a: any) => {
+    const newsCategories = [
+      'Vijesti iz Hrvatske', 'Vijesti iz Svijeta', 'Poznati Hrvati',
+      'Slavni u Hrvatskoj', 'Zanimljivosti', 'Iz Povijesti',
+      'Iz geografije', 'Domovinski rat'
+    ];
+    return newsCategories.includes(a.category) || 
+      (Array.isArray(a.tags) && (a.tags.includes('news_bot') || a.tags.includes('vijesti')));
+  };
+
+  const matchesIsland = (a: any) => {
+    const islandName = island.name.toLowerCase();
+    const tagArray = Array.isArray(a.tags) 
+      ? a.tags 
+      : typeof a.tags === 'string' 
+        ? a.tags.split(',').map((t: string) => t.trim()) 
+        : [];
+    const hasTag = tagArray.some((t: string) => t.toLowerCase() === islandName || t.toLowerCase() === `otok ${islandName}` || islandCityNames.includes(t.toLowerCase()));
+    const hasTitle = a.title?.toLowerCase().includes(islandName) || a.titleEn?.toLowerCase().includes(islandName);
+    const hasExcerpt = a.excerpt?.toLowerCase().includes(islandName) || a.excerptEn?.toLowerCase().includes(islandName);
+    return hasTag || hasTitle || hasExcerpt;
+  };
+
+  // Vijesti filtrirane po tagu ili spomenu otoka
+  const islandNews = articles?.filter(a => isNewsArticle(a) && matchesIsland(a)).slice(0, 5) || [];
+
+  // Povezani putopisi i blog vodiči (koji nisu dnevne vijesti)
+  const relatedArticles = articles?.filter(a => !isNewsArticle(a) && matchesIsland(a)).slice(0, 3) || [];
 
   const getDirectionsUrl = (lat: number, lng: number) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
@@ -126,8 +163,77 @@ export default function IslandClient({ island, listings = [], articles = [], isl
     );
   };
 
+  // Rich Structured Data (TouristDestination + BreadcrumbList)
+  const destinationSchema = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'TouristDestination',
+        '@id': `https://croatiabest.com.hr/islands/${island.slug}#destination`,
+        name: isEn && island.nameEn ? island.nameEn : `Otok ${island.name}`,
+        description: isEn && island.descriptionEn 
+          ? island.descriptionEn.replace(/<[^>]*>/g, '').substring(0, 300) 
+          : (island.description ? island.description.replace(/<[^>]*>/g, '').substring(0, 300) : `Turistički vodič kroz otok ${island.name}`),
+        url: `https://croatiabest.com.hr/islands/${island.slug}`,
+        image: island.image ? [island.image] : [],
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: island.lat,
+          longitude: island.lng,
+        },
+        containedInPlace: {
+          '@type': 'AdministrativeArea',
+          name: island.region || 'Jadran, Hrvatska',
+        },
+        touristType: [
+          'Island tourism',
+          'Beach tourism',
+          'Sailing and nautical',
+          'Gastronomy',
+          'Nature and heritage',
+        ],
+        ...(popularListings.length > 0 ? {
+          includesAttraction: popularListings.slice(0, 5).map(l => ({
+            '@type': 'TouristAttraction',
+            name: isEn && l.metadata?.nameEn ? l.metadata.nameEn : l.name,
+            url: `https://croatiabest.com.hr/objekt/${l.locationCategoryId || l.categoryId}/${l.slug || l.id}`,
+          }))
+        } : {})
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `https://croatiabest.com.hr/islands/${island.slug}#breadcrumb`,
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: isEn ? 'Home' : 'Početna',
+            item: isEn ? 'https://croatiabest.com.hr/en' : 'https://croatiabest.com.hr',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: isEn ? 'Islands' : 'Otoci',
+            item: isEn ? 'https://croatiabest.com.hr/islands' : 'https://croatiabest.com.hr/otoci',
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: isEn && island.nameEn ? island.nameEn : island.name,
+            item: `https://croatiabest.com.hr/islands/${island.slug}`,
+          }
+        ]
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Rich Structured Data (TouristDestination + BreadcrumbList) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(destinationSchema) }}
+      />
       <Navbar />
       {isAdmin && (
         <div className="bg-emerald-950/90 text-emerald-100 border-b border-emerald-500/30 px-6 py-2.5 backdrop-blur-md flex flex-wrap items-center justify-between gap-2 text-xs font-semibold z-30 relative">
@@ -277,6 +383,38 @@ export default function IslandClient({ island, listings = [], articles = [], isl
                 </div>
               )}
 
+              {/* RELATED MAGAZINE BLOG ARTICLES */}
+              {relatedArticles.length > 0 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 border-b border-black/5 pb-4">
+                    <BookOpen className="size-6 text-primary" />
+                    <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
+                      {isEn ? `Stories & Guides: ${island.name}` : `Zanimljivosti i vodiči: ${island.name}`}
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {relatedArticles.map((a) => {
+                      const bTitle = isEn && a.titleEn ? a.titleEn : a.title;
+                      return (
+                        <Link key={a.id} href={getLocalizedUrl(`/blog/${a.slug || a.id}`, language)} className="group">
+                          <Card className="rounded-2xl border-none shadow-md overflow-hidden bg-white h-full flex flex-col hover:shadow-xl transition-all duration-300">
+                            <div className="relative aspect-[16/10] overflow-hidden">
+                              <Image src={a.image} alt={bTitle} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                              <Badge className="absolute top-3 left-3 bg-primary text-white border-none font-black text-[8px] uppercase tracking-wider">
+                                {a.category}
+                              </Badge>
+                            </div>
+                            <CardContent className="p-4 flex-1">
+                              <h4 className="font-bold text-sm leading-tight text-foreground group-hover:text-primary transition-colors line-clamp-2">{bTitle}</h4>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* GOOGLE ADS TILE IN CONTENT (ZAPAMĆENA POZICIJA) */}
               <AdBanner format="rectangle" positionId="ISLAND_IN_CONTENT_RECTANGLE" className="w-full h-[250px] my-8 shadow-sm rounded-3xl" />
 
@@ -359,10 +497,58 @@ export default function IslandClient({ island, listings = [], articles = [], isl
             </div>
           )}
 
+          {/* NEARBY HOMELAND WAR MEMORIALS (DOMOVINSKI RAT) - ISPOD VREMENA */}
+          {nearbyWarMemorials.length > 0 && (
+            <div className="mt-16 pt-12 border-t border-black/5 space-y-8">
+              <div className="flex items-center gap-3 border-b border-black/5 pb-4">
+                <Shield className="size-7 text-red-600" />
+                <div>
+                  <h3 className="text-3xl font-headline font-black italic tracking-tighter text-foreground">
+                    {isEn ? 'Homeland War Memorials' : 'Spomen obilježja Domovinskog rata'}
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-medium mt-1">
+                    {isEn 
+                      ? `Memorial sites and historical monuments on the island of ${island.name}.` 
+                      : `Spomenici, spomen obilježja i mjesta sjećanja iz Domovinskog rata na otoku: ${island.name}.`}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                {nearbyWarMemorials.map((l) => {
+                  const name = isEn && l.metadata?.nameEn ? l.metadata.nameEn : l.name;
+                  const image = getFirstPhoto(l) || DEFAULT_LISTING_IMAGE;
+                  const path = generateListingUrl(l.locationCategoryId || l.categoryId, l.name, language, l.id);
+                  return (
+                    <Link key={l.id} href={path} className="group">
+                      <Card className="rounded-2xl border-none shadow-md overflow-hidden bg-white h-full flex flex-col hover:shadow-xl transition-all duration-300">
+                        <div className="relative aspect-square overflow-hidden">
+                          <Image src={image} alt={name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                          <Badge className="absolute top-3 left-3 bg-red-600 text-white border-none font-black text-[8px] uppercase tracking-wider shadow-md">
+                            {isEn ? 'Memorial' : 'Spomen obilježje'}
+                          </Badge>
+                        </div>
+                        <CardContent className="p-4 flex-1 bg-white z-10 -mt-2 rounded-t-xl">
+                          <h4 className="font-black text-sm leading-tight text-foreground group-hover:text-primary transition-colors line-clamp-2">{name}</h4>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* WIKIPEDIA SECTIONS */}
           {island?.wikiSections?.length > 0 && (
             <WikiView sections={island.wikiSections} />
           )}
+
+          {/* DYNAMIC FAQ SECTION */}
+          <FAQSection 
+            type="island" 
+            name={island.name} 
+            population={island.population} 
+          />
 
         </div>
       </main>

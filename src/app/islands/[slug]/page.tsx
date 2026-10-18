@@ -72,27 +72,15 @@ export default async function IslandPage({ params }: { params: Promise<{ slug: s
     return notFound();
   }
 
-  let listings: any[] = [];
-  try {
-    listings = await pb.collection('listings').getFullList({
-      filter: `city="${island.name}" && status="active"`,
-      sort: '-created',
-      requestKey: null
-    });
-  } catch (e) {
-    // ignore
-  }
-
   let islandCities: any[] = [];
   try {
-    // Pokušaj povući gradove koji pripadaju ovom otoku (ako postoji relacija)
+    // Fetch cities that belong to this island
     islandCities = await pb.collection('cities').getFullList({
       filter: `island="${island.id}"`,
       sort: 'name',
       requestKey: null
     });
   } catch (e) {
-    // Fallback ako se veza čuva kao ime otoka
     try {
       islandCities = await pb.collection('cities').getFullList({
         filter: `island="${island.name}"`,
@@ -104,8 +92,61 @@ export default async function IslandPage({ params }: { params: Promise<{ slug: s
     }
   }
 
+  let listings: any[] = [];
+  try {
+    // Fetch listings for island directly or for any town on this island
+    const cityNames = [island.name, ...islandCities.map((c: any) => c.name).filter(Boolean)];
+    const cityFilterParts = cityNames.map(n => `city="${n}"`).join(' || ');
+    const combinedFilter = `(${cityFilterParts} || region="${island.name}") && status="active"`;
+
+    listings = await pb.collection('listings').getFullList({
+      filter: combinedFilter,
+      sort: '-created',
+      requestKey: null
+    });
+  } catch (e) {
+    try {
+      listings = await pb.collection('listings').getFullList({
+        filter: `city="${island.name}" && status="active"`,
+        sort: '-created',
+        requestKey: null
+      });
+    } catch (err) {
+      // ignore
+    }
+  }
+
+  let allBlogs: any[] = [];
+  try {
+    allBlogs = await pb.collection('blogs').getFullList({
+      sort: '-created',
+      requestKey: null
+    });
+  } catch (e) {
+    // ignore
+  }
+
+  let globalSpecialListings: any[] = [];
+  try {
+    globalSpecialListings = await pb.collection('listings').getFullList({
+      filter: `(locationCategoryId="homeland_war" || locationCategoryId="national_parks") && status="active"`,
+      requestKey: null
+    });
+  } catch (e) {
+    // ignore
+  }
+
   // Fetch real-time weather & marine data with 30m server ISR cache
   const weather = await getWeatherAndMarineData(island.lat, island.lng, `Otok ${island.name}`);
 
-  return <IslandClient island={island} listings={listings} articles={[]} islandCities={islandCities} weather={weather} />;
+  return (
+    <IslandClient 
+      island={island} 
+      listings={listings} 
+      articles={allBlogs} 
+      islandCities={islandCities} 
+      globalSpecialListings={globalSpecialListings}
+      weather={weather} 
+    />
+  );
 }
