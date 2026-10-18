@@ -112,94 +112,106 @@ export default function IslandsHubClient({ islands }: { islands: any[] }) {
             const islandDescription = isEn && island.descriptionEn
               ? island.descriptionEn.replace(/<[^>]*>/g, '').substring(0, 140)
               : (island.seoDescription || (island.description ? island.description.replace(/<[^>]*>/g, '').substring(0, 140) : (isEn ? 'Explore beaches, coves, gastronomy and island life.' : 'Istražite plaže, uvale, gastronomiju i otočki život.')));
+            const islandUrl = getLocalizedUrl(`/islands/${island.slug}`, language);
 
             return (
-              <Link 
+              <Card 
                 key={island.slug || island.id} 
-                href={getLocalizedUrl(`/islands/${island.slug}`, language)}
-                className="group block h-full"
+                className="h-full overflow-hidden rounded-2xl border-slate-200/80 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white flex flex-col group"
               >
-                <Card className="h-full overflow-hidden rounded-2xl border-slate-200/80 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white flex flex-col">
-                  <div className="relative h-48 w-full bg-slate-900 overflow-hidden">
-                    {island.image ? (
-                      <Image 
-                        src={island.image} 
-                        alt={islandName} 
-                        fill 
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-emerald-900 to-slate-950 flex flex-col items-center justify-center p-4">
-                        <Anchor className="w-10 h-10 text-emerald-400/30 mb-2" />
-                        <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">
-                          {isEn ? 'Photo coming soon' : 'Fotografija uskoro'}
-                        </span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    
-                    {island.region && (
-                      <div className="absolute top-3 left-3 z-10">
-                        <span className="text-[10px] font-black uppercase tracking-wider bg-black/50 backdrop-blur-md text-emerald-300 px-2.5 py-1 rounded-full border border-white/10">
-                          {island.region}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="absolute bottom-3 left-3 right-3 z-10">
-                      <h2 className="text-2xl font-black text-white group-hover:text-primary transition-colors leading-tight drop-shadow-md">
-                        {islandName}
-                      </h2>
+                {/* 1. FOTOGRAFIJA I NASLOV KAO LINK NA OTOK */}
+                <Link 
+                  href={islandUrl}
+                  className="block relative h-48 w-full bg-slate-900 overflow-hidden cursor-pointer"
+                >
+                  {island.image ? (
+                    <Image 
+                      src={island.image} 
+                      alt={islandName} 
+                      fill 
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-emerald-900 to-slate-950 flex flex-col items-center justify-center p-4">
+                      <Anchor className="w-10 h-10 text-emerald-400/30 mb-2" />
+                      <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">
+                        {isEn ? 'Photo coming soon' : 'Fotografija uskoro'}
+                      </span>
                     </div>
-                  </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  
+                  {island.region && (
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-black/50 backdrop-blur-md text-emerald-300 px-2.5 py-1 rounded-full border border-white/10">
+                        {island.region}
+                      </span>
+                    </div>
+                  )}
 
-                  <CardContent className="p-4 flex-1 flex flex-col justify-between">
-                    <div>
-                      <p className="text-xs text-slate-600 line-clamp-3 mb-3 font-body leading-relaxed">
+                  <div className="absolute bottom-3 left-3 right-3 z-10">
+                    <h2 className="text-2xl font-black text-white group-hover:text-primary transition-colors leading-tight drop-shadow-md">
+                      {islandName}
+                    </h2>
+                  </div>
+                </Link>
+
+                <CardContent className="p-4 flex-1 flex flex-col justify-between">
+                  <div>
+                    {/* Kratki opis */}
+                    <Link href={islandUrl} className="block group/desc">
+                      <p className="text-xs text-slate-600 line-clamp-3 mb-3 font-body leading-relaxed group-hover/desc:text-slate-900 transition-colors">
                         {islandDescription}
                       </p>
+                    </Link>
 
-                      {/* Popis wiki kategorija / poglavlja (ako otok ima wiki sekcije) */}
-                      {island.wikiSections && Array.isArray(island.wikiSections) && island.wikiSections.length > 0 && (
-                        <div className="mb-3 pt-2.5 border-t border-slate-100">
-                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1">
-                            <BookOpen className="size-3 text-secondary" />
-                            {isEn ? 'Wiki Chapters' : 'Wiki poglavlja'}:
-                          </p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {island.wikiSections.slice(0, 4).map((sec: any, idx: number) => {
-                              const secTitle = (isEn && sec.titleEn) ? sec.titleEn : sec.title;
-                              if (!secTitle) return null;
-                              return (
-                                <span
-                                  key={sec.id || idx}
-                                  className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md group-hover:bg-secondary/10 group-hover:text-secondary transition-colors"
-                                >
-                                  {secTitle}
-                                </span>
-                              );
-                            })}
-                            {island.wikiSections.length > 4 && (
-                              <span className="text-[10px] font-black text-secondary/70 self-center px-0.5">
-                                +{island.wikiSections.length - 4}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    {/* 2. ZASEBNI WIKIPEDIJA LINKOVI KOJI VODE DIREKTNO NA TU SEKCIJU */}
+                    {island.wikiSections && Array.isArray(island.wikiSections) && island.wikiSections.length > 0 && (
+                      <div className="mb-3 pt-2.5 border-t border-slate-100 flex flex-wrap gap-1.5">
+                        {island.wikiSections.slice(0, 5).map((sec: any, idx: number) => {
+                          const secTitle = (isEn && sec.titleEn) ? sec.titleEn : sec.title;
+                          if (!secTitle) return null;
+                          const targetAnchor = sec.id || secTitle.toLowerCase();
+                          return (
+                            <Link
+                              key={sec.id || idx}
+                              href={`${islandUrl}#wiki-section-${encodeURIComponent(targetAnchor)}`}
+                              className="text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-secondary hover:text-white px-2.5 py-1 rounded-lg transition-all border border-slate-200/80 hover:border-secondary shadow-xs"
+                              title={`${isEn ? 'Read section' : 'Pročitaj sekciju'}: ${secTitle}`}
+                            >
+                              {secTitle}
+                            </Link>
+                          );
+                        })}
+                        {island.wikiSections.length > 5 && (
+                          <Link
+                            href={`${islandUrl}#wiki-view`}
+                            className="text-[10px] font-black text-secondary hover:underline self-center px-1"
+                            title={isEn ? 'View all sections' : 'Pogledaj sva poglavlja'}
+                          >
+                            +{island.wikiSections.length - 5}
+                          </Link>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-primary text-xs font-bold mt-2">
-                      <span className="flex items-center gap-1">
+                  {/* 3. DONJA DESNA STRELICA KAO LINK ZA OTOK */}
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-primary text-xs font-bold mt-2">
+                    <Link 
+                      href={islandUrl}
+                      className="flex items-center justify-between w-full hover:underline group/arrow"
+                    >
+                      <span className="flex items-center gap-1 font-black">
                         <Compass className="size-3.5" />
                         {isEn ? 'Explore Island' : 'Istraži otok'}
                       </span>
-                      <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+                      <ArrowRight className="size-3.5 transition-transform group-hover/arrow:translate-x-1" />
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
             );
           })}
         </div>

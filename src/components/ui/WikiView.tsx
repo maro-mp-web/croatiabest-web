@@ -25,12 +25,41 @@ export default function WikiView({ sections }: WikiViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (sections && sections.length > 0) {
+    if (!sections || sections.length === 0) return;
+
+    const checkHash = () => {
+      if (typeof window !== 'undefined' && window.location.hash) {
+        const rawHash = decodeURIComponent(window.location.hash);
+        const hash = rawHash.replace('#wiki-section-', '').replace('#', '').trim();
+        const target = sections.find(
+          s => s.id === hash || 
+               s.id.toLowerCase() === hash.toLowerCase() || 
+               s.title.toLowerCase() === hash.toLowerCase() ||
+               (s.titleEn && s.titleEn.toLowerCase() === hash.toLowerCase())
+        );
+        if (target) {
+          setActiveId(target.id);
+          setTimeout(() => {
+            if (containerRef.current) {
+              const rect = containerRef.current.getBoundingClientRect();
+              window.scrollTo({
+                top: window.scrollY + rect.top - 110,
+                behavior: 'smooth',
+              });
+            }
+          }, 150);
+          return;
+        }
+      }
       if (!activeId || !sections.some(s => s.id === activeId)) {
         setActiveId(sections[0].id);
       }
-    }
-  }, [sections, activeId]);
+    };
+
+    checkHash();
+    window.addEventListener('hashchange', checkHash);
+    return () => window.removeEventListener('hashchange', checkHash);
+  }, [sections]);
 
   if (!sections || sections.length === 0) {
     return null;
@@ -63,7 +92,7 @@ export default function WikiView({ sections }: WikiViewProps) {
   };
 
   return (
-    <div ref={containerRef} className="w-full relative z-30 my-8">
+    <div ref={containerRef} id="wiki-view" className="w-full relative z-30 my-8 scroll-mt-28">
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start relative">
         {/* Sidebar */}
         <div className="w-full lg:w-1/4 lg:sticky lg:top-32 space-y-2 bg-slate-50 p-6 rounded-3xl border border-black/5">
@@ -103,7 +132,7 @@ export default function WikiView({ sections }: WikiViewProps) {
                 <article
                   key={section.id}
                   id={`wiki-section-${section.id}`}
-                  className={`${isActive ? 'block' : 'hidden'}`}
+                  className={`${isActive ? 'block' : 'hidden'} scroll-mt-28`}
                   itemScope
                   itemType="https://schema.org/Article"
                 >

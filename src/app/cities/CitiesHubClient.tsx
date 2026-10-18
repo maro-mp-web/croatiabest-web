@@ -112,94 +112,106 @@ export default function CitiesHubClient({ cities }: { cities: any[] }) {
             const cityDescription = isEn && city.descriptionEn 
               ? city.descriptionEn.replace(/<[^>]*>/g, '').substring(0, 140)
               : (city.seoDescription || (city.description ? city.description.replace(/<[^>]*>/g, '').substring(0, 140) : (isEn ? 'Explore destinations, restaurants, beaches and attractions.' : 'Istražite odredišta, restorane, plaže i znamenitosti.')));
+            const cityUrl = getLocalizedUrl(`/cities/${city.slug}`, language);
 
             return (
-              <Link 
+              <Card 
                 key={city.slug || city.id} 
-                href={getLocalizedUrl(`/cities/${city.slug}`, language)}
-                className="group block h-full"
+                className="h-full overflow-hidden rounded-2xl border-slate-200/80 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white flex flex-col group"
               >
-                <Card className="h-full overflow-hidden rounded-2xl border-slate-200/80 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white flex flex-col">
-                  <div className="relative h-48 w-full bg-slate-900 overflow-hidden">
-                    {city.image ? (
-                      <Image 
-                        src={city.image} 
-                        alt={cityName} 
-                        fill 
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-slate-800 to-indigo-950 flex flex-col items-center justify-center p-4">
-                        <Building2 className="w-10 h-10 text-white/20 mb-2" />
-                        <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">
-                          {isEn ? 'Photo coming soon' : 'Fotografija uskoro'}
-                        </span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    
-                    {city.region && (
-                      <div className="absolute top-3 left-3 z-10">
-                        <span className="text-[10px] font-black uppercase tracking-wider bg-black/50 backdrop-blur-md text-amber-300 px-2.5 py-1 rounded-full border border-white/10">
-                          {city.region}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="absolute bottom-3 left-3 right-3 z-10">
-                      <h2 className="text-2xl font-black text-white group-hover:text-primary transition-colors leading-tight drop-shadow-md">
-                        {cityName}
-                      </h2>
+                {/* 1. FOTOGRAFIJA I NASLOV KAO LINK NA GRAD */}
+                <Link 
+                  href={cityUrl}
+                  className="block relative h-48 w-full bg-slate-900 overflow-hidden cursor-pointer"
+                >
+                  {city.image ? (
+                    <Image 
+                      src={city.image} 
+                      alt={cityName} 
+                      fill 
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-slate-800 to-indigo-950 flex flex-col items-center justify-center p-4">
+                      <Building2 className="w-10 h-10 text-white/20 mb-2" />
+                      <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">
+                        {isEn ? 'Photo coming soon' : 'Fotografija uskoro'}
+                      </span>
                     </div>
-                  </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  
+                  {city.region && (
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-black/50 backdrop-blur-md text-amber-300 px-2.5 py-1 rounded-full border border-white/10">
+                        {city.region}
+                      </span>
+                    </div>
+                  )}
 
-                  <CardContent className="p-4 flex-1 flex flex-col justify-between">
-                    <div>
-                      <p className="text-xs text-slate-600 line-clamp-3 mb-3 font-body leading-relaxed">
+                  <div className="absolute bottom-3 left-3 right-3 z-10">
+                    <h2 className="text-2xl font-black text-white group-hover:text-primary transition-colors leading-tight drop-shadow-md">
+                      {cityName}
+                    </h2>
+                  </div>
+                </Link>
+
+                <CardContent className="p-4 flex-1 flex flex-col justify-between">
+                  <div>
+                    {/* Kratki opis */}
+                    <Link href={cityUrl} className="block group/desc">
+                      <p className="text-xs text-slate-600 line-clamp-3 mb-3 font-body leading-relaxed group-hover/desc:text-slate-900 transition-colors">
                         {cityDescription}
                       </p>
+                    </Link>
 
-                      {/* Popis wiki kategorija / poglavlja (ako grad ima wiki sekcije) */}
-                      {city.wikiSections && Array.isArray(city.wikiSections) && city.wikiSections.length > 0 && (
-                        <div className="mb-3 pt-2.5 border-t border-slate-100">
-                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1">
-                            <BookOpen className="size-3 text-primary" />
-                            {isEn ? 'Wiki Chapters' : 'Wiki poglavlja'}:
-                          </p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {city.wikiSections.slice(0, 4).map((sec: any, idx: number) => {
-                              const secTitle = (isEn && sec.titleEn) ? sec.titleEn : sec.title;
-                              if (!secTitle) return null;
-                              return (
-                                <span
-                                  key={sec.id || idx}
-                                  className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md group-hover:bg-primary/10 group-hover:text-primary transition-colors"
-                                >
-                                  {secTitle}
-                                </span>
-                              );
-                            })}
-                            {city.wikiSections.length > 4 && (
-                              <span className="text-[10px] font-black text-primary/70 self-center px-0.5">
-                                +{city.wikiSections.length - 4}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    {/* 2. ZASEBNI WIKIPEDIJA LINKOVI KOJI VODE DIREKTNO NA TU SEKCIJU */}
+                    {city.wikiSections && Array.isArray(city.wikiSections) && city.wikiSections.length > 0 && (
+                      <div className="mb-3 pt-2.5 border-t border-slate-100 flex flex-wrap gap-1.5">
+                        {city.wikiSections.slice(0, 5).map((sec: any, idx: number) => {
+                          const secTitle = (isEn && sec.titleEn) ? sec.titleEn : sec.title;
+                          if (!secTitle) return null;
+                          const targetAnchor = sec.id || secTitle.toLowerCase();
+                          return (
+                            <Link
+                              key={sec.id || idx}
+                              href={`${cityUrl}#wiki-section-${encodeURIComponent(targetAnchor)}`}
+                              className="text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-primary hover:text-white px-2.5 py-1 rounded-lg transition-all border border-slate-200/80 hover:border-primary shadow-xs"
+                              title={`${isEn ? 'Read section' : 'Pročitaj sekciju'}: ${secTitle}`}
+                            >
+                              {secTitle}
+                            </Link>
+                          );
+                        })}
+                        {city.wikiSections.length > 5 && (
+                          <Link
+                            href={`${cityUrl}#wiki-view`}
+                            className="text-[10px] font-black text-primary hover:underline self-center px-1"
+                            title={isEn ? 'View all sections' : 'Pogledaj sva poglavlja'}
+                          >
+                            +{city.wikiSections.length - 5}
+                          </Link>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-primary text-xs font-bold mt-2">
-                      <span className="flex items-center gap-1">
+                  {/* 3. DONJA DESNA STRELICA KAO LINK ZA GRAD */}
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-primary text-xs font-bold mt-2">
+                    <Link 
+                      href={cityUrl}
+                      className="flex items-center justify-between w-full hover:underline group/arrow"
+                    >
+                      <span className="flex items-center gap-1 font-black">
                         <Compass className="size-3.5" />
-                        {isEn ? 'Explore Guide' : 'Istraži vodič'}
+                        {isEn ? 'Explore City' : 'Istraži vodič'}
                       </span>
-                      <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+                      <ArrowRight className="size-3.5 transition-transform group-hover/arrow:translate-x-1" />
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
