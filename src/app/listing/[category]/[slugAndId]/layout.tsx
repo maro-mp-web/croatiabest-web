@@ -75,8 +75,12 @@ export async function generateMetadata({
 
     if (!listing) {
       return { 
-        title: 'Objekt | CroatiaBest',
-        description: 'Vrhunski turistički i poslovni vodič kroz Hrvatsku - CroatiaBest.'
+        title: 'Objekt nije pronađen | CroatiaBest',
+        description: 'Traženi objekt više nije dostupan ili je premješten na novu lokaciju.',
+        robots: {
+          index: false,
+          follow: false,
+        },
       };
     }
 
@@ -111,9 +115,10 @@ export async function generateMetadata({
       keywords = [listing.name, listing.city, 'CroatiaBest', 'Hrvatska', 'vodič'];
     }
 
-    const rawCategory = (resolvedParams.category || 'ostalo').toLowerCase();
+    const rawCategory = (listing.locationCategoryId || listing.categoryId || resolvedParams.category || 'ostalo').toLowerCase();
     const normalizedCategory = CATEGORY_SLUG_MAP[rawCategory] || rawCategory;
-    const canonicalUrl = `https://croatiabest.com.hr/objekt/${normalizedCategory}/${resolvedParams.slugAndId}`;
+    const canonicalSlug = listing.metadata?.slug || (listing.slug && !listing.slug.endsWith(listing.id) ? listing.slug : null) || generateSlug(listing.name || slugAndId);
+    const canonicalUrl = `https://croatiabest.com.hr/objekt/${normalizedCategory}/${canonicalSlug}`;
 
     return {
       title,

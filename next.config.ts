@@ -24,24 +24,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/dodaj-objekt',
-        destination: '/submit',
-      },
-      {
-        source: '/istrazi',
-        destination: '/explore',
-      },
-      {
-        source: '/gradovi',
-        destination: '/cities',
-      },
-      {
         source: '/gradovi/:slug*',
         destination: '/cities/:slug*',
-      },
-      {
-        source: '/otoci',
-        destination: '/islands',
       },
       {
         source: '/otoci/:slug*',
@@ -66,10 +50,6 @@ const nextConfig: NextConfig = {
       {
         source: '/news/:slug*',
         destination: '/vijesti/:slug*',
-      },
-      {
-        source: '/o-nama',
-        destination: '/about',
       },
       {
         source: '/en/cities',

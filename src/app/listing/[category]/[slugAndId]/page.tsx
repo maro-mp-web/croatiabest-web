@@ -1,7 +1,7 @@
 import React from 'react';
 import PocketBase from 'pocketbase';
 import ListingDetailClient from './ListingDetailClient';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { generateSlug, CATEGORY_SLUG_MAP } from '@/app/lib/utils/slug';
 import { getSeoOverride } from '@/app/lib/listing-seo-config';
 
@@ -82,6 +82,15 @@ export default async function ListingDetailPage({
     return notFound();
   }
 
+  const rawCat = (listing.locationCategoryId || listing.categoryId || resolvedParams.category || 'ostalo').toLowerCase();
+  const canonicalCategory = CATEGORY_SLUG_MAP[rawCat] || rawCat;
+  const canonicalSlug = listing.metadata?.slug || (listing.slug && !listing.slug.endsWith(listing.id) ? listing.slug : null) || generateSlug(listing.name);
+
+  // 301 Permanent Redirect if accessed via unnormalized category, legacy /listing/ or slug with old ID hash
+  if (resolvedParams.category.toLowerCase() !== canonicalCategory || slug !== canonicalSlug) {
+    permanentRedirect(`/objekt/${canonicalCategory}/${canonicalSlug}`);
+  }
+
   const pb = new PocketBase(PB_URL);
   let allActiveListings: any[] = [];
   try {
@@ -97,8 +106,7 @@ export default async function ListingDetailPage({
   const safeListing = JSON.parse(JSON.stringify(listing));
   const safeAllActive = JSON.parse(JSON.stringify(allActiveListings));
 
-  const rawCategory = (resolvedParams.category || 'ostalo').toLowerCase();
-  const normalizedCategory = CATEGORY_SLUG_MAP[rawCategory] || rawCategory;
+  const normalizedCategory = canonicalCategory;
 
   const primarySchemaType = normalizedCategory === 'hitna-pomoc' || normalizedCategory === 'emergency' 
     ? 'EmergencyService' 
@@ -114,7 +122,7 @@ export default async function ListingDetailPage({
       '@type': primarySchemaType,
       name: seoOverride?.h1Title || listing.name,
       description: seoOverride?.seoDescription || listing.metadata?.seoDescription || (listing.description ? listing.description.replace(/<[^>]*>/g, '').slice(0, 160) : undefined),
-      url: `https://croatiabest.com.hr/objekt/${normalizedCategory}/${resolvedParams.slugAndId}`,
+      url: `https://croatiabest.com.hr/objekt/${canonicalCategory}/${canonicalSlug}`,
       address: {
         '@type': 'PostalAddress',
         streetAddress: listing.address || '',
