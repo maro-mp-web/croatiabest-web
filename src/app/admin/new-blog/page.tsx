@@ -150,6 +150,8 @@ function AdminNewBlogPage() {
         readTime,
         publishDate: publishDate ? new Date(publishDate).toISOString() : null,
         tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+        seoIndex: true,
+        seoFollow: true,
       };
 
       if (editId) {

@@ -53,8 +53,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const modifiedDate = article.updated || article.created;
   const authorName = article.author || 'CroatiaBest Redakcija';
 
-  const isIndexable = article.seoIndex !== false;
-  const isFollowable = article.seoFollow !== false;
+  // All published articles on CroatiaBest MUST be indexed and followed by Google!
+  const isIndexable = article.status !== 'draft' && article.noIndex !== true;
+  const isFollowable = article.noFollow !== true;
 
   return {
     title: rawTitle,
