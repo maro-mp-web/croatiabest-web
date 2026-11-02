@@ -244,17 +244,17 @@ export default function ArticleClient({
 
                     {/* Quick navigation pill links */}
                     <div className="flex flex-wrap gap-2 pt-1">
-                      <Link href={`${getLocalizedUrl('/explore', language)}?category=beaches&q=${encodeURIComponent(matchedCity.name)}`}>
+                      <Link href={`${getLocalizedUrl('/explore', language)}?category=beaches&q=${encodeURIComponent(matchedCity.name)}`} rel="nofollow">
                         <span className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/15 transition-colors cursor-pointer">
                           <Waves className="size-3 text-cyan-400" /> {isEn ? 'Beaches' : 'Plaže'}
                         </span>
                       </Link>
-                      <Link href={`${getLocalizedUrl('/explore', language)}?category=restaurants&q=${encodeURIComponent(matchedCity.name)}`}>
+                      <Link href={`${getLocalizedUrl('/explore', language)}?category=restaurants&q=${encodeURIComponent(matchedCity.name)}`} rel="nofollow">
                         <span className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/15 transition-colors cursor-pointer">
                           <UtensilsCrossed className="size-3 text-amber-400" /> {isEn ? 'Restaurants' : 'Restorani'}
                         </span>
                       </Link>
-                      <Link href={`${getLocalizedUrl('/explore', language)}?category=attractions&q=${encodeURIComponent(matchedCity.name)}`}>
+                      <Link href={`${getLocalizedUrl('/explore', language)}?category=attractions&q=${encodeURIComponent(matchedCity.name)}`} rel="nofollow">
                         <span className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/15 transition-colors cursor-pointer">
                           <Landmark className="size-3 text-emerald-400" /> {isEn ? 'Attractions' : 'Znamenitosti'}
                         </span>
@@ -307,12 +307,12 @@ export default function ArticleClient({
 
                     {/* Quick navigation pill links */}
                     <div className="flex flex-wrap gap-2 pt-1">
-                      <Link href={`${getLocalizedUrl('/explore', language)}?category=beaches&q=${encodeURIComponent(matchedIsland.name)}`}>
+                      <Link href={`${getLocalizedUrl('/explore', language)}?category=beaches&q=${encodeURIComponent(matchedIsland.name)}`} rel="nofollow">
                         <span className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/15 transition-colors cursor-pointer">
                           <Waves className="size-3 text-cyan-400" /> {isEn ? 'Island Beaches' : 'Plaže na otoku'}
                         </span>
                       </Link>
-                      <Link href={`${getLocalizedUrl('/explore', language)}?category=restaurants&q=${encodeURIComponent(matchedIsland.name)}`}>
+                      <Link href={`${getLocalizedUrl('/explore', language)}?category=restaurants&q=${encodeURIComponent(matchedIsland.name)}`} rel="nofollow">
                         <span className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/15 transition-colors cursor-pointer">
                           <UtensilsCrossed className="size-3 text-amber-400" /> {isEn ? 'Restaurants' : 'Restorani'}
                         </span>

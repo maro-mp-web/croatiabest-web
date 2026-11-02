@@ -1,12 +1,24 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
+  const disallowedPaths = [
+    '/dashboard/',
+    '/admin/',
+    '/api/',
+    '/*?*q=*',
+    '/*?*category=*',
+    '/*{search_term_string}*',
+    '/explore?*',
+    '/istrazi?*',
+    '/en/explore?*',
+  ];
+
   return {
     rules: [
       {
         userAgent: 'Google-Extended',
         allow: '/',
-        disallow: ['/dashboard/', '/admin/', '/api/'],
+        disallow: disallowedPaths,
       },
       {
         userAgent: [
@@ -19,12 +31,12 @@ export default function robots(): MetadataRoute.Robots {
           'Mediapartners-Google',
         ],
         allow: '/',
-        disallow: ['/dashboard/', '/admin/', '/api/'],
+        disallow: disallowedPaths,
       },
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/dashboard/', '/admin/', '/api/'],
+        disallow: disallowedPaths,
       },
     ],
     sitemap: 'https://croatiabest.com.hr/sitemap.xml',

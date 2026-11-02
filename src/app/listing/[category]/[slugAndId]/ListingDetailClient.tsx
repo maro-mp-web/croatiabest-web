@@ -122,7 +122,7 @@ export default function ListingDetailClient({
   // Description verification
   const baseDescription = (language === 'en' && listing.metadata?.descriptionEn) ? listing.metadata.descriptionEn : listing.description;
   const descriptionHtml = seoOverride?.enrichedDescription
-    ? `<div class="p-6 bg-primary/5 rounded-2xl border border-primary/10 mb-6 not-italic font-sans text-slate-800 leading-relaxed shadow-sm"><h3 class="text-xl font-bold mb-3 text-primary font-headline flex items-center gap-2">Vodič i preporuke uredništva</h3><p class="text-base text-slate-700 leading-relaxed">${seoOverride.enrichedDescription}</p></div>${baseDescription || ''}`
+    ? `<div class="p-6 bg-primary/5 rounded-2xl border border-primary/10 mb-6 not-italic font-sans text-slate-800 leading-relaxed shadow-sm"><h3 class="text-xl font-bold mb-3 text-primary font-headline flex items-center gap-2">Vodič i preporuke uredništva</h3><div class="text-base text-slate-700 leading-relaxed space-y-4">${seoOverride.enrichedDescription}</div></div>${baseDescription || ''}`
     : baseDescription;
   const hasDescription = Boolean(descriptionHtml && descriptionHtml.trim().length > 0);
 

@@ -129,14 +129,6 @@ export default function RootLayout({
                     '@id': 'https://croatiabest.com.hr/#organization',
                   },
                   inLanguage: 'hr',
-                  potentialAction: {
-                    '@type': 'SearchAction',
-                    target: {
-                      '@type': 'EntryPoint',
-                      urlTemplate: 'https://croatiabest.com.hr/explore?q={search_term_string}',
-                    },
-                    'query-input': 'required name=search_term_string',
-                  },
                 },
                 {
                   '@type': 'NewsMediaOrganization',

@@ -58,7 +58,7 @@ export async function generateMetadata({
 
   try {
     let listing: any = await getListingRecord(slugAndId);
-    const seoOverride = getSeoOverride(slugAndId);
+    const seoOverride = getSeoOverride(slugAndId) || (listing ? getSeoOverride(listing.slug || listing.id || generateSlug(listing.name)) : null);
     
     if (!listing && seoOverride) {
       listing = {

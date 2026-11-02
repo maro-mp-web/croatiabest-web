@@ -517,6 +517,7 @@ export default function HomeView({ forcedLanguage }: { forcedLanguage?: 'hr' | '
                   <Link
                     key={chip.label}
                     href={chip.href}
+                    rel={chip.href.includes('?') ? 'nofollow' : undefined}
                     className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white/90 text-xs font-semibold backdrop-blur-md transition-all hover:scale-105"
                   >
                     {chip.label}

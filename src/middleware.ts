@@ -2,10 +2,17 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 import { CATEGORY_SLUG_MAP } from '@/app/lib/utils/slug';
+import { resolveLegacyRedirect } from '@/app/lib/legacy-redirects';
 
 export function middleware(request: NextRequest) {
   const url = new URL(request.url);
   const pathname = url.pathname;
+
+  // Direct 301 Redirect for legacy/corrupted URLs and old 15-char ID hashes
+  const legacyTarget = resolveLegacyRedirect(pathname);
+  if (legacyTarget && pathname !== legacyTarget) {
+    return NextResponse.redirect(new URL(legacyTarget + url.search, request.url), 301);
+  }
 
   // 1. Permanent 301 Redirect: /listing/* -> /objekt/* with normalized Croatian category slug
   if (pathname === '/listing' || pathname === '/listing/') {

@@ -58,7 +58,7 @@ export default async function ListingDetailPage({
   const resolvedParams = await params;
   const slug = resolvedParams.slugAndId || '';
   let listing: any = await getListingRecord(slug);
-  const seoOverride = getSeoOverride(slug) || (listing ? getSeoOverride(listing.slug || listing.id) : null);
+  const seoOverride = getSeoOverride(slug) || (listing ? getSeoOverride(listing.slug || listing.id || generateSlug(listing.name)) : null);
 
   if (!listing && seoOverride) {
     listing = {
